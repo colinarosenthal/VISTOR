@@ -99,7 +99,7 @@ VISTOR/
 Assets/
 Cache/
 ChannelConfigs/
-Code/
+src/
 Config/
 Docs/
 Logs/
