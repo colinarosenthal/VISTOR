@@ -772,3 +772,108 @@ Special recognition is given to:
 - Open-source software contributors whose work has inspired ideas incorporated into VISTOR.
 
 Their efforts help preserve a part of television history that might otherwise be lost.
+
+---
+
+# 24. Development Standards
+
+To maintain consistency throughout the VISTOR codebase, the following naming conventions shall be used unless a specific exception is documented.
+
+## Directories
+
+- Lowercase only
+- Use `snake_case` when multiple words are required
+
+Examples:
+
+```text
+src/
+channel_configs/
+game_shows/
+```
+
+## Python Modules
+
+- `snake_case.py`
+
+Examples:
+
+```text
+channel_manager.py
+media_library.py
+schedule_generator.py
+weather_service.py
+```
+
+## Classes
+
+- `PascalCase`
+
+Examples:
+
+```text
+Application
+ChannelManager
+MediaLibrary
+WeatherService
+```
+
+## Functions & Methods
+
+- `snake_case`
+
+Examples:
+
+```text
+load_configuration()
+initialize_engine()
+generate_schedule()
+```
+
+## Variables
+
+- `snake_case`
+
+Examples:
+
+```text
+current_channel
+weather_data
+media_library
+```
+
+## Constants
+
+- `UPPER_CASE`
+
+Examples:
+
+```text
+APP_NAME
+VERSION
+DEFAULT_CHANNEL
+```
+
+## Assets
+
+Media assets should use lowercase filenames with underscores.
+
+Examples:
+
+```text
+channel_logo.png
+rain_window.mp4
+startup_chime.wav
+```
+
+## Configuration Files
+
+Configuration files should use lowercase names.
+
+Examples:
+
+```text
+settings.json
+channels.yaml
+weather.json
+```
