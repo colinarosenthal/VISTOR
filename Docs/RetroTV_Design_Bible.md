@@ -36,6 +36,156 @@ Throughout the project, VISTOR is treated as though it were an established manuf
 
 In this way, the name VISTOR represents more than the software itself. It reflects the project's broader objective: preserving not only the content of broadcast television, but the feeling of interacting with the hardware, branding, and engineering culture that once surrounded it.
 
+# 1.3 Broadcast Simulation Philosophy
+
+## Core Principle
+
+VISTOR does not simulate media playback.
+
+VISTOR simulates television broadcasting.
+
+The goal is not simply to play episodes, movies, or commercials. The goal is to recreate the behavior of a real television network, where programming is continuously scheduled, interrupted, resumed, and transitioned exactly as it would be on a broadcast station.
+
+Every subsystem should be designed with this philosophy in mind.
+
+---
+
+## Broadcast Events
+
+Programs are never interrupted directly by the player.
+
+Instead, interruptions are represented as **Broadcast Events**.
+
+Examples include:
+
+- Commercial Blocks
+- Station Identification
+- Network Promos
+- Local Affiliate Promos
+- Weather Bulletins
+- Emergency Alert System (EAS)
+- Breaking News Interruptions
+- Holiday Bumpers
+- Rating Screens
+- "We'll Be Right Back" Screens
+- Countdown Timers
+- Future Broadcast Types
+
+Every interruption is treated as the same type of object within the broadcast pipeline.
+
+---
+
+## Broadcast Pipeline
+
+The playback pipeline should remain separated into independent responsibilities.
+
+```
+Engine
+    │
+    ▼
+Scheduler
+    │
+    ▼
+Broadcast Controller
+    │
+    ▼
+Playback Queue
+    │
+    ▼
+Player
+```
+
+Responsibilities:
+
+- **Engine** controls application runtime.
+- **Scheduler** determines what should be airing.
+- **Broadcast Controller** determines when interruptions occur.
+- **Playback Queue** manages the ordered sequence of media.
+- **Player** only plays the next queued media item.
+
+The Player should never make scheduling decisions.
+
+---
+
+## Broadcast Modes
+
+Version 1.0 will support multiple broadcast behaviors.
+
+### Off
+
+No interruptions.
+
+```
+Episode
+Episode
+Movie
+```
+
+---
+
+### Between Programs
+
+Commercial blocks occur only between completed programs.
+
+```
+Episode
+Commercial Block
+Episode
+Commercial Block
+Movie
+```
+
+---
+
+### Mid-Program
+
+Preferred broadcast mode.
+
+Whenever broadcast metadata exists, commercial breaks should occur at their original broadcast timestamps.
+
+Example:
+
+```
+Episode
+    Break @ 09:14
+
+Commercial Block
+
+Resume Episode
+```
+
+If authentic breakpoint metadata is unavailable, VISTOR should generate breakpoints based on runtime.
+
+---
+
+## Future Expansion
+
+The broadcast architecture should allow additional event types without redesigning the playback system.
+
+Possible future broadcast events include:
+
+- Local News Cut-Ins
+- Severe Weather Interruptions
+- Live Event Overrides
+- Seasonal Network Branding
+- Election Coverage
+- Community-Created Broadcast Metadata
+- Regional Affiliate Differences
+
+The broadcast pipeline should remain flexible enough that any future event can be inserted without modifying the Player itself.
+
+---
+
+## Design Rule
+
+Scheduling determines **what** should happen.
+
+Broadcast Controller determines **when** interruptions occur.
+
+Player determines **how** media is played.
+
+Each subsystem should have a single responsibility and should not assume the responsibilities of another subsystem.
+
 # 2. Project Goals
 
 VISTOR aims to recreate the atmosphere of television as it existed before on-demand streaming became the standard.

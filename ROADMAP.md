@@ -99,11 +99,12 @@ VISTOR has a complete project structure and is ready for software development.
 
 ## Runtime Engine
 
-- [ ] Implement engine update loop
+## Runtime Engine
+
+- [x] Implement engine update loop
+- [x] Add engine state management
+- [x] Add graceful runtime shutdown
 - [ ] Build engine timing system
-- [ ] Add engine state management
-- [ ] Implement event dispatch system
-- [ ] Add graceful runtime shutdown
 - [ ] Integrate channel manager
 - [ ] Integrate media player
 - [ ] Integrate scheduler
