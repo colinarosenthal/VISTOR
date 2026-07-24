@@ -3,10 +3,15 @@ VISTOR Clock
 """
 
 from datetime import datetime
+from scheduler.schedule_type import ScheduleType
 
 
 class Clock:
     """Provides the current time for the VISTOR runtime."""
+
+    # ------------------------------------------------------------------
+    # Lifecycle
+    # ------------------------------------------------------------------
 
     def __init__(self):
         self.current_time = None
@@ -23,6 +28,21 @@ class Clock:
         """Update the current time."""
 
         self.current_time = datetime.now()
+
+    def shutdown(self):
+        """Shutdown the clock."""
+
+        self.current_time = None
+        self.initialized = False
+
+    def is_initialized(self):
+        """Return whether the clock has been initialized."""
+
+        return self.initialized
+
+    # ------------------------------------------------------------------
+    # Time Accessors
+    # ------------------------------------------------------------------
 
     def get_time(self):
         """Return the current datetime."""
@@ -73,6 +93,15 @@ class Clock:
         """Return the current second."""
 
         return self.current_time.second
+
+    # ------------------------------------------------------------------
+    # Calendar
+    # ------------------------------------------------------------------
+
+    def is_weekday(self):
+        """Return whether today is Monday through Friday."""
+
+        return self.current_time.weekday() < 5
 
     def is_weekend(self):
         """Return whether today is Saturday or Sunday."""
@@ -131,45 +160,42 @@ class Clock:
     def is_holiday(self):
         """Return whether today is a supported holiday."""
 
-        return any([
-            self.is_new_years_day(),
-            self.is_valentines_day(),
-            self.is_st_patricks_day(),
-            self.is_independence_day(),
-            self.is_halloween(),
-            self.is_thanksgiving(),
-            self.is_christmas_eve(),
-            self.is_christmas_day(),
-            self.is_new_years_eve()
-        ])
+        return self.get_schedule_type() not in (
+            ScheduleType.WEEKDAY,
+            ScheduleType.WEEKEND
+        )
 
-    def is_morning(self):
-        """Return whether it is morning."""
+    def get_schedule_type(self):
+        """Return today's schedule type."""
 
-        return 5 <= self.get_hour() < 12
+        if self.is_new_years_day():
+            return ScheduleType.NEW_YEARS_DAY
 
-    def is_afternoon(self):
-        """Return whether it is afternoon."""
+        if self.is_valentines_day():
+            return ScheduleType.VALENTINES_DAY
 
-        return 12 <= self.get_hour() < 17
+        if self.is_st_patricks_day():
+            return ScheduleType.ST_PATRICKS_DAY
 
-    def is_evening(self):
-        """Return whether it is evening."""
+        if self.is_independence_day():
+            return ScheduleType.INDEPENDENCE_DAY
 
-        return 17 <= self.get_hour() < 21
+        if self.is_halloween():
+            return ScheduleType.HALLOWEEN
 
-    def is_night(self):
-        """Return whether it is night."""
+        if self.is_thanksgiving():
+            return ScheduleType.THANKSGIVING
 
-        return self.get_hour() >= 21 or self.get_hour() < 5
+        if self.is_christmas_eve():
+            return ScheduleType.CHRISTMAS_EVE
 
-    def shutdown(self):
-        """Shutdown the clock."""
+        if self.is_christmas_day():
+            return ScheduleType.CHRISTMAS_DAY
 
-        self.current_time = None
-        self.initialized = False
+        if self.is_new_years_eve():
+            return ScheduleType.NEW_YEARS_EVE
 
-    def is_initialized(self):
-        """Return whether the clock has been initialized."""
+        if self.is_weekend():
+            return ScheduleType.WEEKEND
 
-        return self.initialized
+        return ScheduleType.WEEKDAY

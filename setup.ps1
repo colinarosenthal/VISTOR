@@ -214,6 +214,7 @@ $GitKeepFolders = @(
     "src\osd",
     "src\player",
     "src\remote",
+    "src\scheduler",
     "src\tests",
     "src\util",
     "src\weather"

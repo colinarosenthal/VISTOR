@@ -36,7 +36,63 @@ Throughout the project, VISTOR is treated as though it were an established manuf
 
 In this way, the name VISTOR represents more than the software itself. It reflects the project's broader objective: preserving not only the content of broadcast television, but the feeling of interacting with the hardware, branding, and engineering culture that once surrounded it.
 
-# 1.3 Broadcast Simulation Philosophy
+# 2. Project Goals
+
+VISTOR aims to recreate the atmosphere of television as it existed before on-demand streaming became the standard.
+
+The software should emphasize authenticity, simplicity, and nostalgia over modern convenience.
+
+Primary goals include:
+
+- Persistent television channels.
+- Authentic (end of episode) commercial breaks.
+- Historically appropriate programming.
+- Cable-box style user interface.
+- Local-first media storage.
+- Reliable Raspberry Pi deployment.
+- Expandable architecture for future channels and features.
+
+---
+
+# 3. Core Philosophy
+
+VISTOR follows several guiding principles.
+
+## 3.1 Television, Not Streaming
+
+VISTOR is designed to simulate television.
+
+Users do not browse a library.
+
+Users watch whatever is currently airing.
+
+---
+
+## 3.2 Channels Never Stop
+
+Every channel always exists.
+
+Every channel always has a schedule.
+
+Changing channels never restarts playback.
+
+If a user leaves a channel for ten minutes, that channel should progress ten minutes while unattended.
+
+---
+
+## 3.3 Media Exists Independently
+
+Shows, movies, commercials, music videos, and other content exist independently of channels.
+
+Channels reference media.
+
+Media does not belong to channels.
+
+A single episode may appear on multiple channels without duplication.
+
+---
+
+# 3.4 Broadcast Simulation Philosophy
 
 ## Core Principle
 
@@ -186,63 +242,7 @@ Player determines **how** media is played.
 
 Each subsystem should have a single responsibility and should not assume the responsibilities of another subsystem.
 
-# 2. Project Goals
-
-VISTOR aims to recreate the atmosphere of television as it existed before on-demand streaming became the standard.
-
-The software should emphasize authenticity, simplicity, and nostalgia over modern convenience.
-
-Primary goals include:
-
-- Persistent television channels.
-- Authentic (end of episode) commercial breaks.
-- Historically appropriate programming.
-- Cable-box style user interface.
-- Local-first media storage.
-- Reliable Raspberry Pi deployment.
-- Expandable architecture for future channels and features.
-
----
-
-# 3. Core Philosophy
-
-VISTOR follows several guiding principles.
-
-## 3.1 Television, Not Streaming
-
-VISTOR is designed to simulate television.
-
-Users do not browse a library.
-
-Users watch whatever is currently airing.
-
----
-
-## 3.2 Channels Never Stop
-
-Every channel always exists.
-
-Every channel always has a schedule.
-
-Changing channels never restarts playback.
-
-If a user leaves a channel for ten minutes, that channel should progress ten minutes while unattended.
-
----
-
-## 3.3 Media Exists Independently
-
-Shows, movies, commercials, music videos, and other content exist independently of channels.
-
-Channels reference media.
-
-Media does not belong to channels.
-
-A single episode may appear on multiple channels without duplication.
-
----
-
-## 3.4 Local First
+## 3.5 Local First
 
 Whenever possible, all media should be stored locally.
 
@@ -252,7 +252,7 @@ The only planned exception is live weather data used by the Weather Channel.
 
 ---
 
-## 3.5 Relative Paths
+## 3.6 Relative Paths
 
 No file paths should ever be hardcoded.
 
@@ -260,7 +260,7 @@ Every component of VISTOR should function correctly regardless of where the VIST
 
 ---
 
-## 3.6 Raspberry Pi Production Target
+## 3.7 Raspberry Pi Production Target
 
 Development will occur primarily on Windows.
 
@@ -270,7 +270,7 @@ The Raspberry Pi becomes the dedicated cable box.
 
 ---
 
-## 3.7 Planned Channel Types
+## 3.8 Planned Channel Types
 
 VISTOR is designed to support a wide variety of cable television channels inspired by the late 1990s and early 2000s.
 
@@ -499,13 +499,14 @@ The metadata system should allow the scheduler to build realistic television lin
 
 ---
 
-# 5. Planned System Architecture
+# 5. System Architecture
 
 VISTOR is divided into several independent components.
 
 Each component is responsible for a specific aspect of the cable television experience.
 
-## Channel Engine
+
+## 5.1 Channel Engine
 
 Responsible for:
 
@@ -515,9 +516,8 @@ Responsible for:
 - Commercial insertion
 - Schedule generation
 
----
 
-## Player
+## 5.2 Player
 
 Responsible for:
 
@@ -528,9 +528,8 @@ Responsible for:
 
 Changing channels should never restart programming.
 
----
 
-## Remote Handler
+## 5.3 Remote Handler
 
 Responsible for:
 
@@ -538,9 +537,8 @@ Responsible for:
 - Keyboard controls during development
 - Mapping remote buttons to VISTOR functions
 
----
 
-## OSD Manager
+## 5.4 OSD Manager
 
 Responsible for displaying temporary overlays including:
 
@@ -554,9 +552,8 @@ Responsible for displaying temporary overlays including:
 
 The OSD should resemble period-correct cable television equipment.
 
----
 
-## Metadata Engine
+## 5.5 Metadata Engine
 
 Responsible for:
 
@@ -565,7 +562,70 @@ Responsible for:
 - Providing information to the scheduler
 - Tracking shows, movies, commercials, and promotions
 
----
+
+## 5.6 Architectural Standards
+
+The VISTOR source tree shall maintain a consistent architecture across all development environments.
+
+Architectural standards exist to ensure every contributor works within the same project structure while preserving long-term maintainability.
+
+
+### 5.6.1 Project Scaffold Philosophy
+
+VISTOR shall maintain a complete project scaffold through `setup.ps1`.
+
+The setup script is responsible for generating the intended project architecture for new contributors while preserving all existing development work.
+
+The setup process shall follow these rules:
+
+- Create any missing project folders.
+- Create any missing source files using project templates.
+- Never overwrite an existing file.
+- Never modify user-created source code.
+- Skip existing files and report them in the setup summary.
+- Generate skeleton implementations for unfinished subsystems so the intended architecture is always visible.
+- Keep the generated scaffold synchronized with the current architectural design of VISTOR.
+
+The purpose of the scaffold is to ensure every contributor begins with the same project structure without requiring manual creation of packages, modules, or placeholder files.
+
+As VISTOR evolves, `setup.ps1` shall be updated after each completed subsystem so that the scaffold always reflects the current architectural vision of the project.
+
+
+### 5.6.2 Source Generation Policy
+
+Source files generated by `setup.ps1` are intended only as architectural starting templates.
+
+Once a source file exists, it becomes part of the project's tracked source code and shall thereafter be maintained through Git rather than regenerated.
+
+`setup.ps1` must never overwrite, replace, or modify an existing source file.
+
+
+### 5.6.3 Architectural Consistency
+
+Each subsystem shall exist within its own package under `src/`.
+
+Each package shall expose its primary public class through its `__init__.py` file.
+
+Each module shall contain one primary class or responsibility whenever practical.
+
+Subsystems shall evolve by expanding internally rather than restructuring the overall project architecture.
+
+Future architectural growth shall preserve existing package locations whenever possible to minimize disruption for contributors and maintain backward compatibility.
+
+
+### 5.6.4 Directory Responsibilities
+
+Project directories shall have clearly defined responsibilities.
+
+- `src/` contains application source code.
+- `Assets/` contains static assets used by the application.
+- `Media/` contains user media libraries.
+- `Schedules/` contains broadcast schedule data.
+- `Metadata/` contains generated metadata.
+- `Logs/` contains runtime logs.
+- `Cache/` contains temporary generated data.
+
+Source code shall never be mixed with runtime data or user media.
 
 # 6. Inspiration
 
