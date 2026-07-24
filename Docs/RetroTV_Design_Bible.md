@@ -777,9 +777,11 @@ Their efforts help preserve a part of television history that might otherwise be
 
 # 24. Development Standards
 
+## Naming Conventions
+
 To maintain consistency throughout the VISTOR codebase, the following naming conventions shall be used unless a specific exception is documented.
 
-## Directories
+### Directories
 
 - Lowercase only
 - Use `snake_case` when multiple words are required
@@ -792,7 +794,7 @@ channel_configs/
 game_shows/
 ```
 
-## Python Modules
+### Python Modules
 
 - `snake_case.py`
 
@@ -805,7 +807,7 @@ schedule_generator.py
 weather_service.py
 ```
 
-## Classes
+### Classes
 
 - `PascalCase`
 
@@ -818,7 +820,7 @@ MediaLibrary
 WeatherService
 ```
 
-## Functions & Methods
+### Functions & Methods
 
 - `snake_case`
 
@@ -830,7 +832,7 @@ initialize_engine()
 generate_schedule()
 ```
 
-## Variables
+### Variables
 
 - `snake_case`
 
@@ -842,7 +844,7 @@ weather_data
 media_library
 ```
 
-## Constants
+### Constants
 
 - `UPPER_CASE`
 
@@ -854,7 +856,7 @@ VERSION
 DEFAULT_CHANNEL
 ```
 
-## Assets
+### Assets
 
 Media assets should use lowercase filenames with underscores.
 
@@ -866,7 +868,7 @@ rain_window.mp4
 startup_chime.wav
 ```
 
-## Configuration Files
+### Configuration Files
 
 Configuration files should use lowercase names.
 
@@ -877,3 +879,21 @@ settings.json
 channels.yaml
 weather.json
 ```
+
+## Component Lifecycle
+
+Components should implement only the lifecycle methods they require.
+
+When implemented, lifecycle methods should always appear in the following order:
+
+1. initialize()
+2. start()
+3. stop()
+4. shutdown()
+
+Each method has a distinct responsibility:
+
+- initialize() prepares the component.
+- start() begins active operation.
+- stop() halts active operation while preserving state.
+- shutdown() releases resources and performs cleanup.

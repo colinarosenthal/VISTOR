@@ -2,9 +2,9 @@
 
 **Project Status:** Pre-Alpha
 
-**Current Version:** Planning Stage
+**Current Version:** 0.1.1
 
-**Last Updated:** July 23, 2026
+**Last Updated:** July 24, 2026
 
 ---
 
@@ -83,14 +83,33 @@ VISTOR has a complete project structure and is ready for software development.
 
 ## Application Skeleton
 
-- [ ] Create Python entry point (`main.py`)
-- [ ] Implement application startup sequence
-- [ ] Load configuration files
-- [ ] Initialize logging system
-- [ ] Verify project directory structure
-- [ ] Display startup banner and version information
+- [x] Create Python entry point (`main.py`)
+- [x] Implement application startup sequence
+- [x] Implement application shutdown sequence
+- [x] Establish application lifecycle
+- [x] Build configuration management system
+- [x] Initialize logging system
+- [x] Implement project path management
+- [x] Verify project directory structure
+- [x] Build runtime engine skeleton
+- [x] Define engine lifecycle
+- [x] Display startup banner and version information
 
 ---
+
+## Runtime Engine
+
+- [ ] Implement engine update loop
+- [ ] Build engine timing system
+- [ ] Add engine state management
+- [ ] Implement event dispatch system
+- [ ] Add graceful runtime shutdown
+- [ ] Integrate channel manager
+- [ ] Integrate media player
+- [ ] Integrate scheduler
+- [ ] Integrate weather service
+- [ ] Integrate on-screen display (OSD)
+- [ ] Integrate remote input system
 
 ## Core Infrastructure
 

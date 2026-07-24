@@ -7,6 +7,7 @@ Coordinates startup, initialization, and shutdown.
 from core.config import Config
 from core.logger import Logger
 from core.paths import Paths
+from engine import Engine
 
 
 class Application:
@@ -30,7 +31,8 @@ class Application:
         self.paths.verify()
 
         Logger.info("Initializing engine...")
-        # Placeholder for future engine initialization.
+        self.engine = Engine()
+        self.engine.initialize()
 
     def start(self):
         """Start the application."""
@@ -39,6 +41,8 @@ class Application:
 
         self.initialize()
 
+        self.engine.start()
+
         self.running = True
 
         Logger.info("VISTOR successfully initialized.")
@@ -46,6 +50,8 @@ class Application:
     def shutdown(self):
         """Shutdown the application."""
 
-        self.running = False
-
         Logger.info("Shutting down VISTOR...")
+
+        self.engine.shutdown()
+
+        self.running = False
