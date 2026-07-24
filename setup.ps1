@@ -53,7 +53,7 @@ function Write-ErrorMessage {
     Write-Host "[!] $Message" -ForegroundColor Red
 }
 
-function New-RetroFolder {
+function New-VistorFolder {
 
     param([string]$RelativePath)
 
@@ -81,7 +81,7 @@ function New-RetroFolder {
 
 }
 
-function New-RetroFile {
+function New-VistorFile {
 
     param([string]$RelativePath)
 
@@ -138,16 +138,17 @@ $Folders = @(
 
     "ChannelConfigs",
 
-    "Code",
-    "Code\channels",
-    "Code\engine",
-    "Code\metadata",
-    "Code\osd",
-    "Code\player",
-    "Code\remote",
-    "Code\tests",
-    "Code\util",
-    "Code\weather",
+    "src",
+    "src\channels",
+    "src\core",
+    "src\engine",
+    "src\metadata",
+    "src\osd",
+    "src\player",
+    "src\remote",
+    "src\tests",
+    "src\util",
+    "src\weather",
 
     "Config",
 
@@ -198,11 +199,24 @@ $GitKeepFolders = @(
     "Config",
     "Logs",
     "Metadata",
+
     "Schedules\Archives",
     "Schedules\Daily",
     "Schedules\Generated",
     "Schedules\Weekly",
-    "Tools"
+
+    "Tools",
+
+    "src\channels",
+    "src\core",
+    "src\engine",
+    "src\metadata",
+    "src\osd",
+    "src\player",
+    "src\remote",
+    "src\tests",
+    "src\util",
+    "src\weather"
 )
 
 # ==========================================================
@@ -213,7 +227,7 @@ Write-Section "Creating Project Folders"
 
 foreach ($Folder in $Folders) {
 
-    New-RetroFolder $Folder
+    New-VistorFolder $Folder
 
 }
 
@@ -225,7 +239,7 @@ Write-Section "Creating Project Files"
 
 foreach ($File in $RootFiles) {
 
-    New-RetroFile $File
+    New-VistorFile $File
 
 }
 
