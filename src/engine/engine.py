@@ -3,6 +3,8 @@ VISTOR Engine
 """
 
 from core.logger import Logger
+from core.clock import Clock
+from scheduler.scheduler import Scheduler
 
 
 class Engine:
@@ -15,6 +17,12 @@ class Engine:
         """Initialize the engine."""
 
         Logger.info("Engine initialized.")
+
+        self.clock = Clock()
+        self.clock.initialize()
+
+        self.scheduler = Scheduler(self.clock)
+        self.scheduler.initialize()
 
     def start(self):
         """Start the engine."""
@@ -29,6 +37,9 @@ class Engine:
 
     def update(self):
         """Run one engine update."""
+
+        self.clock.update()
+        self.scheduler.update()
 
         Logger.info("Engine update.")
 

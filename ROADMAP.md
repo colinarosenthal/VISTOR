@@ -2,7 +2,7 @@
 
 **Project Status:** Pre-Alpha
 
-**Current Version:** 0.1.1
+**Current Version:** 0.2.0
 
 **Last Updated:** July 24, 2026
 
@@ -32,7 +32,7 @@ Major features should be completed one at a time and thoroughly tested before ad
 
 # Current Milestone
 
-**Phase 2 — Media Library**
+**Phase 3 — Core Software**
 
 ---
 
@@ -195,11 +195,32 @@ VISTOR has a usable media library and organized metadata system.
 
 ## Scheduler
 
+### Foundation
+
+- [x] Implement Clock subsystem
+- [x] Implement calendar detection
+- [x] Implement weekday/weekend detection
+- [x] Implement holiday detection
+- [x] Implement ScheduleType
+- [x] Implement ProgrammingBlock
+- [x] Implement Schedule
+- [x] Implement Scheduler
+
+### Schedule Management
+
+- [ ] Implement ScheduleLoader
+- [ ] Populate schedule library
+- [ ] Connect ScheduleLoader to Scheduler
+- [ ] Automatic weekday schedule selection
+- [ ] Automatic weekend schedule selection
+- [ ] Automatic holiday schedule selection
+
+### Broadcast Scheduling
+
 - [ ] Daily Schedule Generator
 - [ ] Weekly Schedule Generator
 - [ ] Commercial Scheduler
 - [ ] Persistent Playback Engine
-- [ ] Holiday Schedule Overrides
 
 ---
 
@@ -443,6 +464,18 @@ The objective is to recreate the feeling of sitting in front of a CRT television
 - Created VISTOR_User_Manual.md.
 
 ---
+
+## 2026-07-24
+
+- Implemented Engine architecture.
+- Completed Clock subsystem.
+- Added weekday, weekend, and holiday detection.
+- Implemented ScheduleType system.
+- Implemented ProgrammingBlock.
+- Implemented Schedule.
+- Implemented Scheduler architecture.
+- Established scheduling pipeline foundation for ScheduleLoader.
+- Standardized Design Bible formatting for future contributions.
 
 ## Future Entries
 

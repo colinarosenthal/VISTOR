@@ -3,7 +3,7 @@ VISTOR Scheduler
 """
 
 from core.logger import Logger
-
+from scheduler.schedule_loader import ScheduleLoader
 
 class Scheduler:
     """Manages the active broadcast schedule."""
@@ -27,7 +27,11 @@ class Scheduler:
 
         Logger.info("Scheduler initialized.")
 
-        # Placeholder for future schedule loading.
+        loader = ScheduleLoader()
+
+        loader.load()
+
+        self.schedule_library = loader.get_schedule_library()
 
         self.initialized = True
 
