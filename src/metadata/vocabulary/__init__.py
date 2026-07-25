@@ -9,6 +9,7 @@ from metadata.vocabulary.theme import Theme
 from metadata.vocabulary.country import Country
 from metadata.vocabulary.language import Language
 from metadata.vocabulary.tag import Tag
+from metadata.vocabulary.content_rating import ContentRating
 
 __all__ = [
     "Genre",
@@ -16,4 +17,5 @@ __all__ = [
     "Country",
     "Language",
     "Tag",
+    "ContentRating",
 ]
