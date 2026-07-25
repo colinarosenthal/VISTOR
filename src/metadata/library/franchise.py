@@ -4,7 +4,7 @@ VISTOR Franchise
 
 
 class Franchise:
-    """Represents a collection of related media."""
+    """Represents a shared intellectual property."""
 
     # ------------------------------------------------------------------
     # Construction
@@ -12,9 +12,12 @@ class Franchise:
 
     def __init__(
         self,
+        id: str,
         name: str,
         description: str = "",
     ):
+        self.id = id
+
         self.name = name
 
         self.description = description
@@ -22,6 +25,11 @@ class Franchise:
     # ------------------------------------------------------------------
     # Getters
     # ------------------------------------------------------------------
+
+    def get_id(self):
+        """Return the franchise identifier."""
+
+        return self.id
 
     def get_name(self):
         """Return the franchise name."""

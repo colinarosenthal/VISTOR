@@ -127,18 +127,126 @@ VISTOR successfully launches as an application and establishes the foundation up
 
 ---
 
-# Phase 2 — Media Library
+# Phase 2 — Metadata Engine
 
-## Media Organization
+## Metadata Architecture
 
-- [ ] Finalize media folder structure
+- [x] Finalize metadata architecture
+- [x] Finalize metadata package organization
+- [x] Define metadata inheritance strategy
+- [x] Define metadata relationship model
+- [x] Document metadata architecture
+- [x] Create metadata package structure
+
+---
+
+## Metadata Models
+
+### Foundation
+
+- [ ] Implement MediaItem
+- [ ] Implement MediaAsset
+
+### Relationships
+
+- [ ] Implement Person
+- [ ] Implement Appearance
+
+### Library
+
+- [ ] Implement MediaLibrary
+- [ ] Implement Franchise
+- [ ] Implement Series
+- [ ] Implement Season
+- [ ] Implement Advertiser
+- [ ] Implement Product
+- [ ] Implement Campaign
+
+### Television
+
+- [ ] Implement Episode
+- [ ] Implement NewsSegment
+- [ ] Implement WeatherSegment
+- [ ] Implement SportsEvent
+
+### Film
+
+- [ ] Implement Movie
+- [ ] Implement Documentary
+
+### Advertising
+
+- [ ] Implement Commercial
+- [ ] Implement Promo
+- [ ] Implement StationID
+- [ ] Implement Infomercial
+
+### Music
+
+- [ ] Implement MusicVideo
+
+### Miscellaneous
+
+- [ ] Implement Ambient
+
+---
+
+## Metadata Services
+
+- [ ] Implement Metadata Loader
+- [ ] Implement Metadata Library
+- [ ] Implement Metadata Search
+- [ ] Implement Metadata Serializer
+- [ ] Implement Metadata Validator
+
+---
+
+## Metadata Population
+
+### Vocabulary
+
+- [ ] Populate Genres
+- [ ] Populate Music Genres
+- [ ] Populate Networks
+- [ ] Populate Themes
+- [ ] Populate Countries
+- [ ] Populate Tags
+
+### Commercial Library
+
+- [ ] Populate Advertisers
+- [ ] Populate Products
+- [ ] Populate Campaigns
+
+### Initial Metadata
+
+- [ ] Create Television Metadata
+- [ ] Create Movie Metadata
+- [ ] Create Commercial Metadata
+- [ ] Create Music Video Metadata
+
+---
+
+## Milestone
+
+VISTOR possesses a complete metadata engine capable of describing, organizing, validating, searching, and managing every supported broadcast asset.
+
+---
+
+# Phase 3 — Media Library
+
+## Library Organization
+
+- [ ] Finalize physical media folder structure
 - [ ] Organize existing media library
+- [ ] Normalize filenames
+- [ ] Verify media assets
 
 ---
 
 ## Media Acquisition
 
-Programming
+### Programming
 
 - [ ] Television Shows
 - [ ] Movies
@@ -148,7 +256,7 @@ Programming
 - [ ] Game Shows
 - [ ] Talk Shows
 
-Supporting Content
+### Supporting Content
 
 - [ ] Commercials
 - [ ] Station IDs
@@ -159,74 +267,18 @@ Supporting Content
 
 ---
 
-## Metadata
+## Library Population
 
-- [ ] Design metadata format
-- [ ] Build metadata templates
-- [ ] Create first metadata entries
-- [ ] Build metadata validator
-
----
-
-## Milestone
-
-VISTOR has a usable media library and organized metadata system.
-
----
-
-# Phase 3 — Core Software
-
-## Foundation Modules
-
-- [ ] Configuration Loader
-- [ ] Logging System
-- [ ] Relative Path Manager
-- [ ] Utility Library
-
----
-
-## Metadata Engine
-
-- [ ] Media Scanner
-- [ ] Metadata Parser
-- [ ] Metadata Validator
-
----
-
-## Scheduler
-
-### Foundation
-
-- [x] Implement Clock subsystem
-- [x] Implement calendar detection
-- [x] Implement weekday/weekend detection
-- [x] Implement holiday detection
-- [x] Implement ScheduleType
-- [x] Implement ProgrammingBlock
-- [x] Implement Schedule
-- [x] Implement Scheduler
-
-### Schedule Management
-
-- [ ] Implement ScheduleLoader
-- [ ] Populate schedule library
-- [ ] Connect ScheduleLoader to Scheduler
-- [ ] Automatic weekday schedule selection
-- [ ] Automatic weekend schedule selection
-- [ ] Automatic holiday schedule selection
-
-### Broadcast Scheduling
-
-- [ ] Daily Schedule Generator
-- [ ] Weekly Schedule Generator
-- [ ] Commercial Scheduler
-- [ ] Persistent Playback Engine
+- [ ] Scan Media Library
+- [ ] Associate Metadata
+- [ ] Validate Media Library
+- [ ] Resolve Missing Assets
 
 ---
 
 ## Milestone
 
-VISTOR can determine what every channel should currently be broadcasting.
+VISTOR possesses a fully populated broadcast library ready for scheduling.
 
 ---
 

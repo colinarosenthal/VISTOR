@@ -3,7 +3,7 @@ VISTOR Appearance
 """
 
 from metadata.enums.role_type import RoleType
-from metadata.models.relationships.person import Person
+from metadata.library.person import Person
 
 
 class Appearance:
@@ -19,8 +19,7 @@ class Appearance:
         role: RoleType,
         display_name: str = "",
         character_name: str = "",
-        character_alias: str = "",
-        organization: str = "",
+        affiliation: str = "",
         billing_order: int = 0,
         credited: bool = True,
         notes: str = "",
@@ -32,9 +31,8 @@ class Appearance:
         self.display_name = display_name
 
         self.character_name = character_name
-        self.character_alias = character_alias
 
-        self.organization = organization
+        self.affiliation = affiliation
 
         self.billing_order = billing_order
 
@@ -69,15 +67,10 @@ class Appearance:
 
         return self.character_name
 
-    def get_character_alias(self):
-        """Return the character alias."""
+    def get_affiliation(self):
+        """Return the associated affiliation."""
 
-        return self.character_alias
-
-    def get_organization(self):
-        """Return the associated organization."""
-
-        return self.organization
+        return self.affiliation
 
     def get_billing_order(self):
         """Return billing order."""
@@ -97,6 +90,16 @@ class Appearance:
     # ------------------------------------------------------------------
     # Utility
     # ------------------------------------------------------------------
+
+    def has_character(self):
+        """Return whether this appearance portrays a character."""
+
+        return bool(self.character_name)
+
+    def has_affiliation(self):
+        """Return whether an affiliation exists."""
+
+        return bool(self.affiliation)
 
     def __str__(self):
         return f"{self.get_display_name()} ({self.role.name})"

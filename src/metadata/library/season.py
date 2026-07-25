@@ -2,13 +2,7 @@
 VISTOR Season
 """
 
-from __future__ import annotations
-
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from metadata.models.programming.series import Series
-    from metadata.models.programming.episode import Episode
+from metadata.library.series import Series
 
 
 class Season:
@@ -20,24 +14,33 @@ class Season:
 
     def __init__(
         self,
+        id: str,
         series: Series,
         season_number: int,
         title: str = "",
+        description: str = "",
         premiere_year: int = 0,
     ):
+        self.id = id
+
         self.series = series
 
         self.season_number = season_number
 
         self.title = title
 
-        self.premiere_year = premiere_year
+        self.description = description
 
-        self.episodes: list[Episode] = []
+        self.premiere_year = premiere_year
 
     # ------------------------------------------------------------------
     # Getters
     # ------------------------------------------------------------------
+
+    def get_id(self):
+        """Return the season identifier."""
+
+        return self.id
 
     def get_series(self):
         """Return the parent series."""
@@ -54,28 +57,24 @@ class Season:
 
         return self.title
 
+    def get_description(self):
+        """Return the season description."""
+
+        return self.description
+
     def get_premiere_year(self):
         """Return the premiere year."""
 
         return self.premiere_year
 
-    def get_episodes(self):
-        """Return all episodes."""
-
-        return self.episodes
-
-    # ------------------------------------------------------------------
-    # Episodes
-    # ------------------------------------------------------------------
-
-    def add_episode(self, episode: Episode):
-        """Add an episode."""
-
-        self.episodes.append(episode)
-
     # ------------------------------------------------------------------
     # Utility
     # ------------------------------------------------------------------
+
+    def has_title(self):
+        """Return whether the season has a custom title."""
+
+        return bool(self.title)
 
     def get_display_name(self):
         """Return a display-friendly season name."""

@@ -2,13 +2,7 @@
 VISTOR Series
 """
 
-from __future__ import annotations
-
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from metadata.models.relationships.franchise import Franchise
-    from metadata.models.programming.season import Season
+from metadata.library.franchise import Franchise
 
 
 class Series:
@@ -20,12 +14,15 @@ class Series:
 
     def __init__(
         self,
+        id: str,
         title: str,
         franchise: Franchise | None = None,
         description: str = "",
         premiere_year: int = 0,
         finale_year: int = 0,
     ):
+        self.id = id
+
         self.title = title
 
         self.franchise = franchise
@@ -35,11 +32,14 @@ class Series:
         self.premiere_year = premiere_year
         self.finale_year = finale_year
 
-        self.seasons: list[Season] = []
-
     # ------------------------------------------------------------------
     # Getters
     # ------------------------------------------------------------------
+
+    def get_id(self):
+        """Return the series identifier."""
+
+        return self.id
 
     def get_title(self):
         """Return the series title."""
@@ -47,12 +47,12 @@ class Series:
         return self.title
 
     def get_franchise(self):
-        """Return the franchise."""
+        """Return the associated franchise."""
 
         return self.franchise
 
     def get_description(self):
-        """Return the description."""
+        """Return the series description."""
 
         return self.description
 
@@ -66,32 +66,23 @@ class Series:
 
         return self.finale_year
 
-    def get_seasons(self):
-        """Return all seasons."""
-
-        return self.seasons
-
     # ------------------------------------------------------------------
     # Setters
     # ------------------------------------------------------------------
 
     def set_franchise(self, franchise: Franchise):
-        """Set the franchise."""
+        """Assign the associated franchise."""
 
         self.franchise = franchise
 
     # ------------------------------------------------------------------
-    # Seasons
-    # ------------------------------------------------------------------
-
-    def add_season(self, season: Season):
-        """Add a season."""
-
-        self.seasons.append(season)
-
-    # ------------------------------------------------------------------
     # Utility
     # ------------------------------------------------------------------
+
+    def belongs_to_franchise(self):
+        """Return whether this series belongs to a franchise."""
+
+        return self.franchise is not None
 
     def __str__(self):
         return self.title

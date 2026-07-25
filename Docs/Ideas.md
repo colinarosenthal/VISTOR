@@ -133,3 +133,114 @@ This concept significantly expands the scope of VISTOR and introduces challenges
 
 One possible future implementation could involve downloadable "era packs" containing curated media libraries, schedules, branding assets, and interface themes representing specific time periods. Different VISTOR distributions or hardware editions could even ship preconfigured around a particular decade, allowing users to experience television as it existed during that era.
 
+# Intelligent Content Management
+
+## Overview
+
+Rather than permanently storing every piece of media on the local system, VISTOR should eventually support an intelligent content management system capable of automatically downloading, caching, and removing media based on scheduling needs and available storage.
+
+This would allow VISTOR to operate efficiently on systems with limited storage or internet bandwidth while maintaining the illusion of a complete broadcast library.
+
+---
+
+## Metadata vs Availability
+
+VISTOR should distinguish between:
+
+- The complete metadata library
+- Media currently available on the local machine
+
+Every media item may exist within the metadata library, even if its associated media file has not yet been downloaded.
+
+Availability should therefore become a runtime state rather than permanent metadata.
+
+---
+
+## Sequential Episode Downloads
+
+Rather than downloading entire television series, VISTOR should maintain only a small rolling window of upcoming episodes.
+
+Example:
+
+Downloaded:
+
+- Episode 5
+- Episode 6
+- Episode 7
+
+After Episode 5 airs:
+
+- Delete Episode 5
+- Download Episode 8
+
+Result:
+
+- Episode 6
+- Episode 7
+- Episode 8
+
+This dramatically reduces storage requirements while preserving continuous weekly scheduling.
+
+---
+
+## Seasonal Content
+
+Holiday programming should only occupy storage when it is likely to air.
+
+Examples:
+
+October
+
+- Halloween Specials
+- Halloween Commercials
+
+November
+
+- Thanksgiving Programming
+
+December
+
+- Christmas Specials
+- Christmas Commercials
+
+After each season ends, these assets may be automatically removed until needed again.
+
+---
+
+## Commercial Rotation
+
+Commercial campaigns should follow the same download strategy.
+
+Examples:
+
+- Christmas advertising
+- Summer promotions
+- Back-to-school campaigns
+
+Only active campaigns should remain locally stored.
+
+---
+
+## Intelligent Download Priorities
+
+Every media item should eventually receive a scheduling priority score that determines whether it should remain downloaded.
+
+Possible factors include:
+
+- Broadcast frequency
+- Seasonal relevance
+- IMDb or community rating
+- User preferences
+- Storage limitations
+- Historical usage
+- Upcoming schedule requirements
+
+Rather than relying solely on ratings, VISTOR should prioritize content based upon how likely it is to appear in future broadcasts.
+
+---
+
+## Long-Term Goal
+
+The objective is for VISTOR to feel like it owns an enormous television library while only storing the content most relevant to upcoming broadcasts.
+
+This allows VISTOR to scale efficiently to thousands of media items without requiring enterprise-level storage.

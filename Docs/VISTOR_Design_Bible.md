@@ -876,6 +876,20 @@ This layered architecture allows every broadcast asset to be treated consistentl
 
 ---
 
+## 5.8 Content Availability Philosophy
+
+VISTOR distinguishes between a media item's existence and its local availability.
+
+The metadata library represents the complete broadcast catalog, regardless of whether every associated media asset currently exists on the local machine.
+
+Separate content management systems determine which assets should be downloaded, retained, or removed based upon scheduling requirements, storage limitations, seasonal relevance, and future broadcast demand.
+
+This separation allows VISTOR to simulate an extremely large broadcast library while requiring only a fraction of the storage space that a complete local archive would otherwise consume.
+
+Media metadata remains permanent.
+
+Media availability is treated as a dynamic runtime state.
+
 # 6. Inspiration
 
 VISTOR is an original software project.
