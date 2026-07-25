@@ -450,18 +450,20 @@ This guide will eventually include:
 
 ## Purpose
 
-The metadata package defines the data model used throughout VISTOR.
+The metadata package defines the complete data model used throughout VISTOR.
 
-Rather than storing metadata as unrelated JSON documents, VISTOR models every broadcast asset as a structured object with clearly defined relationships.
+Rather than treating media as unrelated JSON documents, VISTOR models every broadcast asset as a structured object with clearly defined relationships.
 
-The metadata system is intentionally divided into four independent layers:
+Every object within the metadata package belongs to one of six architectural categories:
 
 - Enums
 - Vocabulary
-- Models
+- Library Models
+- Relationship Models
+- Media Models
 - Metadata Services
 
-This separation minimizes duplication, improves maintainability, and allows the metadata library to grow without requiring architectural changes.
+Each category has a single responsibility, minimizing duplication while allowing the metadata library to grow without requiring architectural redesign.
 
 ---
 
@@ -488,29 +490,34 @@ metadata/
 │   ├── tag.py
 │   └── theme.py
 │
-├── models/
-│   ├── media_item.py
-│   ├── media_asset.py
-│   ├── person.py
-│   ├── appearance.py
+├── catalog/
+│   ├── media_library.py
 │   ├── franchise.py
 │   ├── series.py
 │   ├── season.py
-│   ├── episode.py
-│   ├── movie.py
-│   ├── commercial.py
 │   ├── advertiser.py
-│   ├── campaign.py
 │   ├── product.py
-│   ├── music_video.py
-│   ├── sports_event.py
-│   ├── news_segment.py
-│   ├── weather_segment.py
-│   ├── documentary.py
-│   ├── station_id.py
-│   ├── promo.py
+│   └── campaign.py
+│
+├── relationships/
+│   ├── appearance.py
+│   ├── media_asset.py
+│   └── person.py
+│
+├── media/
+│   ├── media_item.py
 │   ├── ambient.py
-│   └── media_library.py
+│   ├── commercial.py
+│   ├── documentary.py
+│   ├── episode.py
+│   ├── infomercial.py
+│   ├── movie.py
+│   ├── music_video.py
+│   ├── news_segment.py
+│   ├── promo.py
+│   ├── sports_event.py
+│   ├── station_id.py
+│   └── weather_segment.py
 │
 ├── metadata_loader.py
 ├── metadata_library.py
@@ -521,13 +528,31 @@ metadata/
 
 ---
 
+## Metadata Architecture
+
+Metadata
+│
+├── Enums
+│
+├── Vocabulary
+│
+├── Library Models
+│
+├── Relationship Models
+│
+├── Media Models
+│
+└── Metadata Services
+
+---
+
+# Metadata Categories
+
 ## Enums
 
-Enums define architectural concepts.
+Enums define fixed architectural concepts.
 
-These represent fixed classifications used throughout the application.
-
-Because these values define application behavior rather than descriptive metadata, they should remain relatively stable over the lifetime of the project.
+These values describe application behavior rather than descriptive metadata and therefore change very infrequently.
 
 Examples include:
 
@@ -559,33 +584,114 @@ Using standardized vocabulary prevents inconsistent metadata while allowing the 
 
 ---
 
-## Models
+## Library Models
 
-Models describe media and the relationships between media.
+Library Models organize the media library.
 
-Every broadcast asset is built upon a common Media Item model.
+They provide structure but are never scheduled or played directly.
 
-Specialized media models extend Media Item and provide only the metadata unique to that media type.
+Examples include:
 
-Supporting models eliminate duplication by representing shared entities such as:
-
+- Media Library
+- Franchise
 - Series
-- Seasons
-- Advertisers
-- Campaigns
-- Products
-- People
-- Franchises
+- Season
+- Advertiser
+- Product
+- Campaign
 
-Relationships between people and media are represented through the Appearance model, allowing a single person to participate in any type of media while performing different roles.
+Library Models describe how media is grouped rather than the media itself.
+
+## Programming Hierarchy
+
+Media Library
+│
+├── Franchises
+│
+├── Series
+│     └── Seasons
+│            └── Episodes
+│
+└── Standalone Media
+      ├── Movies
+      ├── Commercials
+      ├── Music Videos
+      ├── Documentaries
+      ├── Promos
+      ├── Station IDs
+      ├── Sports Events
+      ├── News Segments
+      ├── Weather Segments
+      ├── Ambient
+      └── Infomercials
+
+---
+
+## Relationship Models
+
+Relationship Models connect metadata objects together.
+
+Rather than storing duplicated information throughout the library, shared entities are represented once and referenced wherever needed.
+
+Examples include:
+
+- Person
+- Appearance
+- Media Asset
+
+Relationship models describe participation, ownership, or storage, but are never directly broadcast.
+
+---
+
+## Media Models
+
+Media Models represent playable broadcast assets.
+
+Every playable object inherits from Media Item.
+
+Examples include:
+
+- Episode
+- Movie
+- Commercial
+- Music Video
+- Documentary
+- Sports Event
+- News Segment
+- Weather Segment
+- Promo
+- Station ID
+- Ambient
+- Infomercial
+
+Only Media Models may be selected by the scheduler for broadcast.
+
+## Playable Media Hierarchy
+
+MediaItem
+│
+├── Episode
+├── Movie
+├── Commercial
+├── Promo
+├── Station ID
+├── Music Video
+├── Documentary
+├── Sports Event
+├── News Segment
+├── Weather Segment
+├── Ambient
+└── Infomercial
 
 ---
 
 ## Metadata Services
 
-Metadata Services provide the functionality required to operate the metadata system.
+Metadata Services operate on the metadata library.
 
-These services are responsible for:
+They provide functionality rather than representing metadata themselves.
+
+Responsibilities include:
 
 - Loading metadata
 - Validating metadata
@@ -593,16 +699,580 @@ These services are responsible for:
 - Managing the metadata library
 - Serializing metadata
 
-Keeping these responsibilities separate from the metadata models allows the metadata engine to evolve independently of the data itself.
+Keeping these services separate from the metadata models allows the metadata engine to evolve independently of the data itself.
 
 ---
 
-## Design Philosophy
+# Design Philosophy
 
 Every broadcast asset should be treated uniformly before being treated uniquely.
 
-All media share a common metadata foundation through Media Item.
+All playable media inherit from a common Media Item foundation.
 
-Individual media types extend this shared foundation only where necessary.
+Specialized media models extend this foundation only where additional metadata is required.
 
-This minimizes duplicated code while allowing VISTOR to support television episodes, movies, commercials, music videos, sports broadcasts, news programming, station IDs, promos, documentaries, weather programming, and future media types using a single consistent architecture.
+Supporting metadata is intentionally separated into Library Models, Relationship Models, Vocabulary, and Enums.
+
+This minimizes duplicated information while allowing VISTOR to support television episodes, movies, commercials, music videos, sports broadcasts, documentaries, station IDs, promos, weather programming, ambient programming, infomercials, and future media types using a single consistent architecture.
+
+---
+
+# Organizational Models vs Playable Media
+
+VISTOR distinguishes between organizational metadata and playable media.
+
+Organizational models exist solely to organize related content.
+
+Examples include:
+
+- Franchise
+- Series
+- Season
+- Advertiser
+- Product
+- Campaign
+
+These models are never scheduled or broadcast.
+
+Playable media inherits from Media Item.
+
+Examples include:
+
+- Episode
+- Movie
+- Commercial
+- Documentary
+- Music Video
+- Promo
+- Station ID
+
+Only playable media contains Media Assets and may be selected by the scheduler.
+
+This separation mirrors the structure of real broadcast television while maintaining a clean metadata hierarchy.
+
+---
+
+# Strongly Typed Metadata
+
+VISTOR favors explicit metadata models over primitive values whenever possible.
+
+Rather than storing arbitrary strings throughout the metadata library, dedicated models and enumerations are used.
+
+Examples include:
+
+- Genre
+- Theme
+- Tag
+- Network
+- Country
+- Audience
+- Content Rating
+
+Collections are strongly typed.
+
+For example:
+
+```python
+self.genres: list[Genre] = []
+self.tags: list[Tag] = []
+self.themes: list[Theme] = []
+```
+
+Likewise, relationships are represented using dedicated models rather than duplicated data.
+
+Examples include:
+
+- Media Asset
+- Appearance
+- Franchise
+- Campaign
+
+Strong typing provides several benefits:
+
+- Prevents inconsistent metadata.
+- Improves IDE autocompletion.
+- Simplifies validation.
+- Reduces programming errors.
+- Creates a consistent architecture throughout the metadata system.
+
+To avoid circular imports while preserving strong typing, VISTOR uses forward references where appropriate.
+
+```python
+from __future__ import annotations
+from typing import TYPE_CHECKING
+```
+
+Relationship models are imported only during static type checking, allowing strict typing without introducing runtime dependency issues.
+
+---
+
+# Appearance Model Philosophy
+
+A Person represents an individual.
+
+An Appearance represents that person's participation within a specific piece of media.
+
+VISTOR intentionally separates these concepts because a single individual may participate in many different media while performing different roles.
+
+For example, the same person may appear as:
+
+- An actor in a movie
+- A spokesperson in a commercial
+- A guest on a talk show
+- An athlete in a sporting event
+- A narrator in a documentary
+
+Rather than storing role-specific information inside the Person model, all participation-specific information is stored inside Appearance.
+
+This includes:
+
+- Role
+- Character name
+- Display name
+- Organization
+- Billing order
+- Credit status
+- Notes
+
+This design prevents duplicated person information while allowing VISTOR to answer complex queries without duplicating metadata.
+
+## People Relationships
+
+Media Item
+     │
+     ├───────────────┐
+     │               │
+ Appearance      Appearance
+     │               │
+     │               │
+ Person         Person
+
+---
+
+# Franchise Model Philosophy
+
+A Franchise represents shared intellectual property rather than a collection.
+
+Multiple media items may belong to the same franchise regardless of their format.
+
+Examples include:
+
+- Television series
+- Movies
+- Commercials
+- Promos
+- Music Videos
+- Station IDs
+
+Media items store a reference to their franchise.
+
+The Franchise model does not maintain lists of associated media.
+
+Instead, the Media Library is responsible for locating every media item that references a given franchise.
+
+This ensures there is only one source of truth within the metadata system.
+
+## Franchise Relationships
+
+Franchise
+     │
+     ├── Series
+     │       └── Episodes
+     │
+     ├── Movies
+     │
+     ├── Commercials
+     │
+     ├── Promos
+     │
+     ├── Station IDs
+     │
+     └── Music Videos
+     
+---
+
+# Commercial Metadata Hierarchy
+
+Commercial metadata is organized using a hierarchical relationship model.
+
+Advertiser
+→ Product
+→ Campaign
+→ Commercial
+
+Each level represents a reusable real-world entity.
+
+- An Advertiser may promote many Products.
+- A Product may have many Campaigns.
+- A Campaign may contain many Commercials.
+
+Commercials reference these models rather than duplicating advertiser information.
+
+This reduces redundancy while improving search capabilities.
+
+## Commercial Relationships
+
+Advertiser
+      │
+      ▼
+   Product
+      │
+      ▼
+   Campaign
+      │
+      ▼
+  Commercial
+
+---
+
+# Media Item Philosophy
+
+Media Item serves as the common foundation for every playable broadcast asset.
+
+Rather than storing every possible field directly, Media Item references specialized relationship models such as:
+
+- Media Asset
+- Appearance
+- Franchise
+- Campaign
+
+and maintains reusable metadata collections including:
+
+- Genres
+- Tags
+- Themes
+
+Every playable media type inherits from Media Item.
+
+Specialized media models extend the foundation only where additional metadata is required.
+
+This creates a flexible metadata architecture capable of supporting complex scheduling, searching, and broadcast automation without duplicating information.
+
+## Strongly Typed Metadata Collections
+
+VISTOR uses strongly typed metadata collections rather than generic Python objects.
+
+For example, instead of storing genres as arbitrary strings:
+
+```python
+self.genres = []
+```
+
+VISTOR stores collections of dedicated metadata objects:
+
+```python
+self.genres: list[Genre] = []
+self.tags: list[Tag] = []
+self.themes: list[Theme] = []
+```
+
+The same philosophy applies throughout the metadata system:
+
+- `MediaAsset`
+- `Appearance`
+- `Franchise`
+- `Campaign`
+- `Network`
+- `Country`
+- `ContentRating`
+- `Audience`
+
+Each field references a dedicated model or enumeration rather than using primitive values whenever possible.
+
+### Benefits
+
+Using strongly typed metadata provides several advantages:
+
+- Prevents invalid data from entering the metadata library.
+- Improves IDE autocompletion and code navigation.
+- Makes future validation significantly easier.
+- Reduces programming errors caused by inconsistent strings.
+- Creates a consistent architecture across every metadata model.
+- Makes the metadata system easier to expand without breaking existing code.
+
+### Forward References
+
+As the metadata system grows, some models reference each other.
+
+To avoid circular imports while preserving strong typing, VISTOR uses Python's forward reference system:
+
+```python
+from __future__ import annotations
+from typing import TYPE_CHECKING
+```
+
+Relationship models are imported only during static type checking:
+
+```python
+if TYPE_CHECKING:
+    from metadata.models.relationships.person import Person
+```
+
+This allows VISTOR to maintain strict type safety without creating runtime dependency issues.
+
+### Design Philosophy
+
+VISTOR favors explicit metadata models over generic values.
+
+Rather than asking:
+
+> "Is this string supposed to represent a genre?"
+
+the architecture asks:
+
+> "Is this a Genre object?"
+
+This philosophy makes the metadata library more predictable, easier to maintain, and better suited for long-term expansion as additional broadcast media types are introduced.
+
+## Organizational Models vs Playable Media
+
+VISTOR distinguishes between organizational metadata and playable media.
+
+Organizational models exist solely to group related content.
+
+Examples include:
+
+- Franchise
+- Series
+- Season
+
+These models are never scheduled or played directly.
+
+Instead, they provide structure for the metadata library.
+
+Playable media inherits from MediaItem.
+
+Examples include:
+
+- Episode
+- Movie
+- Commercial
+- Documentary
+- Music Video
+- Promo
+- Station ID
+
+Only playable media contains MediaAssets and can be selected by the scheduler.
+
+Separating organizational models from playable media keeps the metadata hierarchy clean and accurately reflects how broadcast television is structured.
+
+## Programming Hierarchy
+
+VISTOR models episodic programming using a hierarchical structure.
+
+Series
+→ Season
+→ Episode
+
+Each level serves a distinct purpose.
+
+A Series represents the overall television program.
+
+A Season groups episodes released together.
+
+An Episode represents an individual broadcast and is the first level that inherits from MediaItem.
+
+Unlike relationship models such as Franchise, Seasons maintain direct references to their Episodes because episodes cannot exist independently of a season.
+
+This hierarchy mirrors both television production and how viewers naturally organize episodic content.
+
+## Metadata Package Organization
+
+The metadata package is organized by architectural responsibility rather than by inheritance or implementation details.
+
+Each subpackage answers a specific question about the metadata system.
+
+### Enums
+
+Fixed values that define immutable classifications.
+
+Examples include:
+
+- MediaType
+- Audience
+- ContentRating
+
+### Vocabulary
+
+Reusable descriptive objects shared across media.
+
+Examples include:
+
+- Genre
+- Theme
+- Network
+- Country
+
+### Catalog
+
+Objects that organize the media library.
+
+Examples include:
+
+- Franchise
+- Series
+- Season
+- Advertiser
+- Product
+- Campaign
+
+Library Models are never scheduled or played directly.
+
+### Relationships
+
+Objects that connect metadata together.
+
+Examples include:
+
+- Person
+- Appearance
+- MediaAsset
+
+These models describe relationships rather than playable media.
+
+### Media
+
+Playable broadcast objects.
+
+Every class in this package inherits from `MediaItem`.
+
+Examples include:
+
+- Episode
+- Movie
+- Commercial
+- Promo
+- Documentary
+
+Only Media objects may be scheduled by the VISTOR scheduler.
+
+### Managers
+
+Service classes responsible for operating on the metadata system.
+
+Examples include:
+
+- MetadataLoader
+- MetadataLibrary
+- MetadataSearch
+- MetadataSerializer
+- MetadataValidator
+
+Managers manipulate metadata but are not themselves metadata objects.
+
+## Complete Metadata Object Model
+
+                 Media Library
+                      │
+         ┌────────────┴────────────┐
+         │                         │
+    Organizational            Standalone
+        Media                   Media
+         │                         │
+     Franchise                 Movie
+         │                         │
+       Series                 Commercial
+         │                         │
+       Season                Documentary
+         │
+      Episode
+         │
+         ▼
+     Media Item
+         │
+         ├──────────────┐
+         │              │
+    Media Assets    Appearances
+                          │
+                          ▼
+                       Person
+
+Media Item also references:
+
+• Genres
+• Tags
+• Themes
+• Network
+• Country
+• Audience
+• Content Rating
+• Campaign
+
+## Episode Model Philosophy
+
+Episode is the primary playable television object within VISTOR.
+
+Unlike Series and Season, Episode inherits from MediaItem and may therefore be scheduled for broadcast.
+
+An Episode belongs to exactly one Season.
+
+Through its parent Season, an Episode automatically belongs to:
+
+- Series
+- Franchise
+
+This relationship eliminates duplicated metadata while preserving the complete programming hierarchy.
+
+Episode stores only metadata unique to an individual broadcast, including:
+
+- Episode Number
+- Absolute Episode Number
+- Production Code
+- Original Air Date
+- Runtime
+
+All common metadata—including appearances, genres, tags, themes, media assets, and broadcast classifications—is inherited from MediaItem.
+
+This separation keeps Episode lightweight while allowing the scheduler to treat every episode as a fully featured broadcast asset.
+
+## Folder Placement Philosophy
+
+Metadata is organized by architectural responsibility rather than by implementation details or inheritance.
+
+When introducing a new metadata class, its location should be determined by its primary responsibility.
+
+Use the following questions to determine the correct package:
+
+- Is it a fixed application value? → Enums
+- Is it standardized descriptive metadata? → Vocabulary
+- Does it organize the media library? → Library Models
+- Does it connect other metadata objects? → Relationship Models
+- Can it be scheduled and broadcast? → Media Models
+- Does it operate on metadata? → Metadata Services
+
+Every metadata object should belong to exactly one architectural category.
+
+This organization prioritizes long-term maintainability by grouping objects according to their purpose rather than their implementation.
+
+## Organizational Metadata vs Playable Media
+
+VISTOR intentionally separates objects that organize media from objects that represent broadcast media.
+
+Library Models exist solely to organize and describe the media library.
+
+Media Models represent assets that can actually be scheduled for broadcast.
+
+For example:
+
+Series
+→ organizes Episodes
+
+Season
+→ organizes Episodes
+
+Campaign
+→ organizes Commercials
+
+None of these objects can be played directly.
+
+Conversely:
+
+- Episode
+- Movie
+- Commercial
+- Promo
+- Documentary
+
+all inherit from Media Item and represent playable broadcast assets.
+
+This separation mirrors the structure of real broadcast television while preventing organizational metadata from being treated as media.
