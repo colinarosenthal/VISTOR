@@ -667,6 +667,60 @@ This separation allows VISTOR to schedule television programming independently o
 
 ---
 
+## 4.8.1 Identifier Philosophy
+
+VISTOR uses two separate identification systems because metadata objects and physical media files serve different purposes.
+
+Metadata identifiers represent the identity of the content itself. These identifiers belong to persistent metadata objects such as Series, Seasons, Episodes, Movies, Commercials, Networks, People, Studios, Franchises, and other Library objects.
+
+A metadata identifier answers the question:
+
+"What piece of programming is this?"
+
+The identifier remains consistent regardless of where the media is stored or whether a playable file currently exists.
+
+Media Asset identifiers represent individual physical files stored on disk.
+
+A Media Asset identifier answers the question:
+
+"Which specific file is available for playback?"
+
+A single metadata object may reference multiple Media Assets, such as different resolutions, formats, restorations, or broadcast captures of the same content.
+
+Example:
+
+Episode:
+
+ID:
+friends_s01e01
+
+
+Media Assets:
+
+Asset ID:
+asset_000001
+
+File:
+Friends_S01E01_480p.mkv
+
+
+Asset ID:
+asset_000002
+
+File:
+Friends_S01E01_Remaster.mkv
+
+
+The Scheduler operates using metadata identifiers because it determines what programming should air.
+
+The Downloader and Player operate using Media Asset identifiers because they manage and play physical files.
+
+Metadata identity and physical file identity should remain separate throughout the VISTOR architecture.
+
+Content should remain identifiable even when media files are added, removed, replaced, or stored in different locations.
+
+---
+
 # 5. System Architecture
 
 VISTOR is divided into several independent components.
@@ -889,6 +943,34 @@ This separation allows VISTOR to simulate an extremely large broadcast library w
 Media metadata remains permanent.
 
 Media availability is treated as a dynamic runtime state.
+
+## 5.9 Cross-Media Categorization
+
+VISTOR organizes metadata around reusable relationships rather than treating each media type as an isolated object.
+
+Whenever multiple forms of media share a common real-world concept, that concept is represented once and referenced throughout the metadata library.
+
+For example:
+
+- A **Franchise** may include television series, movies, promos, commercials, station identifications, documentaries, and other related media.
+- A **Studio** may produce television series, feature films, documentaries, or promotional material.
+- A **Network** may broadcast episodes, promos, station identifications, news segments, weather programming, and live events.
+- An **Advertiser** may promote multiple products through numerous campaigns and commercials.
+- A **Person** may participate in any type of media through the Appearance relationship model.
+
+This relationship-driven approach allows VISTOR to perform searching, scheduling, and organization across the entire media library without duplicating metadata for each individual media type.
+
+Examples include:
+
+- Every Studio Ghibli production.
+- Every Disney Channel original broadcast.
+- Every appearance by Robin Williams.
+- Every commercial associated with the "Got Milk?" campaign.
+- Every piece of media belonging to the Pokémon franchise.
+
+Rather than creating separate implementations for each media type, VISTOR models shared concepts once and reuses them throughout the metadata system. This philosophy keeps the architecture flexible, extensible, and consistent as additional broadcast media types are introduced.
+
+---
 
 # 6. Inspiration
 

@@ -244,3 +244,128 @@ Rather than relying solely on ratings, VISTOR should prioritize content based up
 The objective is for VISTOR to feel like it owns an enormous television library while only storing the content most relevant to upcoming broadcasts.
 
 This allows VISTOR to scale efficiently to thousands of media items without requiring enterprise-level storage.
+
+## Future Idea: Dynamic Broadcast Interruptions
+
+VISTOR may eventually support dynamic broadcast interruptions that simulate how real television networks could override scheduled programming for major events.
+
+These interruptions should not be treated as changes to the currently airing program. Instead, they should exist as independent Broadcast Events that temporarily override normal playback and allow the original programming to resume afterward.
+
+Possible broadcast interruptions include:
+
+- Breaking News
+- Emergency Alert System (EAS)
+- Severe Weather Alerts
+- Presidential Addresses
+- Live Event Overrides
+- Special Announcements
+
+Example behavior:
+
+Scheduled Programming
+
+Episode
+
+↓
+
+Broadcast Interruption:
+
+Breaking News Segment
+
+↓
+
+Resume Original Programming
+
+
+The scheduler should maintain the original state of the channel while the Broadcast Controller temporarily inserts the interruption.
+
+The currently airing program should not restart after an interruption. Playback should resume from the correct position as if the viewer had been watching a real television broadcast.
+
+
+## User Configuration
+
+Because some viewers may prefer uninterrupted playback, VISTOR should provide settings that control broadcast interruptions.
+
+Possible settings:
+
+Broadcast Settings
+
+Enable Breaking News:
+On / Off
+
+Enable Emergency Alerts:
+On / Off
+
+Enable Weather Interruptions:
+On / Off
+
+Enable Special Broadcast Events:
+On / Off
+
+
+## Interruption Modes
+
+Future versions may support different interruption behaviors.
+
+
+### Historical Mode
+
+Uses preserved historical broadcast interruptions when available.
+
+Example:
+
+CNN
+
+Normal Programming
+
+↓
+
+Historical Breaking News Coverage
+
+↓
+
+Resume Programming
+
+
+### Generated Mode
+
+Creates simulated broadcast interruptions based on configurable events.
+
+Example:
+
+Breaking News:
+
+Severe Weather Warning
+
+
+### Disabled Mode
+
+No broadcast interruptions occur.
+
+Channels continue normal scheduling without overrides.
+
+
+## Architectural Consideration
+
+Broadcast interruptions should be implemented as Broadcast Events rather than as media categories.
+
+A Breaking News event is not a replacement for a News Segment. A News Segment represents a piece of content, while a Broadcast Event represents the decision to interrupt programming and insert content into an active channel.
+
+This approach allows VISTOR to support:
+
+- Authentic television behavior
+- Historical broadcast recreation
+- Optional interruptions
+- Future emergency systems
+- Live event overrides
+
+without requiring changes to the playback engine.
+
+
+This follows the core broadcast architecture:
+
+Scheduling determines what should happen.
+
+Broadcast Controller determines when interruptions occur.
+
+Player determines how media is played.

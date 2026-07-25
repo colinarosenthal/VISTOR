@@ -1,13 +1,20 @@
 """
 VISTOR Appearance
+
+Represents a person's participation within a media item.
 """
 
+from typing import TYPE_CHECKING
+
 from metadata.enums.role_type import RoleType
-from metadata.library.person import Person
+
+if TYPE_CHECKING:
+    from metadata.library.person import Person
+    from metadata.media.media_item import MediaItem
 
 
 class Appearance:
-    """Represents a person's participation in a media item."""
+    """Represents a person's participation within a media item."""
 
     # ------------------------------------------------------------------
     # Construction
@@ -15,24 +22,30 @@ class Appearance:
 
     def __init__(
         self,
-        person: Person,
+        id: str,
+        person: "Person",
+        media_item: "MediaItem",
         role: RoleType,
-        display_name: str = "",
-        character_name: str = "",
-        affiliation: str = "",
+        credit_name: str = "",
+        role_name: str = "",
+        organization: str = "",
         billing_order: int = 0,
         credited: bool = True,
         notes: str = "",
     ):
+        self.id = id
+
         self.person = person
+
+        self.media_item = media_item
 
         self.role = role
 
-        self.display_name = display_name
+        self.credit_name = credit_name
 
-        self.character_name = character_name
+        self.role_name = role_name
 
-        self.affiliation = affiliation
+        self.organization = organization
 
         self.billing_order = billing_order
 
@@ -41,7 +54,16 @@ class Appearance:
         self.notes = notes
 
     # ------------------------------------------------------------------
-    # Getters
+    # Identification
+    # ------------------------------------------------------------------
+
+    def get_id(self):
+        """Return the appearance identifier."""
+
+        return self.id
+
+    # ------------------------------------------------------------------
+    # Relationships
     # ------------------------------------------------------------------
 
     def get_person(self):
@@ -49,28 +71,52 @@ class Appearance:
 
         return self.person
 
+    def get_media_item(self):
+        """Return the associated media item."""
+
+        return self.media_item
+
+    # ------------------------------------------------------------------
+    # Credit Information
+    # ------------------------------------------------------------------
+
     def get_role(self):
         """Return the participation role."""
 
         return self.role
 
-    def get_display_name(self):
+    def get_credit_name(self):
         """Return the displayed credit name."""
 
-        if self.display_name:
-            return self.display_name
+        if self.credit_name:
+            return self.credit_name
 
         return self.person.get_display_name()
 
-    def get_character_name(self):
-        """Return the portrayed character."""
+    def get_role_name(self):
+        """
+        Return the role-specific name.
 
-        return self.character_name
+        Examples:
+        - Character name for actors
+        - Stage role for musicians
+        - Position or title for other appearances
+        """
 
-    def get_affiliation(self):
-        """Return the associated affiliation."""
+        return self.role_name
 
-        return self.affiliation
+    def get_organization(self):
+        """
+        Return the associated organization.
+
+        Examples:
+        - Sports team
+        - News organization
+        - Musical group
+        - Company
+        """
+
+        return self.organization
 
     def get_billing_order(self):
         """Return billing order."""
@@ -91,15 +137,5 @@ class Appearance:
     # Utility
     # ------------------------------------------------------------------
 
-    def has_character(self):
-        """Return whether this appearance portrays a character."""
-
-        return bool(self.character_name)
-
-    def has_affiliation(self):
-        """Return whether an affiliation exists."""
-
-        return bool(self.affiliation)
-
     def __str__(self):
-        return f"{self.get_display_name()} ({self.role.name})"
+        return f"{self.get_credit_name()} ({self.role.name})"

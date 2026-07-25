@@ -16,6 +16,90 @@ This document is intended to ensure that every contributor develops VISTOR consi
 
 ---
 
+1. Introduction
+    1.1 Purpose
+    1.2 Intended Audience
+    1.3 Development Philosophy
+
+2. Coding Standards
+    2.1 Formatting
+    2.2 Documentation
+    2.3 Architecture
+    2.4 Dependencies
+
+3. Core Architecture
+    3.1 Source Tree
+    3.2 Core
+    3.3 Engine
+    3.4 Scheduler
+    3.5 Metadata
+    3.6 Player
+    3.7 Channel Manager
+    3.8 OSD
+    3.9 Weather
+    3.10 Remote
+    3.11 Guide
+
+4. Metadata Architecture
+    4.1 Purpose
+    4.2 Package Structure
+    4.3 Metadata Categories
+        4.3.1 Enums
+        4.3.2 Vocabulary
+        4.3.3 Library Models
+        4.3.4 Relationship Models
+        4.3.5 Media Models
+        4.3.6 Metadata Services
+
+    4.4 Organization Models
+    4.5 Programming Hierarchy
+    4.6 Playable Media Hierarchy
+    4.7 Metadata Relationships
+
+    4.8 Design Philosophy
+        4.8.1 Organizational Metadata vs Playable Media
+        4.8.2 Strongly Typed Metadata
+        4.8.3 Appearance Philosophy
+        4.8.4 Franchise Philosophy
+        4.8.5 Organization Philosophy
+        4.8.6 Media Item Philosophy
+        4.8.7 Episode Philosophy
+        4.8.8 Folder Placement Philosophy
+        4.8.9 Commercial Hierarchy
+
+    4.9 Metadata Class Reference
+        4.9.1 MediaItem
+        4.9.2 Movie
+        4.9.3 Episode
+        4.9.4 Commercial
+        4.9.5 Promo
+        4.9.6 Station ID
+        4.9.7 Documentary
+        4.9.8 Music Video
+        4.9.9 News Segment
+        4.9.10 Weather Segment
+        4.9.11 Sports Event
+        4.9.12 Ambient
+        4.9.13 Infomercial
+
+5. Scheduler Architecture
+
+6. Playback Architecture
+
+7. Channel Architecture
+
+8. Weather Architecture
+
+9. Runtime Lifecycle
+
+10. Data Flow
+
+11. Testing
+
+12. Contribution Guidelines
+
+13. Future Expansion
+
 # Intended Audience
 
 This guide is intended for:
@@ -576,13 +660,141 @@ Examples include:
 - Genres
 - Music Genres
 - Themes
-- Networks
 - Countries
+- Languages
 - Tags
 
 Using standardized vocabulary prevents inconsistent metadata while allowing the media library to continue growing.
 
 ---
+
+## Content Ratings and Regional Classification Systems
+
+Content ratings are treated as vocabulary metadata rather than fixed application enums.
+
+Although ratings influence scheduling decisions, official rating systems vary significantly between countries, organizations, and media formats.
+
+Examples include:
+
+- MPAA ratings in the United States
+- TV Parental Guidelines in the United States
+- BBFC ratings in the United Kingdom
+- Eirin ratings in Japan
+- FSK ratings in Germany
+
+Because these systems are not universal fixed values, they should not be represented as a single enum.
+
+VISTOR separates audience classification from official content ratings.
+
+### Audience
+
+Audience describes the intended target viewer.
+
+Examples:
+
+- Children
+- Family
+- Teen
+- Young Adult
+- Adult
+- General
+
+Audience is used primarily for scheduling decisions and determining appropriate programming groups.
+
+---
+
+### Content Rating
+
+Content Rating represents an official classification assigned by a recognized rating authority.
+
+Examples:
+
+- MPAA → PG-13
+- TV Parental Guidelines → TV-14
+- BBFC → 15
+- Eirin → PG12
+
+Content ratings should preserve the original rating system rather than converting everything into a universal classification.
+
+Future implementations should associate ratings with:
+
+- Rating authority
+- Country
+- Rating value
+- Description
+
+## Example: International Media and Multiple Classification Systems
+
+A single media item may have different metadata depending on region, language, and presentation.
+
+For example, an English dubbed release of a Japanese animated series may contain:
+
+Media:
+    Ghost Stories
+
+Country of Origin:
+    Japan
+
+Original Language:
+    Japanese
+
+Presentation:
+    English Dub
+
+Audience:
+    Teen
+
+Content Ratings:
+
+    Japan:
+        Rating Authority:
+            Eirin
+
+        Rating:
+            PG-12
+
+    United States:
+        Rating Authority:
+            TV Parental Guidelines
+
+        Rating:
+            TV-14
+
+These fields represent different concepts. The country does not determine the audience. The language does not determine the rating. The rating does not determine the audience.
+
+A media item should preserve its original cultural and broadcast context while allowing VISTOR to make scheduling decisions appropriate for the selected channel and region.
+
+This separation allows VISTOR to support:
+
+- International programming
+- Alternate language releases
+- Dubbed and subtitled versions
+- Regional broadcast standards
+- Different cable provider packages
+
+### Design Philosophy
+
+VISTOR preserves both the original metadata and the generalized information required for scheduling.
+
+A media item may contain:
+
+- Audience:
+    - FAMILY
+
+- Content Rating:
+    - MPAA PG
+
+These fields answer different questions.
+
+Audience answers:
+
+> "Who is this content intended for?"
+
+Content Rating answers:
+
+> "What official classification was assigned to this content?"
+
+Keeping these concepts separate allows VISTOR to support international media libraries without redesigning the metadata architecture.
 
 ## Library Models
 
@@ -596,6 +808,9 @@ Examples include:
 - Franchise
 - Series
 - Season
+- Person
+- Studio
+- Network
 - Advertiser
 - Product
 - Campaign
@@ -612,6 +827,11 @@ Media Library
 │     └── Seasons
 │            └── Episodes
 │
+├── Organizations
+│     ├── Studios
+│     ├── Networks
+│     └── Advertisers
+│
 └── Standalone Media
       ├── Movies
       ├── Commercials
@@ -626,6 +846,44 @@ Media Library
       └── Infomercials
 
 ---
+
+## Organization Models
+
+Organization Models represent real-world organizations that participate in the creation, distribution, promotion, or broadcast of media.
+
+Unlike Vocabulary objects, Organization Models possess their own metadata and identity.
+
+Examples include:
+
+- Advertiser
+- Network
+- Studio
+
+Organization Models are reusable across many media items and are referenced rather than duplicated.
+
+For example:
+
+Movie
+→ Production Studio
+→ Distributor
+
+Episode
+→ Production Studio
+→ Original Network
+
+Commercial
+→ Advertiser
+
+Separating organizations into dedicated models allows VISTOR to support scheduling and searching based on organizations themselves, such as:
+
+- Studio Ghibli marathon
+- Disney Channel programming
+- Cartoon Network originals
+- Warner Bros. Animation collection
+
+Organizations represent entities.
+
+Vocabulary represents descriptions.
 
 ## Relationship Models
 
@@ -671,12 +929,15 @@ Only Media Models may be selected by the scheduler for broadcast.
 MediaItem
 │
 ├── Episode
+├── Special
 ├── Movie
+├── Documentary
 ├── Commercial
 ├── Promo
 ├── Station ID
 ├── Music Video
-├── Documentary
+├── Concert
+├── Live Performance
 ├── Sports Event
 ├── News Segment
 ├── Weather Segment
@@ -947,6 +1208,42 @@ Every playable media type inherits from Media Item.
 Specialized media models extend the foundation only where additional metadata is required.
 
 This creates a flexible metadata architecture capable of supporting complex scheduling, searching, and broadcast automation without duplicating information.
+
+---
+
+# Organization Philosophy
+
+VISTOR distinguishes between organizations and people.
+
+A Person participates in media through an Appearance.
+
+An Organization participates through ownership, production, distribution, promotion, or broadcast.
+
+Examples include:
+
+- Studio
+- Network
+- Advertiser
+
+Unlike people, organizations are never represented by Appearance objects.
+
+Instead, media references organizations directly through dedicated metadata fields.
+
+Examples:
+
+Movie
+→ Production Studio
+→ Distributor
+
+Episode
+→ Network
+
+Commercial
+→ Advertiser
+
+Separating organizations from people prevents unrelated concepts from being merged while allowing VISTOR to schedule and search by both independently.
+
+---
 
 ## Strongly Typed Metadata Collections
 

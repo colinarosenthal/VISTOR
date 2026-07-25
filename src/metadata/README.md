@@ -17,11 +17,11 @@ Metadata is organized by architectural responsibility rather than by implementat
 
 Ask one question:
 
-- Is it a fixed value? → Enums
+- Is it a fixed classification? → Enums
 - Is it descriptive? → Vocabulary
 - Does it organize media? → Library
 - Does it connect objects? → Relationships
-- Can it be broadcast? → Media
-- Does it perform work? → Services
+- Is it playable content? → Media
+- Does it perform an operation? → Services
 
 Every new metadata object should belong to exactly one of these categories.

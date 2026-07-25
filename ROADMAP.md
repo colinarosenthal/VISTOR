@@ -32,7 +32,7 @@ Major features should be completed one at a time and thoroughly tested before ad
 
 # Current Milestone
 
-**Phase 3 — Core Software**
+**Phase 3 — Metadata Engine**
 
 ---
 
@@ -137,73 +137,149 @@ VISTOR successfully launches as an application and establishes the foundation up
 - [x] Define metadata relationship model
 - [x] Document metadata architecture
 - [x] Create metadata package structure
+- [x] Establish metadata import system
+- [x] Verify metadata package loading
+- [x] Verify metadata object construction
 
 ---
 
-## Metadata Models
+## Metadata Package Structure
 
-### Foundation
+The metadata system is organized into:
 
-- [ ] Implement MediaItem
-- [ ] Implement MediaAsset
+- `enums/` — fixed classifications and metadata types
+- `vocabulary/` — expandable descriptive values
+- `library/` — persistent catalog entities
+- `media/` — media content models
+- `relationships/` — connections between metadata objects
+- `services/` — metadata management operations
 
-### Relationships
+---
 
-- [ ] Implement Person
-- [ ] Implement Appearance
+# Metadata Models
 
-### Library
+## Foundation
 
-- [ ] Implement MediaLibrary
-- [ ] Implement Franchise
-- [ ] Implement Series
-- [ ] Implement Season
-- [ ] Implement Advertiser
-- [ ] Implement Product
-- [ ] Implement Campaign
+- [x] Implement MediaItem
+- [x] Implement MediaAsset
 
-### Television
+---
+
+## Relationships
+
+- [x] Implement Appearance
+
+---
+
+## Media Organization
+
+- [x] Implement Collection
+
+Collection represents curated groupings of media items based on shared creative, thematic, historical, scheduling, or broadcast relationships.
+
+Examples include:
+- Programming blocks
+- Curated themes
+- Broadcast marathons
+- Related media groupings
+
+---
+
+## Library Entities
+
+- [x] Implement Person
+- [x] Implement MediaLibrary
+- [x] Implement Franchise
+- [x] Implement Series
+- [x] Implement Season
+- [x] Implement Advertiser
+- [x] Implement Product
+- [x] Implement Campaign
+- [x] Implement Network
+- [x] Implement Studio
+
+---
+
+## Vocabulary
+
+- [x] Implement Genre
+- [x] Implement Music Genre
+- [x] Implement Language
+- [x] Implement Country
+- [x] Implement Tag
+- [x] Implement Theme
+- [x] Implement Content Rating
+
+---
+
+# Remaining Metadata Models
+
+## Television
 
 - [ ] Implement Episode
 - [ ] Implement NewsSegment
 - [ ] Implement WeatherSegment
 - [ ] Implement SportsEvent
+- [ ] Implement SportsTalkShow
 
-### Film
+---
+
+## Film
 
 - [ ] Implement Movie
 - [ ] Implement Documentary
 
-### Advertising
+---
+
+## Advertising
 
 - [ ] Implement Commercial
 - [ ] Implement Promo
 - [ ] Implement StationID
 - [ ] Implement Infomercial
 
-### Music
+---
+
+## Music
 
 - [ ] Implement MusicVideo
+- [ ] Implement Concert
 
-### Miscellaneous
+---
+
+## Miscellaneous
 
 - [ ] Implement Ambient
 
 ---
 
-## Metadata Services
+# Metadata Services
 
+## Architecture
+
+- [ ] Create metadata services package
 - [ ] Implement Metadata Loader
-- [ ] Implement Metadata Library
-- [ ] Implement Metadata Search
 - [ ] Implement Metadata Serializer
 - [ ] Implement Metadata Validator
+- [ ] Implement Metadata Search
+- [ ] Implement Metadata Management Service
 
 ---
 
-## Metadata Population
+# Metadata Testing
 
-### Vocabulary
+- [x] Create metadata import test
+- [x] Verify package exports
+- [x] Verify model construction
+- [x] Verify relationship creation
+- [x] Verify collection behavior
+- [x] Verify media library behavior
+
+---
+
+# Metadata Population
+
+## Vocabulary Population
 
 - [ ] Populate Genres
 - [ ] Populate Music Genres
@@ -211,25 +287,31 @@ VISTOR successfully launches as an application and establishes the foundation up
 - [ ] Populate Themes
 - [ ] Populate Countries
 - [ ] Populate Tags
+- [ ] Populate Languages
+- [ ] Populate Content Ratings
 
-### Commercial Library
+---
+
+## Commercial Library
 
 - [ ] Populate Advertisers
 - [ ] Populate Products
 - [ ] Populate Campaigns
 
-### Initial Metadata
+---
+
+## Initial Metadata
 
 - [ ] Create Television Metadata
 - [ ] Create Movie Metadata
 - [ ] Create Commercial Metadata
-- [ ] Create Music Video Metadata
+- [ ] Create Music Metadata
 
 ---
 
 ## Milestone
 
-VISTOR possesses a complete metadata engine capable of describing, organizing, validating, searching, and managing every supported broadcast asset.
+VISTOR possesses a complete metadata engine capable of describing, organizing, validating, searching, and managing all supported broadcast assets.
 
 ---
 
@@ -528,7 +610,13 @@ The objective is to recreate the feeling of sitting in front of a CRT television
 - Implemented Scheduler architecture.
 - Established scheduling pipeline foundation for ScheduleLoader.
 - Standardized Design Bible formatting for future contributions.
-
-## Future Entries
-
-Record each significant development session, milestone, or architectural decision here as the project progresses.
+- Completed metadata package architecture.
+- Implemented metadata enums and vocabulary systems.
+- Implemented library entity models.
+- Implemented media models.
+- Implemented relationship models.
+- Implemented Collection system for curated media groupings.
+- Implemented MediaLibrary catalog structure.
+- Created metadata smoke testing framework.
+- Verified metadata imports, object creation, and relationships.
+- Confirmed metadata architecture is ready for service layer development.

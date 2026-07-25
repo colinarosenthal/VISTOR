@@ -2,7 +2,7 @@
 VISTOR Campaign
 """
 
-from metadata.models.relationships.product import Product
+from metadata.library.product import Product
 
 
 class Campaign:
@@ -14,12 +14,16 @@ class Campaign:
 
     def __init__(
         self,
+        id: str,
         name: str,
         product: Product,
         start_year: int = 0,
         end_year: int = 0,
         description: str = "",
+        slogan: str = "",
     ):
+        self.id = id
+
         self.name = name
 
         self.product = product
@@ -29,9 +33,16 @@ class Campaign:
 
         self.description = description
 
+        self.slogan = slogan
+
     # ------------------------------------------------------------------
     # Getters
     # ------------------------------------------------------------------
+
+    def get_id(self):
+        """Return the campaign identifier."""
+
+        return self.id
 
     def get_name(self):
         """Return the campaign name."""
@@ -42,6 +53,11 @@ class Campaign:
         """Return the associated product."""
 
         return self.product
+
+    def get_advertiser(self):
+        """Return the associated advertiser."""
+
+        return self.product.get_advertiser()
 
     def get_start_year(self):
         """Return the campaign start year."""
@@ -58,15 +74,20 @@ class Campaign:
 
         return self.description
 
+    def get_slogan(self):
+        """Return the campaign slogan."""
+
+        return self.slogan
+
     # ------------------------------------------------------------------
     # Utility
     # ------------------------------------------------------------------
 
-    def is_active_in_year(self, year: int):
+    def is_active(self, year: int):
         """Return whether the campaign was active during a given year."""
 
         if self.start_year == 0:
-            return False
+            return True
 
         if self.end_year == 0:
             return year >= self.start_year

@@ -14,6 +14,7 @@ class MediaAsset:
 
     def __init__(
         self,
+        asset_id: str,
         path: Path,
         checksum: str = "",
         runtime_seconds: int = 0,
@@ -26,6 +27,8 @@ class MediaAsset:
         frame_rate: float = 0.0,
         verified: bool = False,
     ):
+        self.asset_id = asset_id
+
         self.path = Path(path)
 
         self.checksum = checksum
@@ -46,7 +49,16 @@ class MediaAsset:
         self.verified = verified
 
     # ------------------------------------------------------------------
-    # Getters
+    # Identification
+    # ------------------------------------------------------------------
+
+    def get_asset_id(self):
+        """Return the asset identifier."""
+
+        return self.asset_id
+
+    # ------------------------------------------------------------------
+    # File Information
     # ------------------------------------------------------------------
 
     def get_path(self):
@@ -63,6 +75,10 @@ class MediaAsset:
         """Return the asset extension."""
 
         return self.path.suffix.lower()
+
+    # ------------------------------------------------------------------
+    # Technical Information
+    # ------------------------------------------------------------------
 
     def get_runtime_seconds(self):
         """Return runtime in seconds."""
@@ -104,14 +120,14 @@ class MediaAsset:
 
         return self.checksum
 
+    # ------------------------------------------------------------------
+    # Verification
+    # ------------------------------------------------------------------
+
     def is_verified(self):
         """Return whether the asset has been verified."""
 
         return self.verified
-
-    # ------------------------------------------------------------------
-    # Setters
-    # ------------------------------------------------------------------
 
     def set_verified(self, verified: bool):
         """Set verification status."""

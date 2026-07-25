@@ -9,23 +9,37 @@ class MediaType(Enum):
     """Defines the primary classification of a media item."""
 
     # ------------------------------------------------------------------
-    # Programming
+    # Television
     # ------------------------------------------------------------------
 
     TV_SHOW = auto()
 
-    MOVIE = auto()
+    NEWS_SEGMENT = auto()
 
     SPORTS_EVENT = auto()
 
-    NEWS_SEGMENT = auto()
+    SPORTS_TALK = auto()
+
+    WEATHER_SEGMENT = auto()
+
+    # ------------------------------------------------------------------
+    # Film
+    # ------------------------------------------------------------------
+
+    MOVIE = auto()
 
     DOCUMENTARY = auto()
 
+    # ------------------------------------------------------------------
+    # Music
+    # ------------------------------------------------------------------
+
     MUSIC_VIDEO = auto()
 
+    CONCERT = auto()
+
     # ------------------------------------------------------------------
-    # Broadcast Support
+    # Advertising
     # ------------------------------------------------------------------
 
     COMMERCIAL = auto()
@@ -34,12 +48,10 @@ class MediaType(Enum):
 
     STATION_ID = auto()
 
-    WEATHER_SEGMENT = auto()
-
     INFOMERCIAL = auto()
 
     # ------------------------------------------------------------------
-    # Continuous Programming
+    # Miscellaneous
     # ------------------------------------------------------------------
 
     AMBIENT = auto()
