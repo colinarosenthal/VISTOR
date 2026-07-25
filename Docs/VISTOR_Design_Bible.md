@@ -54,7 +54,7 @@ Primary goals include:
 
 ---
 
-# 3. Core Philosophy
+# 3.1 Core Philosophy
 
 VISTOR follows several guiding principles.
 
@@ -327,7 +327,7 @@ Typical overlays include:
 
 ---
 
-## 3.9 Authentic Scheduling
+## 4.1 Scheduling
 
 Programming should follow realistic broadcast schedules rather than random playback.
 
@@ -347,7 +347,7 @@ The scheduler should create the illusion of an active television network operati
 
 ---
 
-## 3.10 Weather Channel
+## 4.2 Weather Channel
 
 VISTOR includes a dedicated Weather Channel inspired by the presentation style of The Weather Channel during the late 1990s and early 2000s.
 
@@ -368,7 +368,7 @@ Internet connectivity should enhance this channel without becoming a requirement
 
 ---
 
-## 3.11 Portability
+## 4.3 Portability
 
 VISTOR should function as a completely portable project.
 
@@ -387,7 +387,7 @@ Hardcoded paths should never be used.
 
 ---
 
-## 3.12 Media Organization
+## 4.4 Media Organization
 
 Media should be organized according to its broadcast purpose rather than the television channel on which it appears.
 
@@ -401,7 +401,7 @@ This approach minimizes duplication while allowing maximum scheduling flexibilit
 
 ---
 
-## 3.13 Seasonal and Special Event Programming
+## 4.5 Seasonal and Special Event Programming
 
 VISTOR should support dynamic programming based on the time of year.
 
@@ -475,7 +475,7 @@ Seasonal programming should feel like a real cable provider modifying existing s
 
 Whenever possible, existing channels should temporarily adopt seasonal programming blocks while maintaining their original identity.
 
-## 3.14 Metadata System
+## 4.6 Metadata System
 
 VISTOR separates media from its descriptive information.
 
@@ -496,6 +496,174 @@ Metadata may include:
 - Scheduling information
 
 The metadata system should allow the scheduler to build realistic television lineups without depending on folder structure.
+
+---
+
+## 4.8 Media Architecture
+
+VISTOR models television programming rather than media files.
+
+The scheduler, metadata engine, channel manager, television guide, downloader, and playback engine all operate on a hierarchy that mirrors how television programming is organized.
+
+Media Assets are considered the physical representation of content rather than the content itself.
+
+Programming exists independently of whether a playable file is currently stored on disk.
+
+---
+
+### Metadata Hierarchy
+
+Library
+↓
+Series
+↓
+Season
+↓
+Episode
+↓
+Media Asset
+
+---
+
+### Library
+
+The Library represents the complete catalog of all content known to VISTOR.
+
+It stores every television series, movie, commercial, music video, and other supported media regardless of whether individual Media Assets are currently downloaded.
+
+The Library is responsible for content discovery, searching, organization, and supplying programming to the Scheduler.
+
+Deleting a Media Asset should never remove content from the Library.
+
+---
+
+### Series
+
+A Series represents an entire television series or film franchise.
+
+Examples include:
+
+- The Simpsons
+- Friends
+- Star Trek
+- The Twilight Zone
+
+Movies are represented as a Series containing a single Season and a single Episode to maintain a consistent architecture across all supported media.
+
+Series-level metadata applies to every Episode contained within the Series.
+
+Examples include:
+
+- Title
+- Media Type
+- Genres
+- Audience
+- Default Rating
+- Original Network
+- Original Studio
+- Country
+- Language
+- Runtime
+- Description
+
+---
+
+### Season
+
+A Season provides organizational structure for episodic programming.
+
+Season-level metadata primarily exists to group Episodes together and store production information.
+
+Examples include:
+
+- Season Number
+- Production Year
+- Episode Count
+
+---
+
+### Episode
+
+An Episode represents an individual broadcast program.
+
+Scheduling decisions are performed primarily at the Episode level.
+
+Episode-level metadata may include:
+
+- Episode Title
+- Episode Number
+- Production Code
+- Original Air Date
+- Synopsis
+- Runtime Override
+- Popularity
+- Themes
+- Guest Stars
+- Scheduling Tags
+
+Episode metadata applies only to the individual broadcast represented by that Episode.
+
+---
+
+### Media Asset
+
+A Media Asset represents a physical playable file stored on disk.
+
+Media Assets contain only technical information required for playback.
+
+An Episode may contain zero, one, or multiple Media Assets.
+
+Media Asset metadata may include:
+
+- File Path
+- Container
+- Codec
+- Resolution
+- Audio Format
+- Duration
+- Checksum
+- Download Status
+- Verification Status
+- Last Played
+
+---
+
+### Design Principles
+
+The Scheduler operates on Episodes.
+
+The Downloader operates on Media Assets.
+
+The Player operates on Media Assets supplied by the Scheduler.
+
+Deleting a Media Asset never removes the Episode from the Library.
+
+The Library always represents the complete catalog of available programming regardless of what files currently exist on disk.
+
+This architecture allows VISTOR to support:
+
+- Automatic downloading
+- Automatic deletion
+- Rotating media libraries
+- Persistent scheduling
+- Multiple quality versions
+- Efficient storage management
+
+without affecting scheduling or metadata.
+
+---
+
+### Metadata Philosophy
+
+Metadata describes television programming rather than media files.
+
+Series-level metadata applies to every Episode within the Series.
+
+Episode-level metadata applies only to that Episode.
+
+Media Asset metadata describes only the technical characteristics of the physical file.
+
+This separation allows VISTOR to schedule television programming independently of file management, faithfully reproducing how a real broadcast network organizes, stores, and delivers content.
 
 ---
 
@@ -626,6 +794,87 @@ Project directories shall have clearly defined responsibilities.
 - `Cache/` contains temporary generated data.
 
 Source code shall never be mixed with runtime data or user media.
+
+## 5.7 Metadata Architecture
+
+VISTOR separates metadata into four distinct categories based on responsibility.
+
+This separation ensures that architectural concepts, descriptive information, data models, and supporting systems remain independent while working together as a unified metadata engine.
+
+### Enums
+
+Enums define architectural concepts.
+
+These represent fixed classifications that should remain stable throughout the lifetime of VISTOR.
+
+Examples include:
+
+- Media Types
+- Presentation Types
+- Audience Classifications
+- Content Ratings
+- Commercial Types
+- Person Roles
+
+Enums define how the application understands media rather than describing individual media items.
+
+---
+
+### Vocabulary
+
+Vocabulary provides standardized descriptive values.
+
+Unlike Enums, vocabulary is expected to expand as the media library grows.
+
+Examples include:
+
+- Genres
+- Music Genres
+- Themes
+- Networks
+- Countries
+- Tags
+
+Vocabulary allows consistent metadata while remaining flexible enough to accommodate future media additions.
+
+---
+
+### Models
+
+Models describe the structure and relationships of media within VISTOR.
+
+Every broadcast asset is represented as a Media Item.
+
+Specialized media types extend this shared foundation while adding only the metadata unique to that type.
+
+Examples include:
+
+- Movies
+- Episodes
+- Commercials
+- Music Videos
+- Sports Events
+- News Segments
+- Weather Segments
+- Station IDs
+
+Supporting models such as Series, Seasons, Campaigns, Advertisers, Products, and People provide relationships between media rather than duplicating information.
+
+---
+
+### Metadata Services
+
+Metadata Services manage the metadata system itself.
+
+These components load, validate, search, serialize, and maintain the metadata library used by the rest of the application.
+
+Keeping metadata services separate from metadata models allows the application to evolve without altering the underlying library structure.
+
+---
+
+This layered architecture allows every broadcast asset to be treated consistently while supporting the wide variety of media required to accurately recreate a late-1990s and early-2000s cable television experience.
+
+---
 
 # 6. Inspiration
 

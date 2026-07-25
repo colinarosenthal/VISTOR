@@ -250,3 +250,199 @@ Using `Join-Path` makes code safer and easier to read.
 ## Applied In VISTOR
 
 The installer builds every project path using `Join-Path`, including the automatic creation of `.gitkeep` files inside selected directories.
+
+---
+
+# Enumerations vs. Constants
+
+## Concept
+
+Not every predefined value in VISTOR should be represented the same way.
+
+Some values define the architecture of the software and are expected to remain stable throughout the lifetime of the project.
+
+Other values exist only to describe media and are expected to evolve as the media library expands.
+
+Choosing the appropriate representation improves both reliability and flexibility.
+
+## Enumerations
+
+Enumerations (Enums) are used when a value must be selected from a fixed set of valid options.
+
+Examples include:
+
+- MediaType
+- Audience
+- ContentRating
+
+Enums provide several advantages:
+
+- Prevent typographical errors.
+- Provide IDE auto-completion.
+- Restrict values to a predefined set.
+- Clearly communicate architectural concepts.
+
+Because these values directly affect how VISTOR operates, they are considered part of the application's architecture rather than user-editable metadata.
+
+## Constants
+
+Some classifications benefit from a standardized vocabulary but are expected to expand over time.
+
+Rather than using Enums, these values are represented as predefined string constants.
+
+Examples include:
+
+- Genres
+- Themes
+
+This provides consistency throughout the project while allowing additional classifications to be introduced without significantly affecting the underlying architecture.
+
+## Tags
+
+Tags are intentionally unstructured.
+
+Unlike Genres or Media Types, Tags are expected to evolve continuously throughout the lifetime of a media library.
+
+Examples include:
+
+- Halloween
+- Christmas
+- Cult Classic
+- Viewer Favorite
+- Marathon Eligible
+
+Tags are stored as ordinary strings rather than predefined constants or Enums.
+
+This allows metadata to remain flexible without requiring changes to the application's source code.
+
+## Why This Matters
+
+Using the appropriate representation for each type of metadata improves both software quality and long-term maintainability.
+
+Stable architectural concepts benefit from strict validation and type safety.
+
+Descriptive metadata benefits from flexibility and the ability to evolve alongside the media library.
+
+Separating these responsibilities prevents unnecessary code changes while preserving consistency throughout the project.
+
+## Applied In VISTOR
+
+VISTOR uses Enums for architectural concepts that are expected to remain stable, including:
+
+- MediaType
+- Audience
+- ContentRating
+
+VISTOR uses predefined string constants for standardized metadata that may expand over time, including:
+
+- Genres
+- Themes
+
+User-defined Tags remain free-form strings to support unlimited media classification without requiring changes to the application's architecture.
+
+---
+
+# Metadata Classification Philosophy
+
+## Concept
+
+Not every piece of metadata represents the same kind of information.
+
+Some values define the architecture of VISTOR and are expected to remain stable throughout the lifetime of the project.
+
+Other values exist to describe media and are expected to evolve as the media library expands.
+
+To keep the system organized, VISTOR separates metadata into three categories:
+
+- Enums
+- Vocabulary
+- Models
+
+Each category serves a different purpose within the metadata system.
+
+## Enums
+
+Enums define architectural concepts.
+
+These represent fixed classifications that should rarely change and are used throughout the application's logic.
+
+Examples include:
+
+- MediaType
+- PresentationType
+- Audience
+- ContentRating
+
+Because these values are part of the software architecture, they benefit from strict validation, IDE auto-completion, and compile-time consistency.
+
+## Vocabulary
+
+Vocabulary files define standardized descriptive values.
+
+Unlike Enums, these collections are expected to expand over time as the media library grows.
+
+Examples include:
+
+- Genres
+- Music Genres
+- Themes
+- Networks
+- Countries
+
+Using standardized vocabulary prevents inconsistent naming while allowing the library to evolve without affecting the application's architecture.
+
+Tags are intentionally excluded from this category because they are designed to remain completely free-form.
+
+## Models
+
+Models represent the structure of the media library itself.
+
+Rather than describing classifications, models describe relationships between media objects.
+
+Examples include:
+
+- MediaLibrary
+- Series
+- Season
+- Episode
+- MediaAsset
+- Person
+
+These models define how media is organized within VISTOR and form the foundation upon which scheduling, metadata, and playback systems operate.
+
+## Why This Matters
+
+Separating metadata into architectural concepts, descriptive vocabulary, and data models keeps responsibilities clearly defined.
+
+Architectural concepts remain stable and strongly typed.
+
+Vocabulary remains standardized while allowing the media library to expand naturally.
+
+Models describe relationships between media rather than individual classifications.
+
+This separation improves maintainability, reduces duplication, and provides a scalable foundation for future features.
+
+## Applied In VISTOR
+
+The metadata package is organized into three primary components:
+
+```text
+metadata/
+├── enums/
+│   ├── audience.py
+│   ├── content_rating.py
+│   ├── media_type.py
+│   └── presentation_type.py
+│
+├── vocabulary/
+│   ├── genre.py
+│   ├── music_genre.py
+│   ├── network.py
+│   ├── country.py
+│   ├── theme.py
+│   └── tag.py
+│
+└── models/
+```
+
+This organization reflects the philosophy that architectural concepts, descriptive metadata, and media relationships should remain independent systems while working together to describe every piece of media within VISTOR.
