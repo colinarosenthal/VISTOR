@@ -212,44 +212,42 @@ Examples include:
 
 ---
 
-# Remaining Metadata Models
-
 ## Television
 
-- [ ] Implement Episode
-- [ ] Implement NewsSegment
-- [ ] Implement WeatherSegment
-- [ ] Implement SportsEvent
-- [ ] Implement SportsTalkShow
+- [x] Implement Episode
+- [x] Implement NewsSegment
+- [x] Implement WeatherSegment
+- [x] Implement SportsEvent
+- [x] Implement SportsTalkShow
 
 ---
 
 ## Film
 
-- [ ] Implement Movie
-- [ ] Implement Documentary
+- [x] Implement Movie
+- [x] Implement Documentary
 
 ---
 
 ## Advertising
 
-- [ ] Implement Commercial
-- [ ] Implement Promo
-- [ ] Implement StationID
-- [ ] Implement Infomercial
+- [x] Implement Commercial
+- [x] Implement Promo
+- [x] Implement StationID
+- [x] Implement Infomercial
 
 ---
 
 ## Music
 
-- [ ] Implement MusicVideo
-- [ ] Implement Concert
+- [x] Implement MusicVideo
+- [x] Implement Concert
 
 ---
 
 ## Miscellaneous
 
-- [ ] Implement Ambient
+- [x] Implement Ambient
 
 ---
 
@@ -257,12 +255,12 @@ Examples include:
 
 ## Architecture
 
-- [ ] Create metadata services package
-- [ ] Implement Metadata Loader
-- [ ] Implement Metadata Serializer
-- [ ] Implement Metadata Validator
-- [ ] Implement Metadata Search
-- [ ] Implement Metadata Management Service
+- [x] Create metadata services package
+- [x] Implement Metadata Loader
+- [x] Implement Metadata Serializer
+- [x] Implement Metadata Validator
+- [x] Implement Metadata Search
+- [x] Implement Metadata Management Service
 
 ---
 

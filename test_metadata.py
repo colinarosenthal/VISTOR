@@ -67,3 +67,52 @@ print(f"Movies: {len(media_library.get_movies())}")
 
 
 print("Metadata architecture test complete")
+
+from metadata.services import MetadataLibrary
+
+
+print("Testing MetadataLibrary...")
+
+metadata_library = MetadataLibrary()
+
+metadata_library.add_person(person)
+
+print(metadata_library)
+
+print(
+    "People:",
+    len(metadata_library.get_people())
+)
+
+from metadata.services import MetadataSearch
+
+
+print("Testing MetadataSearch...")
+
+search = MetadataSearch(metadata_library)
+
+results = search.find_person("Test Person")
+
+print("Search Results:", results)
+
+from metadata.services import MetadataSerializer
+
+
+print("Testing MetadataSerializer...")
+
+serializer = MetadataSerializer(metadata_library)
+
+metadata_data = serializer.to_dictionary()
+
+print(metadata_data)
+
+from metadata.services import MetadataValidator
+
+
+print("Testing MetadataValidator...")
+
+validator = MetadataValidator()
+
+validation_results = validator.validate(media_library)
+
+print(validation_results)

@@ -1186,6 +1186,243 @@ Advertiser
 
 ---
 
+## Metadata Services
+
+Metadata Services provide the operational layer of the VISTOR metadata system.
+
+Unlike Metadata Models, which define what metadata exists, Metadata Services define how metadata is loaded, organized, validated, searched, and stored.
+
+Metadata Services operate on the Metadata Library and do not represent broadcast content themselves.
+
+Responsibilities include:
+
+- Loading metadata
+- Maintaining the active metadata library
+- Validating metadata integrity
+- Searching metadata objects
+- Serializing metadata for storage
+
+Metadata Services should never determine:
+
+- When media is played
+- What channel content appears on
+- How programming is scheduled
+
+Those responsibilities belong exclusively to the Scheduler and Channel systems.
+
+---
+
+## Metadata Service Architecture
+
+Metadata Services
+│
+├── MetadataLoader
+│
+├── MetadataLibrary
+│
+├── MetadataValidator
+│
+├── MetadataSearch
+│
+└── MetadataSerializer
+
+---
+
+## Metadata Service Data Flow
+
+Metadata Files
+        │
+        ▼
+MetadataLoader
+        │
+        ▼
+MetadataLibrary
+        │
+        ├── MetadataValidator
+        │
+        ├── MetadataSearch
+        │
+        └── MetadataSerializer
+
+---
+
+# MetadataLoader
+
+The MetadataLoader is responsible for constructing the VISTOR metadata library from stored metadata definitions.
+
+Responsibilities include:
+
+- Discovering metadata files
+- Creating metadata objects
+- Populating the metadata library
+- Resolving relationships between objects
+
+The MetadataLoader is the entry point between stored metadata and the active runtime metadata system.
+
+Example flow:
+
+Metadata Files
+        │
+        ▼
+MetadataLoader
+        │
+        ▼
+MetadataLibrary
+
+The MetadataLoader does not validate metadata or provide search functionality.
+
+Those responsibilities belong to separate services.
+
+---
+
+# MetadataLibrary
+
+The MetadataLibrary is the central container for all loaded VISTOR metadata.
+
+It acts as the active metadata database used by loading, validation, searching, and serialization systems.
+
+Responsibilities include:
+
+- Storing media objects
+- Storing people and organizations
+- Storing vocabulary metadata
+- Storing relationships
+- Providing access to metadata collections
+
+The MetadataLibrary organizes metadata into several categories:
+
+MetadataLibrary
+│
+├── Media
+│
+├── People
+│
+├── Organizations
+│   ├── Networks
+│   └── Studios
+│
+├── Vocabulary
+│   ├── Genres
+│   ├── Tags
+│   ├── Themes
+│   ├── Countries
+│   └── Languages
+│
+└── Relationships
+
+The MetadataLibrary does not determine scheduling behavior.
+
+It only provides structured access to metadata.
+
+---
+
+# MetadataValidator
+
+The MetadataValidator ensures that the metadata library maintains integrity and consistency.
+
+Responsibilities include:
+
+- Validating people records
+- Validating media objects
+- Validating metadata relationships
+- Validating media assets
+
+The MetadataValidator is intentionally stateless.
+
+It receives a MetadataLibrary instance during validation rather than storing its own reference.
+
+Example flow:
+
+MetadataLibrary
+        │
+        ▼
+MetadataValidator
+        │
+        ▼
+Validation Result
+
+---
+
+# MetadataSearch
+
+The MetadataSearch service provides lookup and search functionality for metadata stored within the MetadataLibrary.
+
+Responsibilities include:
+
+- Searching objects by identifier
+- Searching people
+- Searching media objects
+
+Example flow:
+
+MetadataLibrary
+        │
+        ▼
+MetadataSearch
+
+MetadataSearch does not modify metadata.
+
+It only provides access methods for locating existing metadata objects.
+
+---
+
+# MetadataSerializer
+
+The MetadataSerializer converts VISTOR metadata objects into storage formats.
+
+Responsibilities include:
+
+- Converting metadata objects into dictionaries
+- Exporting metadata libraries
+- Saving metadata data
+
+Example flow:
+
+MetadataLibrary
+        │
+        ▼
+MetadataSerializer
+        │
+        ▼
+Metadata Files
+
+Serialization allows the metadata library to be stored and restored without changing the underlying metadata architecture.
+
+---
+
+## Lifecycle Data Flow
+
+Metadata follows a defined lifecycle from storage, through runtime use, and back into persistent storage.
+
+The metadata lifecycle is:
+
+Metadata Files
+        │
+        ▼
+MetadataLoader
+        │
+        ▼
+MetadataLibrary
+        │
+        ├── MetadataValidator
+        │
+        ├── MetadataSearch
+        │
+        └── MetadataSerializer
+                │
+                ▼
+          Metadata Files
+
+The MetadataLoader converts stored metadata definitions into active runtime objects.
+
+The MetadataLibrary acts as the central runtime representation of all loaded metadata.
+
+Metadata services operate on the library without owning metadata state.
+
+The MetadataSerializer allows the active metadata library to be saved and restored.
+
+---
+
 # Media Item Philosophy
 
 Media Item serves as the common foundation for every playable broadcast asset.

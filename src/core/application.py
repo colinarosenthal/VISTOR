@@ -14,28 +14,29 @@ class Application:
     """Main VISTOR application."""
 
     def __init__(self):
+
         self.running = False
 
     def initialize(self):
-        """Initialize the application."""
-
-        Logger.info("Initializing logger...")
-        self.logger = Logger()
+        """Initialize application services."""
 
         Logger.info("Loading configuration...")
+
         self.config = Config()
         self.config.load()
 
         Logger.info("Initializing paths...")
+
         self.paths = Paths()
         self.paths.verify()
 
         Logger.info("Initializing engine...")
+
         self.engine = Engine()
         self.engine.initialize()
 
     def start(self):
-        """Start the application."""
+        """Start VISTOR."""
 
         Logger.info("Starting VISTOR...")
 
@@ -45,13 +46,21 @@ class Application:
 
         self.running = True
 
-        Logger.info("VISTOR successfully initialized.")
+        Logger.success(
+            "VISTOR successfully initialized."
+        )
 
     def shutdown(self):
-        """Shutdown the application."""
+        """Shutdown VISTOR."""
 
-        Logger.info("Shutting down VISTOR...")
+        Logger.info(
+            "Shutting down VISTOR..."
+        )
 
         self.engine.shutdown()
 
         self.running = False
+
+        Logger.success(
+            "VISTOR shutdown complete."
+        )
