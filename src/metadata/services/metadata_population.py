@@ -1581,9 +1581,6 @@ class MetadataPopulation:
         for video in music_videos:  
             library.add_music_video(video)  
   
-        for video in music_videos:  
-            library.add_music_video(video)  
-  
         for commercial in commercials:  
             library.add_commercial(commercial)  
   

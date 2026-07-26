@@ -132,16 +132,6 @@ class MediaLibrary:
     def get_total_media_count(self):
         """Return total number of media objects."""
 
-        return (
-            len(self.movies)
-            + len(self.episodes)
-            + len(self.sports_events)
-            + len(self.sports_talk_shows)
-            + len(self.music_videos)
-            + len(self.concerts)
-            + len(self.documentaries)
-        )
-
         return (  
                 len(self.movies)  
                 + len(self.episodes)  
