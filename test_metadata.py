@@ -285,3 +285,23 @@ print(
 
 for genre in music_genres:
     print("-", genre)
+
+from metadata.services.metadata_population import MetadataPopulation  
+  
+population = MetadataPopulation()  
+library = population.build_library()  
+  
+print("Movies:", len(library.get_movies()))  
+print("Episodes:", len(library.get_episodes()))  
+print("Music videos:", len(library.get_music_videos()))  
+print("Total:", library.get_total_media_count())  
+  
+# Reference-sharing check  
+advertisers = population.create_advertisers()  
+commercials = population.create_commercials(  
+    advertisers,  
+    population.create_products(advertisers),  
+    population.create_campaigns(population.create_products(advertisers)),  
+)  
+assert commercials[0].get_advertiser() is advertisers["coca_cola"]  
+print("Reference sharing verified.")

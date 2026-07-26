@@ -9,17 +9,18 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from metadata.relationships.media_asset import MediaAsset
     from metadata.relationships.appearance import Appearance
+    
+    from metadata.library.network import Network
 
     from metadata.vocabulary.genre import Genre
     from metadata.vocabulary.tag import Tag
     from metadata.vocabulary.theme import Theme
-    from metadata.vocabulary.network import Network
     from metadata.vocabulary.country import Country
     from metadata.vocabulary.language import Language
+    from metadata.vocabulary.content_rating import ContentRating
 
     from metadata.enums.media_type import MediaType
     from metadata.enums.presentation_type import PresentationType
-    from metadata.enums.content_rating import ContentRating
     from metadata.enums.audience import Audience
 
 

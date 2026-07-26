@@ -300,10 +300,10 @@ Examples include:
 
 ## Initial Metadata
 
-- [ ] Create Television Metadata
-- [ ] Create Movie Metadata
-- [ ] Create Commercial Metadata
-- [ ] Create Music Metadata
+- [x] Create Television Metadata
+- [x] Create Movie Metadata
+- [x] Create Commercial Metadata
+- [x] Create Music Metadata
 
 ---
 

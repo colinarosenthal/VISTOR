@@ -11,10 +11,19 @@ from metadata.vocabulary.content_rating import ContentRating
 from metadata.vocabulary.country import Country  
 from metadata.vocabulary.language import Language  
 from metadata.vocabulary.tag import Tag
+
 from metadata.library.network import Network
 from metadata.library.advertiser import Advertiser  
 from metadata.library.product import Product  
 from metadata.library.campaign import Campaign
+
+from metadata.media.film.movie import Movie  
+from metadata.media.television.episode import Episode  
+from metadata.media.advertising.commercial import Commercial  
+from metadata.media.music.music_video import MusicVideo  
+from metadata.library.franchise import Franchise  
+from metadata.library.series import Series  
+from metadata.library.season import Season
 
 class MetadataPopulation:
     """
@@ -1028,7 +1037,7 @@ class MetadataPopulation:
                 native_name="No linguistic content",  
             ),  
         ]
-# ------------------------------------------------------------------  
+    # ------------------------------------------------------------------  
     # Tag Population  
     # ------------------------------------------------------------------  
   
@@ -1386,3 +1395,192 @@ class MetadataPopulation:
                 slogan="Share a Coke",  
             ),  
         ]
+
+    # ------------------------------------------------------------------  
+    # Movie Population  
+    # ------------------------------------------------------------------  
+  
+    def create_movies(self, genres, tags, themes, ratings, networks, countries, languages):  
+        """  
+        Create default VISTOR movies, referencing shared vocabulary  
+        and organization instances rather than duplicating them.  
+        """  
+  
+        movie = Movie(  
+            id="the_time_machine",  
+            title="The Time Machine",  
+            release_year=1960,  
+            runtime_minutes=103,  
+        )  
+  
+        if "Science Fiction" in genres:  
+            movie.add_genre(genres["Science Fiction"])  
+        if "Adventure" in genres:  
+            movie.add_genre(genres["Adventure"])  
+        if "Widescreen" in tags:  
+            movie.add_tag(tags["Widescreen"])  
+        if "MPAA:G" in ratings:  
+            movie.set_content_rating(ratings["MPAA:G"])  
+        if "United States" in countries:  
+            movie.set_production_country(countries["United States"])  
+        if "English" in languages:  
+            movie.add_language(languages["English"])  
+  
+        return [movie]  
+  
+    # ------------------------------------------------------------------  
+    # Television Population  
+    # ------------------------------------------------------------------  
+  
+    def create_television(self, genres, tags, themes, ratings, networks, countries, languages):  
+        """  
+        Create default VISTOR television episodes, including the  
+        franchise -> series -> season chain each episode belongs to.  
+        """  
+  
+        franchise = Franchise(  
+            id="example_franchise",  
+            name="Example Franchise",  
+            description="Example franchise for default metadata.",  
+        )  
+  
+        series = Series(  
+            id="example_series",  
+            title="Example Series",  
+            franchise=franchise,  
+            description="Example series for default metadata.",  
+            premiere_year=1990,  
+        )  
+  
+        season = Season(  
+            id="example_series_s1",  
+            series=series,  
+            season_number=1,  
+            title="Season 1",  
+            premiere_year=1990,  
+        )  
+  
+        episode = Episode(  
+            id="example_series_s1_e1",  
+            title="Pilot",  
+            season=season,  
+            episode_number=1,  
+            release_year=1990,  
+            runtime_minutes=22,  
+        )  
+  
+        if "Comedy" in genres:  
+            episode.add_genre(genres["Comedy"])  
+        if "TV Parental Guidelines:TV-PG" in ratings:  
+            episode.set_content_rating(ratings["TV Parental Guidelines:TV-PG"])  
+        if "abc" in networks:  
+            episode.set_original_network(networks["abc"])  
+        if "United States" in countries:  
+            episode.set_production_country(countries["United States"])  
+        if "English" in languages:  
+            episode.add_language(languages["English"])  
+  
+        return [episode]  
+  
+    # ------------------------------------------------------------------  
+    # Commercial Population  
+    # ------------------------------------------------------------------  
+  
+    def create_commercials(self, advertisers, products, campaigns):  
+        """  
+        Create default VISTOR commercials, referencing the shared  
+        advertiser, product, and campaign instances.  
+        """  
+  
+        commercial = Commercial(  
+            id="share_a_coke_spot",  
+            title="Share a Coke",  
+            release_year=2014,  
+            runtime_minutes=30,  
+        )  
+  
+        if "coca_cola" in advertisers:  
+            commercial.set_advertiser(advertisers["coca_cola"])  
+  
+        return [commercial]  
+  
+    # ------------------------------------------------------------------  
+    # Music Video Population  
+    # ------------------------------------------------------------------  
+  
+    def create_music_videos(self, music_genres):  
+        """  
+        Create default VISTOR music videos, referencing shared  
+        music genre instances.  
+        """  
+  
+        video = MusicVideo(  
+            id="example_music_video",  
+            title="Example Song",  
+            release_year=1985,  
+            runtime_minutes=4,  
+        )  
+  
+        if "Jazz" in music_genres:  
+            video.set_music_genre(music_genres["Jazz"])  
+  
+        return [video]
+
+    # ------------------------------------------------------------------  
+    # Library Assembly  
+    # ------------------------------------------------------------------  
+  
+    def build_library(self):  
+        """  
+        Build a fully populated MediaLibrary using shared instances,  
+        preserving a single source of truth across all references.  
+        """  
+  
+        from metadata.library.media_library import MediaLibrary  
+  
+        # Vocabulary indexed by name for attachment  
+        genres = {g.get_name(): g for g in self.create_genres()}  
+        music_genres = {m.get_name(): m for m in self.create_music_genres()}  
+        themes = {t.get_name(): t for t in self.create_themes()}  
+        tags = {t.get_name(): t for t in self.create_tags()}  
+        countries = {c.get_name(): c for c in self.create_countries()}  
+        languages = {l.get_name(): l for l in self.create_languages()}  
+  
+        # Content ratings keyed by "system:name" (name alone is not unique)  
+        ratings = {  
+            f"{r.get_system()}:{r.get_name()}": r  
+            for r in self.create_content_ratings()  
+        }  
+  
+        # Networks keyed by id  
+        networks = {n.get_id(): n for n in self.create_networks()}  
+  
+        # Commercial chain (shared instances)  
+        advertisers = self.create_advertisers()  
+        products = self.create_products(advertisers)  
+        campaigns = self.create_campaigns(products)  
+  
+        # Media objects  
+        movies = self.create_movies(  
+            genres, tags, themes, ratings, networks, countries, languages  
+        )  
+        episodes = self.create_television(  
+            genres, tags, themes, ratings, networks, countries, languages  
+        )  
+        commercials = self.create_commercials(advertisers, products, campaigns)  
+        music_videos = self.create_music_videos(music_genres)  
+  
+        library = MediaLibrary()  
+  
+        for movie in movies:  
+            library.add_movie(movie)  
+  
+        for episode in episodes:  
+            library.add_episode(episode)  
+  
+        for video in music_videos:  
+            library.add_music_video(video)  
+  
+        # NOTE: MediaLibrary has no commercials bucket yet (see below).  
+  
+        return library
