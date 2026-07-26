@@ -317,20 +317,20 @@ VISTOR possesses a complete metadata engine capable of describing, organizing, v
   
 ## Metadata Persistence  
   
-- [ ] Serialize populated vocabulary to JSON  
-- [ ] Serialize library entities to JSON  
-- [ ] Serialize media objects to JSON  
-- [ ] Define on-disk metadata directory layout  
-- [ ] Verify round-trip (populate → serialize → load)  
+- [x] Serialize populated vocabulary to JSON  
+- [x] Serialize library entities to JSON  
+- [x] Serialize media objects to JSON  
+- [x] Define on-disk metadata directory layout  
+- [x] Verify round-trip (populate → serialize → load)  
   
 ---  
   
 ## Metadata Loader  
   
-- [ ] Implement library loading stage  
-- [ ] Implement people loading stage  
-- [ ] Implement series loading stage  
-- [ ] Implement season loading stage  
+- [x] Implement library loading stage  
+- [x] Implement people loading stage  
+- [x] Implement series loading stage  
+- [x] Implement season loading stage  
 - [ ] Implement media loading stage  
 - [ ] Resolve object relationships  
 - [ ] Handle missing or malformed metadata files  

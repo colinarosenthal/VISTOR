@@ -1,1 +1,86 @@
-[]
+[
+    {
+        "type": "Movie",
+        "id": "the_time_machine",
+        "title": "The Time Machine",
+        "description": "",
+        "release_year": 1960,
+        "runtime_minutes": 103,
+        "content_rating": {
+            "system": "MPAA",
+            "name": "G"
+        },
+        "original_network": null,
+        "production_country": "United States",
+        "languages": [
+            "English"
+        ],
+        "genres": [
+            "Science Fiction",
+            "Adventure"
+        ],
+        "tags": [
+            "Widescreen"
+        ],
+        "themes": [],
+        "franchise": null
+    },
+    {
+        "type": "Episode",
+        "id": "example_series_s1_e1",
+        "title": "Pilot",
+        "description": "",
+        "release_year": 1990,
+        "runtime_minutes": 22,
+        "content_rating": {
+            "system": "TV Parental Guidelines",
+            "name": "TV-PG"
+        },
+        "original_network": "abc",
+        "production_country": "United States",
+        "languages": [
+            "English"
+        ],
+        "genres": [
+            "Comedy"
+        ],
+        "tags": [],
+        "themes": [],
+        "episode_number": 1,
+        "season": "example_series_s1"
+    },
+    {
+        "type": "MusicVideo",
+        "id": "example_music_video",
+        "title": "Example Song",
+        "description": "",
+        "release_year": 1985,
+        "runtime_minutes": 4,
+        "content_rating": null,
+        "original_network": null,
+        "production_country": null,
+        "languages": [],
+        "genres": [],
+        "tags": [],
+        "themes": [],
+        "music_genre": "Jazz"
+    },
+    {
+        "type": "Commercial",
+        "id": "share_a_coke_spot",
+        "title": "Share a Coke",
+        "description": "",
+        "release_year": 2014,
+        "runtime_minutes": 30,
+        "content_rating": null,
+        "original_network": null,
+        "production_country": null,
+        "languages": [],
+        "genres": [],
+        "tags": [],
+        "themes": [],
+        "advertiser": "Coca-Cola",
+        "product": null,
+        "campaign": null
+    }
+]

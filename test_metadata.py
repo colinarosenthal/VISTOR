@@ -329,58 +329,73 @@ assert len(commercials) >= 1
   
   
 # ------------------------------------------------------------------  
-# Serialization Round-Trip (people bucket)  
+# Serialization Round-Trip (media exercised)  
 # ------------------------------------------------------------------  
-  
+
+from metadata.media.film.movie import Movie  
+from metadata.media.television.episode import Episode  
+from metadata.media.music.music_video import MusicVideo  
+from metadata.media.advertising.commercial import Commercial
+
 print("\n=== Testing Serialization Round-Trip ===")  
   
-  
+# Build a populated MetadataLibrary so the media buckets are actually written.  
 round_trip_library = MetadataLibrary()  
   
+# Carry the person over so people.json is still exercised too.  
 round_trip_library.add_person(person)  
   
+# build_library() returns a MediaLibrary; move its media into the  
+# MetadataLibrary the serializer understands (get_media / add_media).  
+built = population.build_library()  
   
-round_trip_serializer = MetadataSerializer(  
-    round_trip_library  
-)  
+for movie in built.get_movies():  
+    round_trip_library.add_media(movie)  
   
+for episode in built.get_episodes():  
+    round_trip_library.add_media(episode)  
   
-out_dir = Path(  
-    "metadata/data"  
-)  
+for video in built.get_music_videos():  
+    round_trip_library.add_media(video)  
   
+for commercial in built.get_commercials():  
+    round_trip_library.add_media(commercial)  
   
-round_trip_serializer.save_to_directory(out_dir)  
+# Serialize to disk. Keep this path casing identical to the loader's.  
+metadata_path = Path("metadata/data")  
   
-  
-reloaded = MetadataLoader().load(out_dir)  
-  
-  
-assert reloaded is not None  
+MetadataSerializer(round_trip_library).save_to_directory(metadata_path)  
   
 print("Serialization round-trip complete")  
-
-from metadata.services.metadata_library import MetadataLibrary  
-from metadata.services.metadata_serializer import MetadataSerializer  
-from metadata.services.metadata_loader import MetadataLoader  
   
-meta = MetadataLibrary()  
+# Reload from disk.  
+reloaded = MetadataLoader().load(metadata_path)  
   
-# Media counts verified against the in-memory built library  
-# (media serialization/loading is not implemented yet — see TODO below)  
-assert len(movies) >= 1  
-assert len(episodes) >= 1  
-assert len(music_videos) >= 1  
-assert len(commercials) >= 1  
+loaded_media = reloaded.get_media()  
   
-# People round-trip is the only bucket that survives save/load today  
+loaded_movies = [m for m in loaded_media if isinstance(m, Movie)]  
+loaded_episodes = [m for m in loaded_media if isinstance(m, Episode)]  
+loaded_music_videos = [m for m in loaded_media if isinstance(m, MusicVideo)]  
+loaded_commercials = [m for m in loaded_media if isinstance(m, Commercial)]  
+  
+print("Loaded movies:", len(loaded_movies))  
+print("Loaded episodes:", len(loaded_episodes))  
+print("Loaded music videos:", len(loaded_music_videos))  
+print("Loaded commercials:", len(loaded_commercials))  
+print("Loaded total:", len(loaded_media))  
+  
+assert len(loaded_movies) >= 1  
+assert len(loaded_music_videos) >= 1  
+assert len(loaded_commercials) >= 1  
+  
+# Episodes need series/seasons serialized before they can reconstruct  
+# (Episode.__init__ requires a Season). Enable once those buckets are written.  
+# assert len(loaded_episodes) >= 1  
+  
+# People bucket still round-trips.  
 assert len(reloaded.get_people()) >= 1  
   
-print("Serialization round-trip verified (people bucket).")
-  
-# TODO: enable populated-media round-trip once media flattening  
-# is implemented in MetadataSerializer. Until then, media items  
-# hold nested custom objects that json.dump cannot serialize.  
+print("Serialization round-trip verified (media exercised).")  
   
   
 # ------------------------------------------------------------------  

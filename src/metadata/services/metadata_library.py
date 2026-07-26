@@ -21,11 +21,8 @@ class MetadataLibrary:
         # People and organizations  
         self.people = []  
         self.networks = []  
-        self.studios = []
-        self.franchises = []  
-        self.series = []  
-        self.seasons = []
-  
+        self.studios = []  
+   
         # Vocabulary  
         self.genres = []  
         self.tags = []  
@@ -33,12 +30,14 @@ class MetadataLibrary:
         self.countries = []  
         self.languages = []  
         self.content_ratings = []  
-        self.music_genres = []  
+        self.music_genres = []
   
-        # Library entities referenced by media  
+        # Library structure  
         self.franchises = []  
         self.series = []  
         self.seasons = []  
+  
+        # Advertising  
         self.advertisers = []  
         self.products = []  
         self.campaigns = []  
@@ -73,25 +72,7 @@ class MetadataLibrary:
     def get_music_genres(self):  
         return self.music_genres  
   
-    # Library entities  
-    def add_franchise(self, franchise):  
-        self.franchises.append(franchise)  
-  
-    def get_franchises(self):  
-        return self.franchises  
-  
-    def add_series(self, series):  
-        self.series.append(series)  
-  
-    def get_series(self):  
-        return self.series  
-  
-    def add_season(self, season):  
-        self.seasons.append(season)  
-  
-    def get_seasons(self):  
-        return self.seasons  
-  
+    # Library entities        
     def add_advertiser(self, advertiser):  
         self.advertisers.append(advertiser)  
   
@@ -255,22 +236,27 @@ class MetadataLibrary:
     # Utility
     # ------------------------------------------------------------------
 
-    def get_total_count(self):
-        """
-        Return total metadata objects stored.
-        """
-
-        return (
-            len(self.media)
-            + len(self.people)
-            + len(self.networks)
-            + len(self.studios)
-            + len(self.genres)
-            + len(self.tags)
-            + len(self.themes)
-            + len(self.countries)
-            + len(self.languages)
-            + len(self.relationships)
+    def get_total_count(self):  
+        """Return total metadata objects stored."""  
+        return (  
+            len(self.media)  
+            + len(self.people)  
+            + len(self.networks)  
+            + len(self.studios)  
+            + len(self.genres)  
+            + len(self.tags)  
+            + len(self.themes)  
+            + len(self.countries)  
+            + len(self.languages)  
+            + len(self.content_ratings)  
+            + len(self.music_genres)  
+            + len(self.franchises)  
+            + len(self.series)  
+            + len(self.seasons)  
+            + len(self.advertisers)  
+            + len(self.products)  
+            + len(self.campaigns)  
+            + len(self.relationships)  
         )
 
     def __str__(self):
