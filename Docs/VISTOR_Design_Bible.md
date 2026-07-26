@@ -855,40 +855,42 @@ VISTOR separates metadata into four distinct categories based on responsibility.
 
 This separation ensures that architectural concepts, descriptive information, data models, and supporting systems remain independent while working together as a unified metadata engine.
 
-### Enums
-
-Enums define architectural concepts.
-
-These represent fixed classifications that should remain stable throughout the lifetime of VISTOR.
-
-Examples include:
-
-- Media Types
-- Presentation Types
-- Audience Classifications
-- Content Ratings
-- Commercial Types
-- Person Roles
-
-Enums define how the application understands media rather than describing individual media items.
-
----
-
-### Vocabulary
-
-Vocabulary provides standardized descriptive values.
-
-Unlike Enums, vocabulary is expected to expand as the media library grows.
-
-Examples include:
-
-- Genres
-- Music Genres
-- Themes
-- Networks
-- Countries
-- Tags
-
+### Enums  
+  
+Enums define architectural concepts.  
+  
+These represent fixed classifications that should remain stable throughout the lifetime of VISTOR.  
+  
+Examples include:  
+  
+- Media Types  
+- Presentation Types  
+- Audience Classifications  
+- Commercial Types  
+- Person Roles  
+  
+Enums define how the application understands media rather than describing individual media items.  
+  
+---  
+  
+### Vocabulary  
+  
+Vocabulary provides standardized descriptive values.  
+  
+Unlike Enums, vocabulary is expected to expand as the media library grows.  
+  
+Examples include:  
+  
+- Genres  
+- Music Genres  
+- Themes  
+- Countries  
+- Languages  
+- Tags  
+- Content Ratings  
+  
+Content Ratings are vocabulary rather than a single Enum because official rating systems differ between countries and organizations, and a single media item may carry different ratings per region.  
+  
 Vocabulary allows consistent metadata while remaining flexible enough to accommodate future media additions.
 
 ---

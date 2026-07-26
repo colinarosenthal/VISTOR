@@ -553,61 +553,90 @@ Each category has a single responsibility, minimizing duplication while allowing
 
 ## Package Structure
 
-```text
-metadata/
-│
-├── __init__.py
-│
-├── enums/
-│   ├── audience.py
-│   ├── commercial_type.py
-│   ├── content_rating.py
-│   ├── media_type.py
-│   ├── presentation_type.py
-│   └── role_type.py
-│
-├── vocabulary/
-│   ├── country.py
-│   ├── genre.py
-│   ├── music_genre.py
-│   ├── network.py
-│   ├── tag.py
-│   └── theme.py
-│
-├── catalog/
-│   ├── media_library.py
-│   ├── franchise.py
-│   ├── series.py
-│   ├── season.py
-│   ├── advertiser.py
-│   ├── product.py
-│   └── campaign.py
-│
-├── relationships/
-│   ├── appearance.py
-│   ├── media_asset.py
-│   └── person.py
-│
-├── media/
-│   ├── media_item.py
-│   ├── ambient.py
-│   ├── commercial.py
-│   ├── documentary.py
-│   ├── episode.py
-│   ├── infomercial.py
-│   ├── movie.py
-│   ├── music_video.py
-│   ├── news_segment.py
-│   ├── promo.py
-│   ├── sports_event.py
-│   ├── station_id.py
-│   └── weather_segment.py
-│
-├── metadata_loader.py
-├── metadata_library.py
-├── metadata_search.py
-├── metadata_serializer.py
-└── metadata_validator.py
+```
+metadata/  
+│  
+├── __init__.py  
+├── README.md  
+│  
+├── enums/  
+│   ├── __init__.py  
+│   ├── audience.py  
+│   ├── commercial_type.py  
+│   ├── media_type.py  
+│   ├── presentation_type.py  
+│   └── role_type.py  
+│  
+├── vocabulary/  
+│   ├── __init__.py  
+│   ├── content_rating.py  
+│   ├── country.py  
+│   ├── genre.py  
+│   ├── language.py  
+│   ├── music_genre.py  
+│   ├── tag.py  
+│   └── theme.py  
+│  
+├── library/  
+│   ├── __init__.py  
+│   ├── advertiser.py  
+│   ├── campaign.py  
+│   ├── franchise.py  
+│   ├── media_library.py  
+│   ├── network.py  
+│   ├── person.py  
+│   ├── product.py  
+│   ├── season.py  
+│   ├── series.py  
+│   └── studio.py  
+│  
+├── relationships/  
+│   ├── __init__.py  
+│   ├── appearance.py  
+│   └── media_asset.py  
+│  
+├── media/  
+│   ├── __init__.py  
+│   ├── collection.py  
+│   ├── media_item.py  
+│   │  
+│   ├── advertising/  
+│   │   ├── commercial.py  
+│   │   ├── infomercial.py  
+│   │   ├── promo.py  
+│   │   └── station_id.py  
+│   │  
+│   ├── film/  
+│   │   ├── documentary.py  
+│   │   └── movie.py  
+│   │  
+│   ├── miscellaneous/  
+│   │   └── ambient.py  
+│   │  
+│   ├── music/  
+│   │   ├── concert.py  
+│   │   ├── live_performance.py  
+│   │   └── music_video.py  
+│   │  
+│   ├── sports/  
+│   │   ├── sports_event.py  
+│   │   ├── sports_highlight.py  
+│   │   └── sports_talk_show.py  
+│   │  
+│   └── television/  
+│       ├── episode.py  
+│       ├── news_segment.py  
+│       ├── special.py  
+│       ├── talk_show.py  
+│       └── weather_segment.py  
+│  
+└── services/  
+    ├── __init__.py  
+    ├── metadata_library.py  
+    ├── metadata_loader.py  
+    ├── metadata_search.py  
+    ├── metadata_serializer.py  
+    └── metadata_validator.py  
 ```
 
 ---

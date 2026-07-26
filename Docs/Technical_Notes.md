@@ -327,17 +327,20 @@ Separating these responsibilities prevents unnecessary code changes while preser
 
 ## Applied In VISTOR
 
-VISTOR uses Enums for architectural concepts that are expected to remain stable, including:
-
-- MediaType
-- Audience
-- ContentRating
-
-VISTOR uses predefined string constants for standardized metadata that may expand over time, including:
-
-- Genres
-- Themes
-
+VISTOR uses Enums for architectural concepts that are expected to remain stable, including:  
+  
+- MediaType  
+- Audience  
+  
+VISTOR uses standardized vocabulary for descriptive metadata that may expand over time, including:  
+  
+- Genres  
+- Themes  
+- Languages  
+- Content Ratings  
+  
+Content Ratings are vocabulary rather than an Enum because rating systems vary by country and organization, and each rating preserves its original authority, country, and value.  
+  
 User-defined Tags remain free-form strings to support unlimited media classification without requiring changes to the application's architecture.
 
 ---

@@ -279,14 +279,14 @@ Examples include:
 
 ## Vocabulary Population
 
-- [ ] Populate Genres
-- [ ] Populate Music Genres
-- [ ] Populate Networks
-- [ ] Populate Themes
-- [ ] Populate Countries
-- [ ] Populate Tags
-- [ ] Populate Languages
-- [ ] Populate Content Ratings
+- [x] Populate Genres
+- [x] Populate Music Genres
+- [x] Populate Networks
+- [x] Populate Themes
+- [x] Populate Countries
+- [x] Populate Tags
+- [x] Populate Languages
+- [x] Populate Content Ratings
 
 ---
 
