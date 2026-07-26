@@ -12,6 +12,9 @@ from metadata.vocabulary.country import Country
 from metadata.vocabulary.language import Language  
 from metadata.vocabulary.tag import Tag
 from metadata.library.network import Network
+from metadata.library.advertiser import Advertiser  
+from metadata.library.product import Product  
+from metadata.library.campaign import Campaign
 
 class MetadataPopulation:
     """
@@ -1240,5 +1243,146 @@ class MetadataPopulation:
                 name="British Broadcasting Corporation",  
                 abbreviation="BBC",  
                 description="British public broadcast network.",  
+            ),  
+        ]
+
+    # ------------------------------------------------------------------  
+    # Advertiser Population  
+    # ------------------------------------------------------------------  
+  
+    def create_advertisers(self):  
+        """  
+        Create default VISTOR advertisers.  
+  
+        Returns a dictionary keyed by advertiser slug so that products  
+        and campaigns can reference the same advertiser instances rather  
+        than duplicating them.  
+        """  
+  
+        return {  
+  
+            # ----------------------------------------------------------  
+            # Beverage  
+            # ----------------------------------------------------------  
+  
+            "coca_cola": Advertiser(  
+                name="Coca-Cola",  
+                description="Global beverage company.",  
+                country="United States",  
+            ),  
+            "pepsico": Advertiser(  
+                name="PepsiCo",  
+                description="Global food and beverage company.",  
+                country="United States",  
+            ),  
+  
+            # ----------------------------------------------------------  
+            # Food  
+            # ----------------------------------------------------------  
+  
+            "mcdonalds": Advertiser(  
+                name="McDonald's",  
+                description="Global fast food restaurant chain.",  
+                country="United States",  
+            ),  
+  
+            # ----------------------------------------------------------  
+            # Apparel  
+            # ----------------------------------------------------------  
+  
+            "nike": Advertiser(  
+                name="Nike",  
+                description="Global athletic apparel and footwear company.",  
+                country="United States",  
+            ),  
+  
+            # ----------------------------------------------------------  
+            # Automotive  
+            # ----------------------------------------------------------  
+  
+            "toyota": Advertiser(  
+                name="Toyota",  
+                description="Global automobile manufacturer.",  
+                country="Japan",  
+            ),  
+  
+            # ----------------------------------------------------------  
+            # Technology  
+            # ----------------------------------------------------------  
+  
+            "apple": Advertiser(  
+                name="Apple",  
+                description="Consumer electronics and software company.",  
+                country="United States",  
+            ),  
+        }  
+  
+    # ------------------------------------------------------------------  
+    # Product Population  
+    # ------------------------------------------------------------------  
+  
+    def create_products(self, advertisers):  
+        """  
+        Create default VISTOR products.  
+  
+        Accepts the advertiser dictionary produced by create_advertisers  
+        so that each product references an existing advertiser instance  
+        rather than constructing a new one.  
+  
+        Returns a dictionary keyed by product slug.  
+        """  
+  
+        return {  
+  
+            "coca_cola_classic": Product(  
+                id="coca_cola_classic",  
+                name="Coca-Cola Classic",  
+                advertiser=advertisers["coca_cola"],  
+                description="Original flavored cola soft drink.",  
+                category="Beverage",  
+                release_year=1886,  
+            ),  
+            "big_mac": Product(  
+                id="big_mac",  
+                name="Big Mac",  
+                advertiser=advertisers["mcdonalds"],  
+                description="Signature layered hamburger.",  
+                category="Food",  
+                release_year=1967,  
+            ),  
+            "air_jordan": Product(  
+                id="air_jordan",  
+                name="Air Jordan",  
+                advertiser=advertisers["nike"],  
+                description="Signature basketball footwear line.",  
+                category="Footwear",  
+                release_year=1984,  
+            ),  
+        }  
+  
+    # ------------------------------------------------------------------  
+    # Campaign Population  
+    # ------------------------------------------------------------------  
+  
+    def create_campaigns(self, products):  
+        """  
+        Create default VISTOR advertising campaigns.  
+  
+        Accepts the product dictionary produced by create_products so  
+        that each campaign references an existing product instance  
+        rather than constructing a new one.  
+  
+        Returns a list of campaigns.  
+        """  
+  
+        return [  
+            Campaign(  
+                id="share_a_coke",  
+                name="Share a Coke",  
+                product=products["coca_cola_classic"],  
+                start_year=2011,  
+                end_year=2017,  
+                description="Campaign featuring personalized bottle labels.",  
+                slogan="Share a Coke",  
             ),  
         ]

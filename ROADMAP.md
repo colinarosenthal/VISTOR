@@ -281,7 +281,6 @@ Examples include:
 
 - [x] Populate Genres
 - [x] Populate Music Genres
-- [x] Populate Networks
 - [x] Populate Themes
 - [x] Populate Countries
 - [x] Populate Tags
@@ -295,6 +294,7 @@ Examples include:
 - [ ] Populate Advertisers
 - [ ] Populate Products
 - [ ] Populate Campaigns
+- [x] Populate Networks
 
 ---
 

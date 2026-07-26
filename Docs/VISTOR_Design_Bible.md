@@ -974,6 +974,29 @@ Rather than creating separate implementations for each media type, VISTOR models
 
 ---
 
+## 5.10 Metadata Population Philosophy  
+  
+VISTOR populates its metadata library by constructing each shared entity exactly once.  
+  
+Reusable entities such as Advertisers, Products, Campaigns, Networks, and Studios are created a single time and then referenced by every object that depends on them.  
+  
+Population routines do not rebuild the entities they depend upon.  
+  
+For example, a Product references an existing Advertiser rather than constructing a new one, and a Campaign references an existing Product rather than constructing its own.  
+  
+This preserves a single source of truth throughout the metadata library and prevents duplicated entities that represent the same real-world organization.  
+  
+Dependent entities are assembled together so that shared references remain consistent:  
+  
+Advertiser  
+→ Product  
+→ Campaign  
+→ Commercial  
+  
+Because population follows the same reference-driven philosophy as the rest of the metadata system, populated data can be searched, scheduled, and organized by shared entities without duplication.
+
+---
+
 # 6. Inspiration
 
 VISTOR is an original software project.
