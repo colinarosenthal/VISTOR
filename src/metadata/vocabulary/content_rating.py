@@ -1,18 +1,20 @@
 """  
 VISTOR Content Rating  
   
-Defines official content rating classifications used throughout VISTOR.  
-  
-A content rating is a controlled vocabulary value describing an official  
-classification (e.g. "PG-13", "BBFC 15"). Because different countries and  
-versions of the same media may carry different ratings, a rating value is  
-assigned to media per-region rather than being a permanent property of the  
-media itself.  
+Defines official content rating classifications.  
 """  
   
   
 class ContentRating:  
-    """Represents an official media content rating classification."""  
+    """  
+    Represents an official media content rating.  
+  
+    Ratings are described rather than fixed, because different  
+    countries and organizations use different classification  
+    standards. Each rating preserves the system and country of  
+    the authority that issued it rather than being converted into  
+    a single universal value.  
+    """  
   
     # ------------------------------------------------------------------  
     # Construction  
@@ -46,17 +48,17 @@ class ContentRating:
         return self.name  
   
     def get_system(self):  
-        """Return the rating system (e.g. MPAA, BBFC)."""  
+        """Return the rating system."""  
   
         return self.system  
   
     def get_country(self):  
-        """Return the country or region that issues this rating."""  
+        """Return the issuing country."""  
   
         return self.country  
   
     def get_min_age(self):  
-        """Return the approximate minimum recommended age."""  
+        """Return the minimum recommended age."""  
   
         return self.min_age  
   
@@ -64,6 +66,20 @@ class ContentRating:
         """Return the rating description."""  
   
         return self.description  
+  
+    # ------------------------------------------------------------------  
+    # Modification  
+    # ------------------------------------------------------------------  
+  
+    def set_description(self, description: str):  
+        """Set the rating description."""  
+  
+        self.description = description  
+  
+    def set_min_age(self, min_age: int):  
+        """Set the minimum recommended age."""  
+  
+        self.min_age = min_age  
   
     # ------------------------------------------------------------------  
     # Utility  

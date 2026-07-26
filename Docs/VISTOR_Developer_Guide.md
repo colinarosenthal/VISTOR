@@ -1200,6 +1200,24 @@ Commercials reference these models rather than duplicating advertiser informatio
 
 This reduces redundancy while improving search capabilities.
 
+---
+
+## How Reference Sharing Is Enforced  
+  
+Each entity in the commercial hierarchy holds its dependency by reference rather than rebuilding it.  
+  
+- `Advertiser` is a leaf entity defined by `name`, `description`, and `country`. It depends on nothing else and is unaffected by how it is populated.  
+- `Product` accepts an `Advertiser` in its constructor and stores it directly as `self.advertiser`, so it holds whichever advertiser instance is passed in without duplicating it.  
+- `Campaign` accepts a `Product` in its constructor and stores it as `self.product`. Its `get_advertiser()` method walks through to the product's advertiser via `self.product.get_advertiser()`, keeping the reference chain intact end to end.  
+  
+Because each level stores the exact instance it is given, passing the same advertiser and product instances throughout population guarantees a single source of truth.  
+  
+For example, a campaign's `get_advertiser()` returns the same `Advertiser` object referenced by its product, rather than a separate copy.  
+  
+The single-source-of-truth guarantee is enforced during population by passing shared instances between entities, not by the entity classes themselves.
+
+---
+
 ## Commercial Relationships
 
 Advertiser

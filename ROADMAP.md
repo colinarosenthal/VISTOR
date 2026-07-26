@@ -291,10 +291,10 @@ Examples include:
 
 ## Commercial Library
 
-- [ ] Populate Advertisers
-- [ ] Populate Products
-- [ ] Populate Campaigns
 - [x] Populate Networks
+- [x] Populate Advertisers
+- [x] Populate Products
+- [x] Populate Campaigns
 
 ---
 
