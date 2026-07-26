@@ -13,24 +13,37 @@ class MetadataLibrary:
     used by loading, validation, searching, and serialization.
     """
 
-    def __init__(self):
-
-        # Media objects
-        self.media = []
-
-        # People and organizations
-        self.people = []
-        self.networks = []
+    def __init__(self):  
+  
+        # Media objects  
+        self.media = []  
+  
+        # People and organizations  
+        self.people = []  
+        self.networks = []  
         self.studios = []
-
-        # Vocabulary
-        self.genres = []
-        self.tags = []
-        self.themes = []
-        self.countries = []
-        self.languages = []
-
-        # Relationships
+        self.franchises = []  
+        self.series = []  
+        self.seasons = []
+  
+        # Vocabulary  
+        self.genres = []  
+        self.tags = []  
+        self.themes = []  
+        self.countries = []  
+        self.languages = []  
+        self.content_ratings = []  
+        self.music_genres = []  
+  
+        # Library entities referenced by media  
+        self.franchises = []  
+        self.series = []  
+        self.seasons = []  
+        self.advertisers = []  
+        self.products = []  
+        self.campaigns = []  
+  
+        # Relationships  
         self.relationships = []
 
     # ------------------------------------------------------------------
@@ -46,6 +59,76 @@ class MetadataLibrary:
         """Return all media objects."""
 
         return self.media
+
+    # Vocabulary additions  
+    def add_content_rating(self, rating):  
+        self.content_ratings.append(rating)  
+  
+    def get_content_ratings(self):  
+        return self.content_ratings  
+  
+    def add_music_genre(self, genre):  
+        self.music_genres.append(genre)  
+  
+    def get_music_genres(self):  
+        return self.music_genres  
+  
+    # Library entities  
+    def add_franchise(self, franchise):  
+        self.franchises.append(franchise)  
+  
+    def get_franchises(self):  
+        return self.franchises  
+  
+    def add_series(self, series):  
+        self.series.append(series)  
+  
+    def get_series(self):  
+        return self.series  
+  
+    def add_season(self, season):  
+        self.seasons.append(season)  
+  
+    def get_seasons(self):  
+        return self.seasons  
+  
+    def add_advertiser(self, advertiser):  
+        self.advertisers.append(advertiser)  
+  
+    def get_advertisers(self):  
+        return self.advertisers  
+  
+    def add_product(self, product):  
+        self.products.append(product)  
+  
+    def get_products(self):  
+        return self.products  
+  
+    def add_campaign(self, campaign):  
+        self.campaigns.append(campaign)  
+  
+    def get_campaigns(self):  
+        return self.campaigns  
+  
+    # Convenience media getters (filter self.media by type)  
+    def get_movies(self):  
+        from metadata.media.film.movie import Movie  
+        return [m for m in self.media if isinstance(m, Movie)]  
+  
+    def get_episodes(self):  
+        from metadata.media.television.episode import Episode  
+        return [m for m in self.media if isinstance(m, Episode)]  
+  
+    def get_music_videos(self):  
+        from metadata.media.music.music_video import MusicVideo  
+        return [m for m in self.media if isinstance(m, MusicVideo)]  
+  
+    def get_commercials(self):  
+        from metadata.media.advertising.commercial import Commercial  
+        return [m for m in self.media if isinstance(m, Commercial)]  
+  
+    def get_total_media_count(self):  
+        return len(self.media)
 
     # ------------------------------------------------------------------
     # People
@@ -65,6 +148,32 @@ class MetadataLibrary:
     # Organizations
     # ------------------------------------------------------------------
 
+    def add_franchise(self, franchise):  
+        """Add franchise."""  
+  
+        self.franchises.append(franchise)  
+  
+    def get_franchises(self):  
+        return self.franchises  
+  
+  
+    def add_series(self, series):  
+        """Add series."""  
+  
+        self.series.append(series)  
+  
+    def get_series(self):  
+        return self.series  
+  
+  
+    def add_season(self, season):  
+        """Add season."""  
+  
+        self.seasons.append(season)  
+  
+    def get_seasons(self):  
+        return self.seasons
+    
     def add_network(self, network):
         """Add network."""
 

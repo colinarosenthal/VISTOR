@@ -313,51 +313,73 @@ VISTOR possesses a complete metadata engine capable of describing, organizing, v
 
 ---
 
-# Phase 3 — Media Library
-
-## Library Organization
-
-- [ ] Finalize physical media folder structure
-- [ ] Organize existing media library
-- [ ] Normalize filenames
-- [ ] Verify media assets
-
----
-
-## Media Acquisition
-
-### Programming
-
-- [ ] Television Shows
-- [ ] Movies
-- [ ] Sports
-- [ ] News
-- [ ] Documentaries
-- [ ] Game Shows
-- [ ] Talk Shows
-
-### Supporting Content
-
-- [ ] Commercials
-- [ ] Station IDs
-- [ ] Network Promos
-- [ ] Music Videos
-- [ ] Infomercials
-- [ ] Ambient Loops
-
----
-
-## Library Population
-
-- [ ] Scan Media Library
-- [ ] Associate Metadata
-- [ ] Validate Media Library
-- [ ] Resolve Missing Assets
-
----
-
-## Milestone
-
+# Phase 3 — Media Library  
+  
+## Metadata Persistence  
+  
+- [ ] Serialize populated vocabulary to JSON  
+- [ ] Serialize library entities to JSON  
+- [ ] Serialize media objects to JSON  
+- [ ] Define on-disk metadata directory layout  
+- [ ] Verify round-trip (populate → serialize → load)  
+  
+---  
+  
+## Metadata Loader  
+  
+- [ ] Implement library loading stage  
+- [ ] Implement people loading stage  
+- [ ] Implement series loading stage  
+- [ ] Implement season loading stage  
+- [ ] Implement media loading stage  
+- [ ] Resolve object relationships  
+- [ ] Handle missing or malformed metadata files  
+  
+---  
+  
+## Library Organization  
+  
+- [ ] Finalize physical media folder structure  
+- [ ] Organize existing media library  
+- [ ] Normalize filenames  
+- [ ] Verify media assets  
+  
+---  
+  
+## Media Acquisition  
+  
+### Programming  
+  
+- [ ] Television Shows  
+- [ ] Movies  
+- [ ] Sports  
+- [ ] News  
+- [ ] Documentaries  
+- [ ] Game Shows  
+- [ ] Talk Shows  
+  
+### Supporting Content  
+  
+- [ ] Commercials  
+- [ ] Station IDs  
+- [ ] Network Promos  
+- [ ] Music Videos  
+- [ ] Infomercials  
+- [ ] Ambient Loops  
+  
+---  
+  
+## Library Population  
+  
+- [ ] Scan Media Library  
+- [ ] Associate Metadata  
+- [ ] Validate Media Library  
+- [ ] Resolve Missing Assets  
+  
+---  
+  
+## Milestone  
+  
 VISTOR possesses a fully populated broadcast library ready for scheduling.
 
 ---

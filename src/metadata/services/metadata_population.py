@@ -1275,11 +1275,13 @@ class MetadataPopulation:
             # ----------------------------------------------------------  
   
             "coca_cola": Advertiser(  
+                id="coca_cola",  
                 name="Coca-Cola",  
                 description="Global beverage company.",  
                 country="United States",  
             ),  
             "pepsico": Advertiser(  
+                id="pepsico",  
                 name="PepsiCo",  
                 description="Global food and beverage company.",  
                 country="United States",  
@@ -1290,6 +1292,7 @@ class MetadataPopulation:
             # ----------------------------------------------------------  
   
             "mcdonalds": Advertiser(  
+                id="mcdonalds",  
                 name="McDonald's",  
                 description="Global fast food restaurant chain.",  
                 country="United States",  
@@ -1300,6 +1303,7 @@ class MetadataPopulation:
             # ----------------------------------------------------------  
   
             "nike": Advertiser(  
+                id="nike",  
                 name="Nike",  
                 description="Global athletic apparel and footwear company.",  
                 country="United States",  
@@ -1310,6 +1314,7 @@ class MetadataPopulation:
             # ----------------------------------------------------------  
   
             "toyota": Advertiser(  
+                id="toyota",  
                 name="Toyota",  
                 description="Global automobile manufacturer.",  
                 country="Japan",  
@@ -1320,11 +1325,12 @@ class MetadataPopulation:
             # ----------------------------------------------------------  
   
             "apple": Advertiser(  
+                id="apple",  
                 name="Apple",  
                 description="Consumer electronics and software company.",  
                 country="United States",  
             ),  
-        }  
+        }
   
     # ------------------------------------------------------------------  
     # Product Population  
@@ -1532,11 +1538,11 @@ class MetadataPopulation:
   
     def build_library(self):  
         """  
-        Build a fully populated MediaLibrary using shared instances,  
+        Build a fully populated MetadataLibrary using shared instances,  
         preserving a single source of truth across all references.  
         """  
   
-        from metadata.library.media_library import MediaLibrary  
+        from metadata.services.metadata_library import MetadataLibrary  
   
         # Vocabulary indexed by name for attachment  
         genres = {g.get_name(): g for g in self.create_genres()}  
@@ -1570,18 +1576,80 @@ class MetadataPopulation:
         commercials = self.create_commercials(advertisers, products, campaigns)  
         music_videos = self.create_music_videos(music_genres)  
   
-        library = MediaLibrary()  
+        from metadata.services.metadata_library import MetadataLibrary  
   
-        for movie in movies:  
-            library.add_movie(movie)  
+        library = MetadataLibrary()  
+  
+        # Vocabulary (persist the full standardized set)  
+        for value in genres.values():  
+            library.add_genre(value)  
+        for value in tags.values():  
+            library.add_tag(value)  
+        for value in themes.values():  
+            library.add_theme(value)  
+        for value in countries.values():  
+            library.add_country(value)  
+        for value in languages.values():  
+            library.add_language(value)  
+        for value in ratings.values():  
+            library.add_content_rating(value)  
+        for value in music_genres.values():  
+            library.add_music_genre(value)  
+        for value in networks.values():  
+            library.add_network(value)  
+  
+        # Library entities referenced by the media (collected from the  
+        # shared instances, preserving single source of truth)  
+        franchises = {}  
+        series_map = {}  
+        seasons_map = {}  
+        advertisers_map = {}  
+        products_map = {}  
+        campaigns_map = {}  
   
         for episode in episodes:  
-            library.add_episode(episode)  
-  
-        for video in music_videos:  
-            library.add_music_video(video)  
+            season = episode.get_season()  
+            if season is not None:  
+                seasons_map[season.get_id()] = season  
+                series = season.get_series()  
+                if series is not None:  
+                    series_map[series.get_id()] = series  
+                    franchise = series.get_franchise()  
+                    if franchise is not None:  
+                        franchises[franchise.get_id()] = franchise  
   
         for commercial in commercials:  
-            library.add_commercial(commercial)  
+            advertiser = commercial.get_advertiser()  
+            if advertiser is not None:  
+                advertisers_map[advertiser.get_name()] = advertiser  
+            product = commercial.get_product()  
+            if product is not None:  
+                products_map[product.get_id()] = product  
+            campaign = commercial.get_campaign()  
+            if campaign is not None:  
+                campaigns_map[campaign.get_id()] = campaign  
+  
+        for value in franchises.values():  
+            library.add_franchise(value)  
+        for value in series_map.values():  
+            library.add_series(value)  
+        for value in seasons_map.values():  
+            library.add_season(value)  
+        for value in advertisers_map.values():  
+            library.add_advertiser(value)  
+        for value in products_map.values():  
+            library.add_product(value)  
+        for value in campaigns_map.values():  
+            library.add_campaign(value)  
+  
+        # Media  
+        for movie in movies:  
+            library.add_media(movie)  
+        for episode in episodes:  
+            library.add_media(episode)  
+        for video in music_videos:  
+            library.add_media(video)  
+        for commercial in commercials:  
+            library.add_media(commercial)  
   
         return library
