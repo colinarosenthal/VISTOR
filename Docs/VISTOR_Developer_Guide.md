@@ -1,1859 +1,611 @@
-# VISTOR Developer Guide
-
-**Version:** 0.2.0
-
-**Last Updated:** July 24, 2026
-
----
-
-# Purpose
-
-The VISTOR Developer Guide serves as the primary technical reference for contributors.
-
-Unlike the Design Bible, which defines the vision and philosophy of VISTOR, the Developer Guide explains how the software is organized, how its systems interact, and how new functionality should be implemented.
-
-This document is intended to ensure that every contributor develops VISTOR consistently while preserving the project's architecture.
-
----
-
-1. Introduction
-    1.1 Purpose
-    1.2 Intended Audience
-    1.3 Development Philosophy
-
-2. Coding Standards
-    2.1 Formatting
-    2.2 Documentation
-    2.3 Architecture
-    2.4 Dependencies
-
-3. Core Architecture
-    3.1 Source Tree
-    3.2 Core
-    3.3 Engine
-    3.4 Scheduler
-    3.5 Metadata
-    3.6 Player
-    3.7 Channel Manager
-    3.8 OSD
-    3.9 Weather
-    3.10 Remote
-    3.11 Guide
-
-4. Metadata Architecture
-    4.1 Purpose
-    4.2 Package Structure
-    4.3 Metadata Categories
-        4.3.1 Enums
-        4.3.2 Vocabulary
-        4.3.3 Library Models
-        4.3.4 Relationship Models
-        4.3.5 Media Models
-        4.3.6 Metadata Services
-
-    4.4 Organization Models
-    4.5 Programming Hierarchy
-    4.6 Playable Media Hierarchy
-    4.7 Metadata Relationships
-
-    4.8 Design Philosophy
-        4.8.1 Organizational Metadata vs Playable Media
-        4.8.2 Strongly Typed Metadata
-        4.8.3 Appearance Philosophy
-        4.8.4 Franchise Philosophy
-        4.8.5 Organization Philosophy
-        4.8.6 Media Item Philosophy
-        4.8.7 Episode Philosophy
-        4.8.8 Folder Placement Philosophy
-        4.8.9 Commercial Hierarchy
-
-    4.9 Metadata Class Reference
-        4.9.1 MediaItem
-        4.9.2 Movie
-        4.9.3 Episode
-        4.9.4 Commercial
-        4.9.5 Promo
-        4.9.6 Station ID
-        4.9.7 Documentary
-        4.9.8 Music Video
-        4.9.9 News Segment
-        4.9.10 Weather Segment
-        4.9.11 Sports Event
-        4.9.12 Ambient
-        4.9.13 Infomercial
-
-5. Scheduler Architecture
-
-6. Playback Architecture
-
-7. Channel Architecture
-
-8. Weather Architecture
-
-9. Runtime Lifecycle
-
-10. Data Flow
-
-11. Testing
-
-12. Contribution Guidelines
-
-13. Future Expansion
-
-# Intended Audience
-
-This guide is intended for:
-
-- Core developers
-- Contributors
-- Future maintainers
-- Anyone wishing to understand VISTOR's internal architecture
-
----
-
-# Development Philosophy
-
-Every subsystem should have a single, clearly defined responsibility.
-
-Subsystems communicate through well-defined interfaces rather than directly manipulating one another.
-
-Architecture should remain modular.
-
-When adding new functionality:
-
-- Extend existing systems where appropriate.
-- Avoid introducing unnecessary dependencies.
-- Prefer composition over duplication.
-- Preserve subsystem independence whenever possible.
-
-The objective is long-term maintainability rather than rapid feature development.
-
----
-
-# Coding Standards
-
-## Formatting
-
-- Follow PEP 8.
-- Use descriptive variable names.
-- Avoid unnecessary abbreviations.
-- Keep methods focused on a single responsibility.
-
----
-
-## Documentation
-
-Every public class and method should contain a docstring.
-
-Complex logic should include comments explaining *why* something is being done rather than *what* the code is doing.
-
----
-
-## Architecture
-
-Subsystems should communicate through exposed methods.
-
-Avoid directly modifying another subsystem's internal state.
-
-When possible:
-
-```
-Subsystem A
-        ↓
-Public Interface
-        ↓
-Subsystem B
-```
-
-instead of
-
-```
-Subsystem A
-        ↓
-Internal Variables
-        ↓
-Subsystem B
-```
-
----
-
-## Dependencies
-
-Dependencies should always point downward through the architecture.
-
-For example:
-
-```
-Engine
-    ↓
-Scheduler
-    ↓
-Schedule
-    ↓
-Programming Block
-```
-
-Not:
-
-```
-Programming Block
-        ↓
-Engine
-```
-
-Lower-level systems should never depend upon higher-level systems.
-
----
-
-# Project Architecture
-
-The following sections describe every folder, subsystem, and major source file within VISTOR.
-
-As development continues, this section will expand into a complete architectural reference.
-
----
-
-# Source Tree
-
-```
-src/
-
-core/
-engine/
-scheduler/
-metadata/
-player/
-channel/
-remote/
-osd/
-weather/
-guide/
-utilities/
-```
-
----
-
-# Core
-
-The Core package contains systems required by every other subsystem.
-
-Nothing inside Core should depend upon higher-level components.
-
-## application.py
-
-### Purpose
-
-Coordinates application startup and shutdown.
-
-### Responsibilities
-
-- Initialize subsystems
-- Start the engine
-- Shutdown gracefully
-
----
-
-## clock.py
-
-### Purpose
-
-Provides all runtime date and time information.
-
-### Responsibilities
-
-- Maintain current time
-- Detect weekdays/weekends
-- Detect holidays
-- Determine schedule type
-
-Clock is the authoritative source for all time-based behavior.
-
----
-
-## config.py
-
-### Purpose
-
-Loads application configuration.
-
----
-
-## logger.py
-
-### Purpose
-
-Provides centralized application logging.
-
----
-
-## paths.py
-
-### Purpose
-
-Maintains project-relative filesystem paths.
-
----
-
-## version.py
-
-### Purpose
-
-Stores application version information.
-
----
-
-# Engine
-
-The Engine coordinates runtime execution.
-
-Every runtime subsystem is owned by the Engine.
-
-Future responsibilities include:
-
-- Clock
-- Scheduler
-- Metadata Engine
-- Channel Manager
-- Player
-- OSD
-- Weather
-- Remote Input
-
-The Engine should coordinate systems rather than perform subsystem logic itself.
-
----
-
-# Scheduler
-
-The Scheduler determines what programming should currently be broadcasting.
-
-Responsibilities include:
-
-- Selecting schedules
-- Selecting programming blocks
-- Providing broadcast timing information
-
-The Scheduler never controls playback.
-
----
-
-## scheduler.py
-
-Coordinates schedule selection.
-
----
-
-## schedule_loader.py
-
-Loads available schedules.
-
----
-
-## schedule.py
-
-Represents one broadcast schedule.
-
----
-
-## programming_block.py
-
-Represents one scheduled time block.
-
----
-
-## schedule_type.py
-
-Defines all supported schedule types.
-
----
-
-# Metadata
-
-The Metadata subsystem determines what media exists.
-
-Responsibilities include:
-
-- Loading metadata
-- Organizing media
-- Providing searchable media information
-
-The Metadata subsystem should never determine *when* media is played.
-
-That responsibility belongs exclusively to the Scheduler.
-
----
-
-# Player
-
-The Player controls media playback.
-
-Responsibilities include:
-
-- Starting playback
-- Stopping playback
-- Resuming playback
-- Channel switching
-
-The Player should never determine scheduling.
-
----
-
-# Channel Manager
-
-Maintains all television channels.
-
-Responsibilities include:
-
-- Channel definitions
-- Channel numbering
-- Previous channel
-- Active channel
-
----
-
-# OSD
-
-Responsible for all temporary on-screen overlays.
-
-Examples include:
-
-- Channel banner
-- Program information
-- Volume indicator
-- Clock
-- TV Guide
-
----
-
-# Weather
-
-Responsible for weather retrieval and forecast generation.
-
-This subsystem should remain independent of the Scheduler.
-
----
-
-# Remote
-
-Processes remote-control input.
-
-Responsibilities include:
-
-- IR input
-- Keyboard input during development
-- Button mapping
-
----
-
-# Guide
-
-Provides television guide information.
-
-The Guide consumes scheduling information but never creates schedules.
-
----
-
-# Dependency Overview
-
-The intended architecture is:
-
-```
-Application
-        ↓
-Engine
-        ↓
-Clock
-Scheduler
-Metadata
-Player
-Channel Manager
-Guide
-Weather
-OSD
-Remote
-```
-
-Example scheduling flow:
-
-```
-Clock
-        ↓
-Scheduler
-        ↓
-Schedule
-        ↓
-Programming Block
-        ↓
-Player
-```
-
-Example media flow:
-
-```
-Metadata Engine
-        ↓
-Media Library
-        ↓
-Schedule Loader
-        ↓
-Scheduler
-```
-
----
-
-# Contribution Guidelines
-
-Before implementing new functionality:
-
-1. Determine which subsystem owns the responsibility.
-2. Avoid crossing subsystem boundaries.
-3. Preserve modularity.
-4. Update documentation when architecture changes.
-5. Test the subsystem independently before integration.
-
----
-
-# Future Expansion
-
-This guide will eventually include:
-
-- Complete file reference
-- Class reference
-- Module reference
-- Data flow diagrams
-- Lifecycle diagrams
-- Initialization sequence
-- Runtime sequence
-- Metadata format specification
-- Schedule format specification
-- Coding examples
-- Testing procedures
-- Release workflow
-
-# 4. Metadata Architecture
-
-## Purpose
-
-The metadata package defines the complete data model used throughout VISTOR.
-
-Rather than treating media as unrelated JSON documents, VISTOR models every broadcast asset as a structured object with clearly defined relationships.
-
-Every object within the metadata package belongs to one of six architectural categories:
-
-- Enums
-- Vocabulary
-- Library Models
-- Relationship Models
-- Media Models
-- Metadata Services
-
-Each category has a single responsibility, minimizing duplication while allowing the metadata library to grow without requiring architectural redesign.
-
----
-
-## Package Structure
-
-```
-metadata/  
-│  
-├── __init__.py  
-├── README.md  
-│  
-├── enums/  
-│   ├── __init__.py  
-│   ├── audience.py  
-│   ├── commercial_type.py  
-│   ├── media_type.py  
-│   ├── presentation_type.py  
-│   └── role_type.py  
-│  
-├── vocabulary/  
-│   ├── __init__.py  
-│   ├── content_rating.py  
-│   ├── country.py  
-│   ├── genre.py  
-│   ├── language.py  
-│   ├── music_genre.py  
-│   ├── tag.py  
-│   └── theme.py  
-│  
-├── library/  
-│   ├── __init__.py  
-│   ├── advertiser.py  
-│   ├── campaign.py  
-│   ├── franchise.py  
-│   ├── media_library.py  
-│   ├── network.py  
-│   ├── person.py  
-│   ├── product.py  
-│   ├── season.py  
-│   ├── series.py  
-│   └── studio.py  
-│  
-├── relationships/  
-│   ├── __init__.py  
-│   ├── appearance.py  
-│   └── media_asset.py  
-│  
-├── media/  
-│   ├── __init__.py  
-│   ├── collection.py  
-│   ├── media_item.py  
-│   │  
-│   ├── advertising/  
-│   │   ├── commercial.py  
-│   │   ├── infomercial.py  
-│   │   ├── promo.py  
-│   │   └── station_id.py  
-│   │  
-│   ├── film/  
-│   │   ├── documentary.py  
-│   │   └── movie.py  
-│   │  
-│   ├── miscellaneous/  
-│   │   └── ambient.py  
-│   │  
-│   ├── music/  
-│   │   ├── concert.py  
-│   │   ├── live_performance.py  
-│   │   └── music_video.py  
-│   │  
-│   ├── sports/  
-│   │   ├── sports_event.py  
-│   │   ├── sports_highlight.py  
-│   │   └── sports_talk_show.py  
-│   │  
-│   └── television/  
-│       ├── episode.py  
-│       ├── news_segment.py  
-│       ├── special.py  
-│       ├── talk_show.py  
-│       └── weather_segment.py  
-│  
-└── services/  
-    ├── __init__.py  
-    ├── metadata_library.py  
-    ├── metadata_loader.py  
-    ├── metadata_search.py  
-    ├── metadata_serializer.py  
-    └── metadata_validator.py  
-```
-
----
-
-## Metadata Architecture
-
-Metadata
-│
-├── Enums
-│
-├── Vocabulary
-│
-├── Library Models
-│
-├── Relationship Models
-│
-├── Media Models
-│
-└── Metadata Services
-
----
-
-# Metadata Categories
-
-## Enums
-
-Enums define fixed architectural concepts.
-
-These values describe application behavior rather than descriptive metadata and therefore change very infrequently.
-
-Examples include:
-
-- Media Type
-- Presentation Type
-- Audience
-- Content Rating
-- Commercial Type
-- Role Type
-
----
-
-## Vocabulary
-
-Vocabulary contains standardized descriptive values.
-
-Unlike Enums, vocabulary collections are expected to expand as additional media is added to the library.
-
-Examples include:
-
-- Genres
-- Music Genres
-- Themes
-- Countries
-- Languages
-- Tags
-
-Using standardized vocabulary prevents inconsistent metadata while allowing the media library to continue growing.
-
----
-
-## Content Ratings and Regional Classification Systems
-
-Content ratings are treated as vocabulary metadata rather than fixed application enums.
-
-Although ratings influence scheduling decisions, official rating systems vary significantly between countries, organizations, and media formats.
-
-Examples include:
-
-- MPAA ratings in the United States
-- TV Parental Guidelines in the United States
-- BBFC ratings in the United Kingdom
-- Eirin ratings in Japan
-- FSK ratings in Germany
-
-Because these systems are not universal fixed values, they should not be represented as a single enum.
-
-VISTOR separates audience classification from official content ratings.
-
-### Audience
-
-Audience describes the intended target viewer.
-
-Examples:
-
-- Children
-- Family
-- Teen
-- Young Adult
-- Adult
-- General
-
-Audience is used primarily for scheduling decisions and determining appropriate programming groups.
-
----
-
-### Content Rating
-
-Content Rating represents an official classification assigned by a recognized rating authority.
-
-Examples:
-
-- MPAA → PG-13
-- TV Parental Guidelines → TV-14
-- BBFC → 15
-- Eirin → PG12
-
-Content ratings should preserve the original rating system rather than converting everything into a universal classification.
-
-Future implementations should associate ratings with:
-
-- Rating authority
-- Country
-- Rating value
-- Description
-
-## Example: International Media and Multiple Classification Systems
-
-A single media item may have different metadata depending on region, language, and presentation.
-
-For example, an English dubbed release of a Japanese animated series may contain:
-
-Media:
-    Ghost Stories
-
-Country of Origin:
-    Japan
-
-Original Language:
-    Japanese
-
-Presentation:
-    English Dub
-
-Audience:
-    Teen
-
-Content Ratings:
-
-    Japan:
-        Rating Authority:
-            Eirin
-
-        Rating:
-            PG-12
-
-    United States:
-        Rating Authority:
-            TV Parental Guidelines
-
-        Rating:
-            TV-14
-
-These fields represent different concepts. The country does not determine the audience. The language does not determine the rating. The rating does not determine the audience.
-
-A media item should preserve its original cultural and broadcast context while allowing VISTOR to make scheduling decisions appropriate for the selected channel and region.
-
-This separation allows VISTOR to support:
-
-- International programming
-- Alternate language releases
-- Dubbed and subtitled versions
-- Regional broadcast standards
-- Different cable provider packages
-
-### Design Philosophy
-
-VISTOR preserves both the original metadata and the generalized information required for scheduling.
-
-A media item may contain:
-
-- Audience:
-    - FAMILY
-
-- Content Rating:
-    - MPAA PG
-
-These fields answer different questions.
-
-Audience answers:
-
-> "Who is this content intended for?"
-
-Content Rating answers:
-
-> "What official classification was assigned to this content?"
-
-Keeping these concepts separate allows VISTOR to support international media libraries without redesigning the metadata architecture.
-
-## Library Models
-
-Library Models organize the media library.
-
-They provide structure but are never scheduled or played directly.
-
-Examples include:
-
-- Media Library
-- Franchise
-- Series
-- Season
-- Person
-- Studio
-- Network
-- Advertiser
-- Product
-- Campaign
-
-Library Models describe how media is grouped rather than the media itself.
-
-## Programming Hierarchy
-
-Media Library
-│
-├── Franchises
-│
-├── Series
-│     └── Seasons
-│            └── Episodes
-│
-├── Organizations
-│     ├── Studios
-│     ├── Networks
-│     └── Advertisers
-│
-└── Standalone Media
-      ├── Movies
-      ├── Commercials
-      ├── Music Videos
-      ├── Documentaries
-      ├── Promos
-      ├── Station IDs
-      ├── Sports Events
-      ├── News Segments
-      ├── Weather Segments
-      ├── Ambient
-      └── Infomercials
-
----
-
-## Organization Models
-
-Organization Models represent real-world organizations that participate in the creation, distribution, promotion, or broadcast of media.
-
-Unlike Vocabulary objects, Organization Models possess their own metadata and identity.
-
-Examples include:
-
-- Advertiser
-- Network
-- Studio
-
-Organization Models are reusable across many media items and are referenced rather than duplicated.
-
-For example:
-
-Movie
-→ Production Studio
-→ Distributor
-
-Episode
-→ Production Studio
-→ Original Network
-
-Commercial
-→ Advertiser
-
-Separating organizations into dedicated models allows VISTOR to support scheduling and searching based on organizations themselves, such as:
-
-- Studio Ghibli marathon
-- Disney Channel programming
-- Cartoon Network originals
-- Warner Bros. Animation collection
-
-Organizations represent entities.
-
-Vocabulary represents descriptions.
-
-## Relationship Models
-
-Relationship Models connect metadata objects together.
-
-Rather than storing duplicated information throughout the library, shared entities are represented once and referenced wherever needed.
-
-Examples include:
-
-- Person
-- Appearance
-- Media Asset
-
-Relationship models describe participation, ownership, or storage, but are never directly broadcast.
-
----
-
-## Media Models
-
-Media Models represent playable broadcast assets.
-
-Every playable object inherits from Media Item.
-
-Examples include:
-
-- Episode
-- Movie
-- Commercial
-- Music Video
-- Documentary
-- Sports Event
-- News Segment
-- Weather Segment
-- Promo
-- Station ID
-- Ambient
-- Infomercial
-
-Only Media Models may be selected by the scheduler for broadcast.
-
-## Playable Media Hierarchy
-
-MediaItem
-│
-├── Episode
-├── Special
-├── Movie
-├── Documentary
-├── Commercial
-├── Promo
-├── Station ID
-├── Music Video
-├── Concert
-├── Live Performance
-├── Sports Event
-├── News Segment
-├── Weather Segment
-├── Ambient
-└── Infomercial
-
----
-
-## Metadata Services
-
-Metadata Services operate on the metadata library.
-
-They provide functionality rather than representing metadata themselves.
-
-Responsibilities include:
-
-- Loading metadata
-- Validating metadata
-- Searching metadata
-- Managing the metadata library
-- Serializing metadata
-
-Keeping these services separate from the metadata models allows the metadata engine to evolve independently of the data itself.
-
----
-
-# Design Philosophy
-
-Every broadcast asset should be treated uniformly before being treated uniquely.
-
-All playable media inherit from a common Media Item foundation.
-
-Specialized media models extend this foundation only where additional metadata is required.
-
-Supporting metadata is intentionally separated into Library Models, Relationship Models, Vocabulary, and Enums.
-
-This minimizes duplicated information while allowing VISTOR to support television episodes, movies, commercials, music videos, sports broadcasts, documentaries, station IDs, promos, weather programming, ambient programming, infomercials, and future media types using a single consistent architecture.
-
----
-
-# Organizational Models vs Playable Media
-
-VISTOR distinguishes between organizational metadata and playable media.
-
-Organizational models exist solely to organize related content.
-
-Examples include:
-
-- Franchise
-- Series
-- Season
-- Advertiser
-- Product
-- Campaign
-
-These models are never scheduled or broadcast.
-
-Playable media inherits from Media Item.
-
-Examples include:
-
-- Episode
-- Movie
-- Commercial
-- Documentary
-- Music Video
-- Promo
-- Station ID
-
-Only playable media contains Media Assets and may be selected by the scheduler.
-
-This separation mirrors the structure of real broadcast television while maintaining a clean metadata hierarchy.
-
----
-
-# Strongly Typed Metadata
-
-VISTOR favors explicit metadata models over primitive values whenever possible.
-
-Rather than storing arbitrary strings throughout the metadata library, dedicated models and enumerations are used.
-
-Examples include:
-
-- Genre
-- Theme
-- Tag
-- Network
-- Country
-- Audience
-- Content Rating
-
-Collections are strongly typed.
-
-For example:
-
-```python
-self.genres: list[Genre] = []
-self.tags: list[Tag] = []
-self.themes: list[Theme] = []
-```
-
-Likewise, relationships are represented using dedicated models rather than duplicated data.
-
-Examples include:
-
-- Media Asset
-- Appearance
-- Franchise
-- Campaign
-
-Strong typing provides several benefits:
-
-- Prevents inconsistent metadata.
-- Improves IDE autocompletion.
-- Simplifies validation.
-- Reduces programming errors.
-- Creates a consistent architecture throughout the metadata system.
-
-To avoid circular imports while preserving strong typing, VISTOR uses forward references where appropriate.
-
-```python
-from __future__ import annotations
-from typing import TYPE_CHECKING
-```
-
-Relationship models are imported only during static type checking, allowing strict typing without introducing runtime dependency issues.
-
----
-
-# Appearance Model Philosophy
-
-A Person represents an individual.
-
-An Appearance represents that person's participation within a specific piece of media.
-
-VISTOR intentionally separates these concepts because a single individual may participate in many different media while performing different roles.
-
-For example, the same person may appear as:
-
-- An actor in a movie
-- A spokesperson in a commercial
-- A guest on a talk show
-- An athlete in a sporting event
-- A narrator in a documentary
-
-Rather than storing role-specific information inside the Person model, all participation-specific information is stored inside Appearance.
-
-This includes:
-
-- Role
-- Character name
-- Display name
-- Organization
-- Billing order
-- Credit status
-- Notes
-
-This design prevents duplicated person information while allowing VISTOR to answer complex queries without duplicating metadata.
-
-## People Relationships
-
-Media Item
-     │
-     ├───────────────┐
-     │               │
- Appearance      Appearance
-     │               │
-     │               │
- Person         Person
-
----
-
-# Franchise Model Philosophy
-
-A Franchise represents shared intellectual property rather than a collection.
-
-Multiple media items may belong to the same franchise regardless of their format.
-
-Examples include:
-
-- Television series
-- Movies
-- Commercials
-- Promos
-- Music Videos
-- Station IDs
-
-Media items store a reference to their franchise.
-
-The Franchise model does not maintain lists of associated media.
-
-Instead, the Media Library is responsible for locating every media item that references a given franchise.
-
-This ensures there is only one source of truth within the metadata system.
-
-## Franchise Relationships
-
-Franchise
-     │
-     ├── Series
-     │       └── Episodes
-     │
-     ├── Movies
-     │
-     ├── Commercials
-     │
-     ├── Promos
-     │
-     ├── Station IDs
-     │
-     └── Music Videos
-     
----
-
-# Commercial Metadata Hierarchy
-
-Commercial metadata is organized using a hierarchical relationship model.
-
-Advertiser
-→ Product
-→ Campaign
-→ Commercial
-
-Each level represents a reusable real-world entity.
-
-- An Advertiser may promote many Products.
-- A Product may have many Campaigns.
-- A Campaign may contain many Commercials.
-
-Commercials reference these models rather than duplicating advertiser information.
-
-This reduces redundancy while improving search capabilities.
-
----
-
-## How Reference Sharing Is Enforced  
+# VISTOR Developer Guide  
   
-Each entity in the commercial hierarchy holds its dependency by reference rather than rebuilding it.  
+**Version:** 0.3.0  
   
-- `Advertiser` is a leaf entity defined by `name`, `description`, and `country`. It depends on nothing else and is unaffected by how it is populated.  
-- `Product` accepts an `Advertiser` in its constructor and stores it directly as `self.advertiser`, so it holds whichever advertiser instance is passed in without duplicating it.  
-- `Campaign` accepts a `Product` in its constructor and stores it as `self.product`. Its `get_advertiser()` method walks through to the product's advertiser via `self.product.get_advertiser()`, keeping the reference chain intact end to end.  
+**Last Updated:** July 26, 2026  
   
-Because each level stores the exact instance it is given, passing the same advertiser and product instances throughout population guarantees a single source of truth.  
+---  
   
-For example, a campaign's `get_advertiser()` returns the same `Advertiser` object referenced by its product, rather than a separate copy.  
+## Table of Contents  
   
-The single-source-of-truth guarantee is enforced during population by passing shared instances between entities, not by the entity classes themselves.
-
+1. Introduction  
+    1.1 Purpose  
+    1.2 Intended Audience  
+    1.3 Development Philosophy  
+  
+2. Coding Standards  
+    2.1 Formatting  
+    2.2 Documentation  
+    2.3 Architecture  
+    2.4 Dependencies  
+  
+3. Project Architecture  
+    3.1 Source Tree  
+    3.2 Dependency Direction  
+  
+4. Core  
+    4.1 application.py  
+    4.2 clock.py  
+    4.3 config.py  
+    4.4 logger.py  
+    4.5 paths.py  
+    4.6 version.py  
+  
+5. Engine  
+    5.1 engine.py  
+  
+6. Scheduler  
+    6.1 scheduler.py  
+    6.2 schedule.py  
+    6.3 schedule_loader.py  
+    6.4 programming_block.py  
+    6.5 schedule_type.py  
+  
+7. Metadata  
+    7.1 Purpose  
+    7.2 Package Structure  
+    7.3 Enums  
+    7.4 Vocabulary  
+    7.5 Library Models  
+    7.6 Relationship Models  
+    7.7 Media Models  
+    7.8 Metadata Services  
+    7.9 Serialization and Loading  
+    7.10 Metadata Population  
+  
+8. Subsystems (Not Yet Implemented)  
+    8.1 Player  
+    8.2 Channel Manager  
+    8.3 OSD  
+    8.4 Weather  
+    8.5 Remote  
+    8.6 Guide  
+  
+9. Testing  
+  
+10. Contribution Guidelines  
+  
+11. Future Expansion  
+  
+---  
+  
+# 1. Introduction  
+  
+## 1.1 Purpose  
+  
+The VISTOR Developer Guide serves as the primary technical reference for contributors.  
+  
+Unlike the Design Bible, which defines the vision and philosophy of VISTOR, the Developer Guide explains how the software is organized, how its systems interact, and how new functionality should be implemented.  
+  
+This document is intended to ensure that every contributor develops VISTOR consistently while preserving the project's architecture.  
+  
+---  
+  
+## 1.2 Intended Audience  
+  
+This guide is intended for:  
+  
+- Core developers  
+- Contributors  
+- Future maintainers  
+- Anyone wishing to understand VISTOR's internal architecture  
+  
+---  
+  
+## 1.3 Development Philosophy  
+  
+Every subsystem should have a single, clearly defined responsibility.  
+  
+Subsystems communicate through well-defined interfaces rather than directly manipulating one another.  
+  
+Architecture should remain modular.  
+  
+When adding new functionality:  
+  
+- Extend existing systems where appropriate.  
+- Avoid introducing unnecessary dependencies.  
+- Prefer composition over duplication.  
+- Preserve subsystem independence whenever possible.  
+  
+The objective is long-term maintainability rather than rapid feature development.  
+  
+---  
+  
+# 2. Coding Standards  
+  
+## 2.1 Formatting  
+  
+- Follow PEP 8.  
+- Use descriptive variable names.  
+- Avoid unnecessary abbreviations.  
+- Keep methods focused on a single responsibility.  
+  
+---  
+  
+## 2.2 Documentation  
+  
+Every public class and method should contain a docstring.  
+  
+Complex logic should include comments explaining *why* something is being done rather than *what* the code is doing.  
+  
+---  
+  
+## 2.3 Architecture  
+  
+Subsystems should communicate through exposed methods.  
+  
+Avoid directly modifying another subsystem's internal state.  
+  
+When possible:  
+  
+```  
+Subsystem A  
+        |  
+Public Interface  
+        |  
+Subsystem B  
+```  
+  
+instead of  
+  
+```  
+Subsystem A  
+        |  
+Internal Variables  
+        |  
+Subsystem B  
+```  
+  
+---  
+  
+## 2.4 Dependencies  
+  
+Dependencies should always point downward through the architecture.  
+  
+For example:  
+  
+```  
+Engine  
+    |  
+Scheduler  
+    |  
+Schedule  
+    |  
+Programming Block  
+```  
+  
+Not:  
+  
+```  
+Programming Block  
+        |  
+Engine  
+```  
+  
+Lower-level systems should never depend upon higher-level systems.  
+  
+---  
+  
+# 3. Project Architecture  
+  
+The following sections describe every folder, subsystem, and major source file within VISTOR.  
+  
+As development continues, this section will expand into a complete architectural reference.  
+  
+---  
+  
+## 3.1 Source Tree  
+  
+```  
+src/  
+    core/  
+    engine/  
+    scheduler/  
+    metadata/  
+    main.py  
+```  
+  
+The `core/`, `engine/`, `scheduler/`, and `metadata/` packages are implemented. Additional subsystems (Player, Channel Manager, OSD, Weather, Remote, Guide) are planned but not yet present in the source tree; they are documented in Section 8.  
+  
+---  
+  
+## 3.2 Dependency Direction  
+  
+VISTOR enforces a strict downward dependency flow. Lower-level packages (such as `core`) must never import from higher-level runtime packages (such as `engine` or `scheduler`).  
+  
+```  
+core  
+    |  
+metadata  
+    |  
+scheduler  
+    |  
+engine  
+```  
+  
 ---
 
-## Commercial Relationships
-
-Advertiser
-      │
-      ▼
-   Product
-      │
-      ▼
-   Campaign
-      │
-      ▼
-  Commercial
-
+# 4. Core  
+  
+The `core` package contains the foundational runtime services every other  
+subsystem depends on: application lifecycle, configuration, logging, timing,  
+version reporting, and path resolution.  
+  
+## 4.1 application.py  
+  
+Coordinates application startup and shutdown.  
+  
+Responsibilities:  
+- Initialize subsystems in dependency order  
+- Start the engine  
+- Shut down gracefully  
+  
+## 4.2 config.py  
+  
+Holds runtime configuration values, including the active version string.  
+  
+Note: the version constant here must stay in sync with `version.py`.  
+  
+## 4.3 logger.py  
+  
+Provides the shared `Logger` used across subsystems for INFO/SUCCESS/ERROR  
+output with timestamps.  
+  
+## 4.4 version.py  
+  
+Defines the single `VERSION` constant reported by the application.  
+  
+## 4.5 paths.py  
+  
+Resolves all top-level project directories relative to the project root.  
+Directory names follow a capitalized convention: `Assets`, `Media`, `Logs`,  
+`Config`, `Metadata`, `Schedules`. Consumers should resolve paths through  
+`Paths` rather than hardcoding strings, so casing never drifts.  
+  
+## 4.6 clock.py  
+  
+Provides current time information for VISTOR and derives the active schedule  
+type from the calendar.  
+  
+Key behavior:  
+- `initialize()` / `update()` capture the current `datetime`  
+- Calendar helpers: `is_weekday()`, `is_weekend()`, `is_halloween()`,  
+  `is_christmas_day()`, `is_holiday()`  
+- `get_schedule_type()` returns the correct `ScheduleType` for the current  
+  date, falling back to `WEEKDAY`  
+  
+The Clock consumes the `ScheduleType` enum defined by the scheduler subsystem.  
+  
+---  
+  
+# 5. Engine  
+  
+The engine owns the primary runtime loop and coordinates the Clock and  
+Scheduler.  
+  
+Responsibilities:  
+- Construct and initialize the Clock and Scheduler  
+- Advance the Clock and Scheduler on each tick  
+- Expose the current schedule and programming block to consumers  
+- Shut subsystems down in reverse dependency order  
+  
+Dependencies point downward: Engine → Scheduler → Schedule → Programming Block.  
+  
+---  
+  
+# 6. Scheduler  
+  
+The scheduler selects and advances the active broadcast schedule based on the  
+current time.  
+  
+## 6.1 schedule_type.py  
+  
+Defines the `ScheduleType` enum — the fixed set of daily/holiday schedule  
+classifications (WEEKDAY, WEEKEND, and holiday variants such as HALLOWEEN and  
+CHRISTMAS_DAY).  
+  
+## 6.2 scheduler.py  
+  
+Manages the active schedule and current programming block.  
+  
+Key behavior:  
+- `initialize()` loads all schedules via `ScheduleLoader` into a  
+  `schedule_library` keyed by `ScheduleType`  
+- `update()` asks the Clock for the current `ScheduleType`, selects the  
+  matching schedule, and resolves the current programming block (or clears it  
+  when no schedule matches)  
+- `shutdown()` clears the library and current state  
+  
+## 6.3 schedule_loader.py  
+  
+Discovers and constructs the schedule library consumed by the Scheduler.  
+  
+## 6.4 schedule.py / programming_block.py  
+  
+Represent an individual schedule and the ordered programming blocks within it.  
+`Schedule.get_current_block(clock)` resolves which block is active for the  
+current time.  
+  
 ---
 
-## Metadata Services
-
-Metadata Services provide the operational layer of the VISTOR metadata system.
-
-Unlike Metadata Models, which define what metadata exists, Metadata Services define how metadata is loaded, organized, validated, searched, and stored.
-
-Metadata Services operate on the Metadata Library and do not represent broadcast content themselves.
-
-Responsibilities include:
-
-- Loading metadata
-- Maintaining the active metadata library
-- Validating metadata integrity
-- Searching metadata objects
-- Serializing metadata for storage
-
-Metadata Services should never determine:
-
-- When media is played
-- What channel content appears on
-- How programming is scheduled
-
-Those responsibilities belong exclusively to the Scheduler and Channel systems.
-
+# 7. Metadata  
+  
+The metadata system is the descriptive backbone of VISTOR. It separates media  
+files from the information that describes them, allowing the scheduler to build  
+realistic lineups without depending on folder structure.  
+  
+## 7.1 Purpose  
+  
+Metadata answers "what piece of programming is this?" independently of where a  
+file is stored or whether a playable file currently exists. Every persistent  
+object (Series, Season, Episode, Movie, Commercial, Network, Person, Studio,  
+Franchise) carries a stable identifier that does not change with storage  
+location.  
+  
+## 7.2 Package Structure  
+  
+The `metadata` package is organized into six areas:  
+  
+- enums/          Fixed architectural classifications  
+- vocabulary/     Standardized, expandable descriptive values  
+- library/        Persistent library entities  
+- media/          Playable broadcast asset models  
+- relationships/  Links between people and media  
+- services/       Loading, searching, validation, serialization, population  
+  
+## 7.3 Enums  
+  
+Enums define how the application understands media. They are stable  
+classifications, not per-item descriptions:  
+  
+- media_type.py         MediaType  
+- presentation_type.py  PresentationType  
+- audience.py           Audience  
+- commercial_type.py    CommercialType  
+- role_type.py          RoleType  
+  
+## 7.4 Vocabulary  
+  
+Vocabulary provides standardized descriptive values expected to expand as the  
+library grows:  
+  
+- genre.py          Genre (name, description)  
+- theme.py          Theme (name, description)  
+- tag.py            Tag (name, description, category)  
+- country.py        Country (name, iso_alpha2, iso_alpha3, region)  
+- language.py       Language  
+- content_rating.py ContentRating (system, name)  
+- music_genre.py    MusicGenre  
+  
+## 7.5 Library Models  
+  
+Persistent entities that own stable identifiers and are referenced (not  
+duplicated) throughout the library:  
+  
+- person.py       Person (id, name, stage_name, aliases, biography, ...)  
+- network.py      Network (id, name, abbreviation, description)  
+- studio.py       Studio (id, name, country, founded_year, description)  
+- franchise.py    Franchise  
+- series.py       Series  
+- season.py       Season  
+- advertiser.py   Advertiser (id, name; now exposes get_id())  
+- product.py      Product  
+- campaign.py     Campaign  
+- media_library.py MediaLibrary (catalog: movies, episodes, music videos,  
+                    commercials, with total-count helpers)  
+  
+Reference philosophy: dependent entities are assembled so shared references  
+stay consistent — Advertiser → Product → Campaign → Commercial — preserving a  
+single source of truth and preventing duplicate entities.  
+  
+## 7.6 Media Models  
+  
+All playable assets inherit from `MediaItem` (media/media_item.py), the common  
+base carrying id, title, description, release_year, runtime_minutes,  
+media_type, presentation_type, content_rating, audience, original_network,  
+production_country, languages, genres, tags, themes, appearances, and  
+media_assets.  
+  
+Concrete media types, grouped by domain:  
+  
+- film/          movie.py, documentary.py  
+- television/    episode.py, special.py, talk_show.py, news_segment.py,  
+                 weather_segment.py  
+- advertising/   commercial.py, infomercial.py, promo.py, station_id.py  
+- music/         music_video.py, concert.py, live_performance.py  
+- sports/        sports_event.py, sports_highlight.py, sports_talk_show.py  
+- miscellaneous/ ambient.py  
+  
+collection.py provides curated groupings of media items.  
+  
+Note: Episode requires a Season instance at construction, so episodes depend on  
+the franchise → series → season chain being present to reconstruct.  
+  
+## 7.7 Relationship Models  
+  
+- appearance.py   Appearance — a person's participation in a media item  
+                  (person, media_item, role, credit_name, role_name,  
+                  organization, billing_order, credited, notes)  
+- media_asset.py  MediaAsset — links a media item to a concrete playable file  
+  
+## 7.8 Services  
+  
+- metadata_library.py    MetadataLibrary — central in-memory container for all  
+                         loaded objects (media, people, networks, studios,  
+                         vocabulary buckets, relationships) with add_/get_  
+                         accessors and total-count helpers  
+- metadata_population.py MetadataPopulation — builds a fully populated library  
+                         (build_library) using shared references  
+- metadata_search.py     MetadataSearch — query helpers over the library  
+- metadata_validator.py  MetadataValidator — integrity checks over loaded data  
+- metadata_serializer.py MetadataSerializer — flattens objects to JSON  
+- metadata_loader.py     MetadataLoader — reconstructs the library from disk  
+  
+## 7.9 Serialization and Loading Round-Trip  
+  
+Metadata is persisted as per-type, human-readable JSON files (one file per  
+bucket) rather than a single combined document. Each bucket lives under the  
+project's `Metadata/data/` directory, and the same casing is used by the  
+serializer, the loader, and any calling code so the round-trip behaves  
+identically on case-sensitive (Linux/macOS) and case-insensitive (Windows)  
+filesystems.  
+  
+Every persistent object is written and re-linked by its stable identifier  
+(`get_id()`). Identifiers—not names—are the single source of truth for  
+references across the entire metadata system, including advertisers, products,  
+campaigns, franchises, series, seasons, networks, and studios.  
+  
+Serialization (MetadataSerializer):  
+- `to_dictionary()` produces the in-memory dictionary of all buckets.  
+- `save_to_directory(directory)` writes each bucket to its own JSON file.  
+- `_object_to_dictionary()` copies an object's public attributes.  
+- `_media_to_dictionary()` flattens a media item, replacing every nested  
+  reference object with its identifier (`get_id()`) so `json.dump` can  
+  serialize it. This includes the commercial chain (advertiser, product,  
+  campaign), the television chain (season, series, franchise), and the shared  
+  vocabulary/library references (network, studio, country, languages, genres,  
+  tags, themes).  
+  
+Loading (MetadataLoader):  
+- `load(metadata_path)` constructs a MetadataLibrary and runs the load stages in  
+  order: vocabulary, library (networks/studios), people, series, seasons,  
+  media, then relationship resolution.  
+- Each stage reads its JSON file, reconstructs objects, and adds them to the  
+  library. Flattened identifier references are held on a temporary `_pending`  
+  payload until relationships are resolved.  
+- `_resolve_relationships()` re-links every flattened identifier back to its  
+  loaded object instance—Episode → Season, Season → Series, Season → Franchise,  
+  Appearance → Person, Commercial → Advertiser/Product/Campaign, and each media  
+  item → network/studio/country/languages/genres/tags/themes—then clears the  
+  temporary `_pending` payload.  
+  
+Because references are stored and restored by identifier, a populated library  
+can be written to disk and reconstructed with every shared reference intact,  
+giving a complete save → load round-trip with no duplicated entities.  
+  
 ---
 
-## Metadata Service Architecture
-
-Metadata Services
-│
-├── MetadataLoader
-│
-├── MetadataLibrary
-│
-├── MetadataValidator
-│
-├── MetadataSearch
-│
-└── MetadataSerializer
-
+# 8. Subsystems  
+  
+The following subsystems are defined in VISTOR's architecture but are not  
+yet implemented. Each has a reserved location in the source tree and a  
+single, well-defined responsibility it will assume once built.  
+  
+## 8.1 Player  
+  
+**Status:** Not yet implemented.  
+  
+Will handle media playback, decoding, and transport control (play, pause,  
+seek). Consumes the ProgrammingBlock selected by the Scheduler and reports  
+playback position back to the runtime loop.  
+  
+## 8.2 Channel Manager  
+  
+**Status:** Not yet implemented.  
+  
+Will manage the set of available channels, channel selection, and the  
+mapping between a channel and its active Schedule.  
+  
+## 8.3 OSD (On-Screen Display)  
+  
+**Status:** Not yet implemented.  
+  
+Will render on-screen overlays such as the channel bumper, clock, and  
+now-playing information over the active video output.  
+  
+## 8.4 Weather  
+  
+**Status:** Not yet implemented.  
+  
+Will provide weather data for weather-themed channels and segments,  
+integrating with the metadata WeatherSegment media type.  
+  
+## 8.5 Remote  
+  
+**Status:** Not yet implemented.  
+  
+Will translate physical or virtual remote input into commands (channel up  
+or down, power, menu) dispatched to the runtime.  
+  
+## 8.6 Guide  
+  
+**Status:** Not yet implemented.  
+  
+Will present an electronic program guide built from the Scheduler's  
+ProgrammingBlocks across channels.  
+  
+---  
+  
+# 9. Testing  
+  
+VISTOR currently uses a smoke-test script rather than a formal test  
+framework.  
+  
+## 9.1 test_metadata.py  
+  
+Located at the repository root, test_metadata.py exercises the metadata  
+layer end to end. It runs from the repo root with:  
+  
+    python test_metadata.py  
+  
+The script verifies, in order:  
+  
+- Metadata imports resolve across enums, vocabulary, library, media,  
+  relationships, and services.  
+- Core models construct correctly (Person, MediaItem, Appearance).  
+- Collections and MediaLibrary catalog behavior.  
+- MetadataLibrary bucket storage and retrieval.  
+- MetadataSearch lookups.  
+- MetadataSerializer.to_dictionary output shape.  
+- MetadataValidator passes on populated data.  
+- MetadataPopulation.build_library assembles movies, episodes, music  
+  videos, and commercials with shared references intact.  
+- A full serialization round-trip: a populated library is written to disk  
+  with save_to_directory and reloaded with MetadataLoader, confirming the  
+  reconstructed objects and their references match.  
+  
+A successful run ends with "All tests passed successfully."  
+  
+## 9.2 Testing Conventions  
+  
+- Tests should run without external services or network access.  
+- Each new subsystem should add its own smoke test at the repository root  
+  until a formal test framework is adopted.  
+  
+---  
+  
+# 10. Contribution Guidelines  
+  
+## 10.1 Branching and Commits  
+  
+- Keep commits focused and descriptive.  
+- Ensure test_metadata.py passes before committing metadata changes.  
+  
+## 10.2 Code Style  
+  
+- Follow the formatting rules in Section 2 (Coding Standards).  
+- Dependencies point downward through the architecture; higher-level  
+  subsystems depend on lower-level ones, never the reverse.  
+  
+## 10.3 Documentation  
+  
+- Update this Developer Guide when a subsystem's implementation status  
+  changes (for example, moving a component out of Section 8 once built).  
+- Keep the Design Bible focused on vision and philosophy; implementation  
+  detail belongs here.  
+  
+---  
+  
+# 11. Future Expansion  
+  
+Planned work, in rough order of development priority:  
+  
+- Implement the Player subsystem and wire it to the Scheduler output.  
+- Implement the Channel Manager and channel selection.  
+- Build the OSD overlay layer.  
+- Add the Weather subsystem and connect it to WeatherSegment metadata.  
+- Implement Remote input handling.  
+- Build the Guide (electronic program guide).  
+- Adopt a formal test framework as the codebase grows.  
+  
 ---
-
-## Metadata Service Data Flow
-
-Metadata Files
-        │
-        ▼
-MetadataLoader
-        │
-        ▼
-MetadataLibrary
-        │
-        ├── MetadataValidator
-        │
-        ├── MetadataSearch
-        │
-        └── MetadataSerializer
-
----
-
-# MetadataLoader
-
-The MetadataLoader is responsible for constructing the VISTOR metadata library from stored metadata definitions.
-
-Responsibilities include:
-
-- Discovering metadata files
-- Creating metadata objects
-- Populating the metadata library
-- Resolving relationships between objects
-
-The MetadataLoader is the entry point between stored metadata and the active runtime metadata system.
-
-Example flow:
-
-Metadata Files
-        │
-        ▼
-MetadataLoader
-        │
-        ▼
-MetadataLibrary
-
-The MetadataLoader does not validate metadata or provide search functionality.
-
-Those responsibilities belong to separate services.
-
----
-
-# MetadataLibrary
-
-The MetadataLibrary is the central container for all loaded VISTOR metadata.
-
-It acts as the active metadata database used by loading, validation, searching, and serialization systems.
-
-Responsibilities include:
-
-- Storing media objects
-- Storing people and organizations
-- Storing vocabulary metadata
-- Storing relationships
-- Providing access to metadata collections
-
-The MetadataLibrary organizes metadata into several categories:
-
-MetadataLibrary
-│
-├── Media
-│
-├── People
-│
-├── Organizations
-│   ├── Networks
-│   └── Studios
-│
-├── Vocabulary
-│   ├── Genres
-│   ├── Tags
-│   ├── Themes
-│   ├── Countries
-│   └── Languages
-│
-└── Relationships
-
-The MetadataLibrary does not determine scheduling behavior.
-
-It only provides structured access to metadata.
-
----
-
-# MetadataValidator
-
-The MetadataValidator ensures that the metadata library maintains integrity and consistency.
-
-Responsibilities include:
-
-- Validating people records
-- Validating media objects
-- Validating metadata relationships
-- Validating media assets
-
-The MetadataValidator is intentionally stateless.
-
-It receives a MetadataLibrary instance during validation rather than storing its own reference.
-
-Example flow:
-
-MetadataLibrary
-        │
-        ▼
-MetadataValidator
-        │
-        ▼
-Validation Result
-
----
-
-# MetadataSearch
-
-The MetadataSearch service provides lookup and search functionality for metadata stored within the MetadataLibrary.
-
-Responsibilities include:
-
-- Searching objects by identifier
-- Searching people
-- Searching media objects
-
-Example flow:
-
-MetadataLibrary
-        │
-        ▼
-MetadataSearch
-
-MetadataSearch does not modify metadata.
-
-It only provides access methods for locating existing metadata objects.
-
----
-
-# MetadataSerializer
-
-The MetadataSerializer converts VISTOR metadata objects into storage formats.
-
-Responsibilities include:
-
-- Converting metadata objects into dictionaries
-- Exporting metadata libraries
-- Saving metadata data
-
-Example flow:
-
-MetadataLibrary
-        │
-        ▼
-MetadataSerializer
-        │
-        ▼
-Metadata Files
-
-Serialization allows the metadata library to be stored and restored without changing the underlying metadata architecture.
-
----
-
-## Lifecycle Data Flow
-
-Metadata follows a defined lifecycle from storage, through runtime use, and back into persistent storage.
-
-The metadata lifecycle is:
-
-Metadata Files
-        │
-        ▼
-MetadataLoader
-        │
-        ▼
-MetadataLibrary
-        │
-        ├── MetadataValidator
-        │
-        ├── MetadataSearch
-        │
-        └── MetadataSerializer
-                │
-                ▼
-          Metadata Files
-
-The MetadataLoader converts stored metadata definitions into active runtime objects.
-
-The MetadataLibrary acts as the central runtime representation of all loaded metadata.
-
-Metadata services operate on the library without owning metadata state.
-
-The MetadataSerializer allows the active metadata library to be saved and restored.
-
----
-
-# Media Item Philosophy
-
-Media Item serves as the common foundation for every playable broadcast asset.
-
-Rather than storing every possible field directly, Media Item references specialized relationship models such as:
-
-- Media Asset
-- Appearance
-- Franchise
-- Campaign
-
-and maintains reusable metadata collections including:
-
-- Genres
-- Tags
-- Themes
-
-Every playable media type inherits from Media Item.
-
-Specialized media models extend the foundation only where additional metadata is required.
-
-This creates a flexible metadata architecture capable of supporting complex scheduling, searching, and broadcast automation without duplicating information.
-
----
-
-# Organization Philosophy
-
-VISTOR distinguishes between organizations and people.
-
-A Person participates in media through an Appearance.
-
-An Organization participates through ownership, production, distribution, promotion, or broadcast.
-
-Examples include:
-
-- Studio
-- Network
-- Advertiser
-
-Unlike people, organizations are never represented by Appearance objects.
-
-Instead, media references organizations directly through dedicated metadata fields.
-
-Examples:
-
-Movie
-→ Production Studio
-→ Distributor
-
-Episode
-→ Network
-
-Commercial
-→ Advertiser
-
-Separating organizations from people prevents unrelated concepts from being merged while allowing VISTOR to schedule and search by both independently.
-
----
-
-## Strongly Typed Metadata Collections
-
-VISTOR uses strongly typed metadata collections rather than generic Python objects.
-
-For example, instead of storing genres as arbitrary strings:
-
-```python
-self.genres = []
-```
-
-VISTOR stores collections of dedicated metadata objects:
-
-```python
-self.genres: list[Genre] = []
-self.tags: list[Tag] = []
-self.themes: list[Theme] = []
-```
-
-The same philosophy applies throughout the metadata system:
-
-- `MediaAsset`
-- `Appearance`
-- `Franchise`
-- `Campaign`
-- `Network`
-- `Country`
-- `ContentRating`
-- `Audience`
-
-Each field references a dedicated model or enumeration rather than using primitive values whenever possible.
-
-### Benefits
-
-Using strongly typed metadata provides several advantages:
-
-- Prevents invalid data from entering the metadata library.
-- Improves IDE autocompletion and code navigation.
-- Makes future validation significantly easier.
-- Reduces programming errors caused by inconsistent strings.
-- Creates a consistent architecture across every metadata model.
-- Makes the metadata system easier to expand without breaking existing code.
-
-### Forward References
-
-As the metadata system grows, some models reference each other.
-
-To avoid circular imports while preserving strong typing, VISTOR uses Python's forward reference system:
-
-```python
-from __future__ import annotations
-from typing import TYPE_CHECKING
-```
-
-Relationship models are imported only during static type checking:
-
-```python
-if TYPE_CHECKING:
-    from metadata.models.relationships.person import Person
-```
-
-This allows VISTOR to maintain strict type safety without creating runtime dependency issues.
-
-### Design Philosophy
-
-VISTOR favors explicit metadata models over generic values.
-
-Rather than asking:
-
-> "Is this string supposed to represent a genre?"
-
-the architecture asks:
-
-> "Is this a Genre object?"
-
-This philosophy makes the metadata library more predictable, easier to maintain, and better suited for long-term expansion as additional broadcast media types are introduced.
-
-## Organizational Models vs Playable Media
-
-VISTOR distinguishes between organizational metadata and playable media.
-
-Organizational models exist solely to group related content.
-
-Examples include:
-
-- Franchise
-- Series
-- Season
-
-These models are never scheduled or played directly.
-
-Instead, they provide structure for the metadata library.
-
-Playable media inherits from MediaItem.
-
-Examples include:
-
-- Episode
-- Movie
-- Commercial
-- Documentary
-- Music Video
-- Promo
-- Station ID
-
-Only playable media contains MediaAssets and can be selected by the scheduler.
-
-Separating organizational models from playable media keeps the metadata hierarchy clean and accurately reflects how broadcast television is structured.
-
-## Programming Hierarchy
-
-VISTOR models episodic programming using a hierarchical structure.
-
-Series
-→ Season
-→ Episode
-
-Each level serves a distinct purpose.
-
-A Series represents the overall television program.
-
-A Season groups episodes released together.
-
-An Episode represents an individual broadcast and is the first level that inherits from MediaItem.
-
-Unlike relationship models such as Franchise, Seasons maintain direct references to their Episodes because episodes cannot exist independently of a season.
-
-This hierarchy mirrors both television production and how viewers naturally organize episodic content.
-
-## Metadata Package Organization
-
-The metadata package is organized by architectural responsibility rather than by inheritance or implementation details.
-
-Each subpackage answers a specific question about the metadata system.
-
-### Enums
-
-Fixed values that define immutable classifications.
-
-Examples include:
-
-- MediaType
-- Audience
-- ContentRating
-
-### Vocabulary
-
-Reusable descriptive objects shared across media.
-
-Examples include:
-
-- Genre
-- Theme
-- Network
-- Country
-
-### Catalog
-
-Objects that organize the media library.
-
-Examples include:
-
-- Franchise
-- Series
-- Season
-- Advertiser
-- Product
-- Campaign
-
-Library Models are never scheduled or played directly.
-
-### Relationships
-
-Objects that connect metadata together.
-
-Examples include:
-
-- Person
-- Appearance
-- MediaAsset
-
-These models describe relationships rather than playable media.
-
-### Media
-
-Playable broadcast objects.
-
-Every class in this package inherits from `MediaItem`.
-
-Examples include:
-
-- Episode
-- Movie
-- Commercial
-- Promo
-- Documentary
-
-Only Media objects may be scheduled by the VISTOR scheduler.
-
-### Managers
-
-Service classes responsible for operating on the metadata system.
-
-Examples include:
-
-- MetadataLoader
-- MetadataLibrary
-- MetadataSearch
-- MetadataSerializer
-- MetadataValidator
-
-Managers manipulate metadata but are not themselves metadata objects.
-
-## Complete Metadata Object Model
-
-                 Media Library
-                      │
-         ┌────────────┴────────────┐
-         │                         │
-    Organizational            Standalone
-        Media                   Media
-         │                         │
-     Franchise                 Movie
-         │                         │
-       Series                 Commercial
-         │                         │
-       Season                Documentary
-         │
-      Episode
-         │
-         ▼
-     Media Item
-         │
-         ├──────────────┐
-         │              │
-    Media Assets    Appearances
-                          │
-                          ▼
-                       Person
-
-Media Item also references:
-
-• Genres
-• Tags
-• Themes
-• Network
-• Country
-• Audience
-• Content Rating
-• Campaign
-
-## Episode Model Philosophy
-
-Episode is the primary playable television object within VISTOR.
-
-Unlike Series and Season, Episode inherits from MediaItem and may therefore be scheduled for broadcast.
-
-An Episode belongs to exactly one Season.
-
-Through its parent Season, an Episode automatically belongs to:
-
-- Series
-- Franchise
-
-This relationship eliminates duplicated metadata while preserving the complete programming hierarchy.
-
-Episode stores only metadata unique to an individual broadcast, including:
-
-- Episode Number
-- Absolute Episode Number
-- Production Code
-- Original Air Date
-- Runtime
-
-All common metadata—including appearances, genres, tags, themes, media assets, and broadcast classifications—is inherited from MediaItem.
-
-This separation keeps Episode lightweight while allowing the scheduler to treat every episode as a fully featured broadcast asset.
-
-## Folder Placement Philosophy
-
-Metadata is organized by architectural responsibility rather than by implementation details or inheritance.
-
-When introducing a new metadata class, its location should be determined by its primary responsibility.
-
-Use the following questions to determine the correct package:
-
-- Is it a fixed application value? → Enums
-- Is it standardized descriptive metadata? → Vocabulary
-- Does it organize the media library? → Library Models
-- Does it connect other metadata objects? → Relationship Models
-- Can it be scheduled and broadcast? → Media Models
-- Does it operate on metadata? → Metadata Services
-
-Every metadata object should belong to exactly one architectural category.
-
-This organization prioritizes long-term maintainability by grouping objects according to their purpose rather than their implementation.
-
-## Organizational Metadata vs Playable Media
-
-VISTOR intentionally separates objects that organize media from objects that represent broadcast media.
-
-Library Models exist solely to organize and describe the media library.
-
-Media Models represent assets that can actually be scheduled for broadcast.
-
-For example:
-
-Series
-→ organizes Episodes
-
-Season
-→ organizes Episodes
-
-Campaign
-→ organizes Commercials
-
-None of these objects can be played directly.
-
-Conversely:
-
-- Episode
-- Movie
-- Commercial
-- Promo
-- Documentary
-
-all inherit from Media Item and represent playable broadcast assets.
-
-This separation mirrors the structure of real broadcast television while preventing organizational metadata from being treated as media.

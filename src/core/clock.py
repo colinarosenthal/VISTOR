@@ -4,7 +4,7 @@ VISTOR Clock
 
 from datetime import datetime
 
-from core.schedule_type import ScheduleType
+from scheduler.schedule_type import ScheduleType
 
 
 class Clock:

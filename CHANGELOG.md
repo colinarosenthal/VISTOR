@@ -127,3 +127,26 @@ VISTOR possesses a complete project foundation and application skeleton ready fo
   - Miscellaneous
 - Updated the project roadmap to establish the Metadata Engine as its own development phase.
 - Refined the overall project architecture to support long-term scalability and reduce metadata duplication.
+
+## [0.3.0] — Metadata Serialization & Round-Trip  
+  
+### Added  
+  
+- Implemented `MetadataSerializer.save_to_directory()` to write per-type,  
+  human-readable JSON files (media, people, networks, studios, vocabulary).  
+- Implemented `MetadataSerializer._media_to_dictionary()` to flatten nested  
+  media references into stable id/name keys before serialization.  
+- Implemented `MetadataLoader` loading stages (`_load_library`, `_load_people`,  
+  `_load_series`, `_load_seasons`, `_load_media`) and `_resolve_relationships`  
+  to reconstruct objects and re-link references after loading.  
+- Added a full serialization round-trip test in `test_metadata.py`  
+  (save populated library -> load -> assert reconstructed counts/references).  
+  
+### Changed  
+  
+- `MetadataLibrary.__init__` now initializes all buckets used by `add_*`  
+  methods (added `content_ratings`, `music_genres`).  
+- Removed duplicate `add_*`/`get_*` method definitions in `metadata_library.py`.  
+- Reference flattening standardized: id-keyed for Network/Studio/Franchise/  
+  Series/Season/Advertiser/Product/Campaign; name-keyed for Language/Genre/  
+  Tag/Theme/Country; ContentRating keyed by system:name.

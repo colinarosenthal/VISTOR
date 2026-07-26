@@ -234,8 +234,8 @@ loader = MetadataLoader()
   
   
 metadata_path = Path(  
-    "metadata/data"  
-)  
+    "Metadata/data"  
+)
   
   
 loaded_library = loader.load(  

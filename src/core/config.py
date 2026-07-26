@@ -10,7 +10,7 @@ class Config:
 
         # General
         self.debug = False
-        self.version = "0.2.0"
+        self.version = "0.3.0"
 
         # Directories
         self.media_directory = "Media"

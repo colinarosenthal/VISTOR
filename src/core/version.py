@@ -8,7 +8,7 @@ APP_SUBTITLE = (
     "Vintage Interactive Television Operating Runtime"
 )
 
-VERSION = "0.2.0"
+VERSION = "0.3.0"
 
 
 def get_application_title():
