@@ -8,7 +8,7 @@ Weather segments are unique within VISTOR because they may be generated dynamica
 The presentation layer should recreate the style of historical weather broadcasts while allowing current weather information to be displayed.
 """
 
-from metadata.media.television.media_item import MediaItem
+from metadata.media.media_item import MediaItem
 
 
 class WeatherSegment(MediaItem):

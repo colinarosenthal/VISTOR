@@ -4,7 +4,7 @@ VISTOR Television Special
 Represents a standalone television program that is not part of a regular episodic series.
 """
 
-from metadata.media.television.media_item import MediaItem
+from metadata.media.media_item import MediaItem
 
 
 class Special(MediaItem):

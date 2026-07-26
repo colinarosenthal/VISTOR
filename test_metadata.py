@@ -303,5 +303,8 @@ commercials = population.create_commercials(
     population.create_products(advertisers),  
     population.create_campaigns(population.create_products(advertisers)),  
 )  
-assert commercials[0].get_advertiser() is advertisers["coca_cola"]  
+assert commercials[0].get_advertiser() is advertisers["coca_cola"] 
 print("Reference sharing verified.")
+
+print("Commercials:", len(library.get_commercials()))  
+assert len(library.get_commercials()) >= 1
