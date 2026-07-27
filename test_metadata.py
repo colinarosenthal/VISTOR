@@ -1,4 +1,5 @@
 import sys  
+import json
   
 from pathlib import Path  
   
@@ -475,6 +476,46 @@ assert "files" in scan_report
 assert "total_files" in scan_report  
   
 print("Media scan verified.")
+
+# ----------------------------------------------------------------------  
+# Media Associator
+# ---------------------------------------------------------------------- 
+
+print("\n=== Testing MediaAssociator ===")  
+  
+from metadata.services.media_associator import MediaAssociator  
+  
+# Reuse the populated library from the round-trip section.  
+associator_library = built  
+  
+# Pick a real id from the library so the manifest matches something.  
+first_media = associator_library.get_media()[0]  
+sample_id = first_media.get_id()  
+  
+manifest_data = {  
+    sample_id: "Movies/sample_placeholder.mkv"  
+}  
+  
+manifest_path = Path("Metadata/data/asset_manifest.json")  
+  
+with open(manifest_path, "w", encoding="utf-8") as manifest_file:  
+    json.dump(manifest_data, manifest_file, indent=4)  
+  
+associator = MediaAssociator(  
+    associator_library,  
+    Path("Media"),  
+)  
+  
+assoc_report = associator.associate_from_manifest(manifest_path)  
+  
+print("Associated:", len(assoc_report["associated"]))  
+print("Unmatched ids:", len(assoc_report["unmatched_ids"]))  
+print("Missing files:", len(assoc_report["missing_files"]))  
+  
+assert len(assoc_report["associated"]) >= 1  
+assert len(first_media.get_media_assets()) >= 1  
+  
+print("Media association verified.")
   
 # ------------------------------------------------------------------  
 # Final Result  

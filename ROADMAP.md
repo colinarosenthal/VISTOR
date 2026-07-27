@@ -375,7 +375,7 @@ VISTOR possesses a complete metadata engine capable of describing, organizing, v
 ## Library Population  
   
 - [x] Scan Media Library  
-- [ ] Associate Metadata  
+- [x] Associate Metadata  
 - [ ] Validate Media Library  
 - [ ] Resolve Missing Assets  
   
