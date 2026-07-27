@@ -516,6 +516,36 @@ assert len(assoc_report["associated"]) >= 1
 assert len(first_media.get_media_assets()) >= 1  
   
 print("Media association verified.")
+
+# ----------------------------------------------------------------------  
+# Media Validator  
+# ----------------------------------------------------------------------  
+  
+print("\n=== Testing MediaValidator ===")  
+  
+from metadata.services.media_validator import MediaValidator  
+  
+validator = MediaValidator(loaded_library)  
+  
+validation_report = validator.validate()  
+  
+print("Media checked:", validation_report["total_media"])  
+print("Valid:", len(validation_report["valid"]))  
+print("Without assets:", len(validation_report["media_without_assets"]))  
+print("Missing asset files:", len(validation_report["missing_assets"]))  
+  
+# Resolve any dangling assets by dropping them.  
+resolution_report = validator.resolve_missing_assets(strategy="drop")  
+  
+print("Dropped:", len(resolution_report["dropped"]))  
+print("Flagged:", len(resolution_report["flagged"]))  
+  
+# After a "drop" pass, re-validation should report no missing asset files.  
+post_report = validator.validate()  
+  
+assert len(post_report["missing_assets"]) == 0  
+  
+print("Media validation verified.")
   
 # ------------------------------------------------------------------  
 # Final Result  
