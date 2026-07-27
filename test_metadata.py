@@ -359,7 +359,35 @@ for video in built.get_music_videos():
     round_trip_library.add_media(video)  
   
 for commercial in built.get_commercials():  
-    round_trip_library.add_media(commercial)  
+    round_trip_library.add_media(commercial)
+
+seen_seasons = {}  
+seen_series = {}  
+seen_franchises = {}  
+  
+for episode in built.get_episodes():  
+    round_trip_library.add_media(episode)  
+  
+    season = episode.get_season()  
+    if season and season.get_id() not in seen_seasons:  
+        seen_seasons[season.get_id()] = season  
+  
+        series = season.get_series()  
+        if series and series.get_id() not in seen_series:  
+            seen_series[series.get_id()] = series  
+  
+            franchise = series.get_franchise()  
+            if franchise and franchise.get_id() not in seen_franchises:  
+                seen_franchises[franchise.get_id()] = franchise  
+  
+for franchise in seen_franchises.values():  
+    round_trip_library.add_franchise(franchise)  
+  
+for series in seen_series.values():  
+    round_trip_library.add_series(series)  
+  
+for season in seen_seasons.values():  
+    round_trip_library.add_season(season)  
   
 # Serialize to disk. Keep this path casing identical to the loader's.  
 metadata_path = Path("Metadata/data")  
@@ -390,7 +418,7 @@ assert len(loaded_commercials) >= 1
   
 # Episodes need series/seasons serialized before they can reconstruct  
 # (Episode.__init__ requires a Season). Enable once those buckets are written.  
-# assert len(loaded_episodes) >= 1  
+assert len(loaded_episodes) >= 1  
   
 # People bucket still round-trips.  
 assert len(reloaded.get_people()) >= 1  
@@ -429,6 +457,24 @@ assert normalize_filename("Friends S01E01 (Pilot).MKV") == "friends_s01e01_pilot
 assert normalize_filename("  Weird##Name!!.MP4 ") == "weird_name.mp4"  
   
 print("Filename normalization verified.")
+
+# ----------------------------------------------------------------------  
+# Media Scanner  
+# ---------------------------------------------------------------------- 
+
+from metadata.services.media_scanner import MediaScanner  
+  
+print("=== Testing MediaScanner ===")  
+  
+scan_report = MediaScanner().scan()  
+  
+print("Media files found:", scan_report["total_files"])  
+  
+# Scanning an empty/missing Media dir is valid; just assert shape.  
+assert "files" in scan_report  
+assert "total_files" in scan_report  
+  
+print("Media scan verified.")
   
 # ------------------------------------------------------------------  
 # Final Result  

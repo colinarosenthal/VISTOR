@@ -1,1 +1,7 @@
-[]
+[
+    {
+        "id": "example_franchise",
+        "name": "Example Franchise",
+        "description": "Example franchise for default metadata."
+    }
+]

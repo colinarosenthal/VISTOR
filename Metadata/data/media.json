@@ -82,5 +82,29 @@
         "advertiser": "coca_cola",
         "product": null,
         "campaign": null
+    },
+    {
+        "type": "Episode",
+        "id": "example_series_s1_e1",
+        "title": "Pilot",
+        "description": "",
+        "release_year": 1990,
+        "runtime_minutes": 22,
+        "content_rating": {
+            "system": "TV Parental Guidelines",
+            "name": "TV-PG"
+        },
+        "original_network": "abc",
+        "production_country": "United States",
+        "languages": [
+            "English"
+        ],
+        "genres": [
+            "Comedy"
+        ],
+        "tags": [],
+        "themes": [],
+        "episode_number": 1,
+        "season": "example_series_s1"
     }
 ]

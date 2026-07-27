@@ -1,1 +1,10 @@
-[]
+[
+    {
+        "id": "example_series",
+        "title": "Example Series",
+        "franchise": "example_franchise",
+        "description": "Example series for default metadata.",
+        "premiere_year": 1990,
+        "finale_year": 0
+    }
+]

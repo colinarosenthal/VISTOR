@@ -1,1 +1,10 @@
-[]
+[
+    {
+        "id": "example_series_s1",
+        "series": "example_series",
+        "season_number": 1,
+        "title": "Season 1",
+        "description": "",
+        "premiere_year": 1990
+    }
+]
