@@ -156,7 +156,7 @@ class MetadataSerializer:
         return {  
             "id": product.get_id(),  
             "name": product.get_name(),  
-            "advertiser": product.get_advertiser().get_name(),  
+            "advertiser": product.get_advertiser().get_id(),  
             "description": product.get_description(),  
             "category": product.get_category(),  
             "release_year": product.get_release_year(),  
@@ -213,7 +213,7 @@ class MetadataSerializer:
             advertiser = item.get_advertiser()  
             product = item.get_product()  
             campaign = item.get_campaign()  
-            data["advertiser"] = advertiser.get_name() if advertiser else None  
+            data["advertiser"] = advertiser.get_id() if advertiser else None  
             data["product"] = product.get_id() if product else None  
             data["campaign"] = campaign.get_id() if campaign else None  
         elif isinstance(item, MusicVideo):  

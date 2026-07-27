@@ -362,7 +362,7 @@ for commercial in built.get_commercials():
     round_trip_library.add_media(commercial)  
   
 # Serialize to disk. Keep this path casing identical to the loader's.  
-metadata_path = Path("metadata/data")  
+metadata_path = Path("Metadata/data")  
   
 MetadataSerializer(round_trip_library).save_to_directory(metadata_path)  
   

@@ -1,14 +1,14 @@
-"""
-VISTOR Metadata Loader
-
-Responsible for loading metadata from disk and constructing
-the VISTOR metadata library.
-
-The MetadataLoader discovers metadata files, creates metadata
-objects, resolves relationships between objects, and returns
-a fully populated MetadataLibrary instance.
-"""
-
+"""  
+VISTOR Metadata Loader  
+  
+Responsible for loading metadata from disk and constructing  
+the VISTOR metadata library.  
+  
+The MetadataLoader discovers metadata files, creates metadata  
+objects, resolves relationships between objects, and returns  
+a fully populated MetadataLibrary instance.  
+"""  
+  
 import json  
   
 from pathlib import Path  
@@ -38,56 +38,62 @@ from metadata.library.campaign import Campaign
 from metadata.media.film.movie import Movie  
 from metadata.media.television.episode import Episode  
 from metadata.media.advertising.commercial import Commercial  
-from metadata.media.music.music_video import MusicVideo
-
-
-class MetadataLoader:
-    """Loads VISTOR metadata into memory."""
-
-    # ------------------------------------------------------------------
-    # Construction
-    # ------------------------------------------------------------------
-
-    def __init__(self):
-        pass
-
-    # ------------------------------------------------------------------
-    # Public Interface
-    # ------------------------------------------------------------------
-
-    def load(self, metadata_path: Path) -> MetadataLibrary:
-        """
-        Load the complete metadata library.
-
-        Parameters
-        ----------
-        metadata_path
-            Root metadata directory.
-
-        Returns
-        -------
-        MetadataLibrary
-            Fully populated metadata library.
-        """
-
-        library = MetadataLibrary()
-
-        self._load_vocabulary(library, metadata_path)
-
-        self._load_library(library, metadata_path)
-        self._load_people(library, metadata_path)
-        self._load_series(library, metadata_path)
-        self._load_seasons(library, metadata_path)
-        self._load_media(library, metadata_path)
-
-        self._resolve_relationships(library)
-
-        return library
-
-    # ------------------------------------------------------------------
-    # Vocabulary Loading
-    # ------------------------------------------------------------------
-
+from metadata.media.music.music_video import MusicVideo  
+  
+  
+class MetadataLoader:  
+    """Loads VISTOR metadata into memory."""  
+  
+    # ------------------------------------------------------------------  
+    # Construction  
+    # ------------------------------------------------------------------  
+  
+    def __init__(self):  
+        pass  
+  
+    # ------------------------------------------------------------------  
+    # Public Interface  
+    # ------------------------------------------------------------------  
+  
+    def load(self, metadata_path: Path) -> MetadataLibrary:  
+        """  
+        Load the complete metadata library.  
+  
+        Parameters  
+        ----------  
+        metadata_path  
+            Root metadata directory.  
+  
+        Returns  
+        -------  
+        MetadataLibrary  
+            Fully populated metadata library.  
+        """  
+  
+        library = MetadataLibrary()  
+  
+        self._load_vocabulary(library, metadata_path)  
+  
+        self._load_library(library, metadata_path)  
+        self._load_people(library, metadata_path)  
+        self._load_franchises(library, metadata_path)  
+        self._load_series(library, metadata_path)  
+        self._load_seasons(library, metadata_path)  
+  
+        self._load_advertisers(library, metadata_path)  
+        self._load_products(library, metadata_path)  
+        self._load_campaigns(library, metadata_path)  
+  
+        self._load_media(library, metadata_path)  
+  
+        self._resolve_relationships(library)  
+  
+        return library  
+  
+    # ------------------------------------------------------------------  
+    # Library-Level Loading  
+    # ------------------------------------------------------------------  
+  
     def _load_library(  
         self,  
         library: MetadataLibrary,  
@@ -96,16 +102,14 @@ class MetadataLoader:
         """Load library-level metadata."""  
   
         self._load_networks(library, metadata_path)  
-        self._load_studios(library, metadata_path)
-
+        self._load_studios(library, metadata_path)  
+  
     def _load_networks(  
         self,  
         library: MetadataLibrary,  
         metadata_path: Path,  
     ):  
-        """  
-        Load network metadata.  
-        """  
+        """Load network metadata."""  
   
         path = metadata_path / "networks.json"  
   
@@ -113,7 +117,6 @@ class MetadataLoader:
             return  
   
         with open(path, "r", encoding="utf-8") as file:  
-  
             data = json.load(file)  
   
         for item in data:  
@@ -127,15 +130,12 @@ class MetadataLoader:
   
             library.add_network(network)  
   
-  
     def _load_studios(  
         self,  
         library: MetadataLibrary,  
         metadata_path: Path,  
     ):  
-        """  
-        Load studio metadata.  
-        """  
+        """Load studio metadata."""  
   
         path = metadata_path / "studios.json"  
   
@@ -143,7 +143,6 @@ class MetadataLoader:
             return  
   
         with open(path, "r", encoding="utf-8") as file:  
-  
             data = json.load(file)  
   
         for item in data:  
@@ -156,146 +155,130 @@ class MetadataLoader:
                 description=item.get("description", ""),  
             )  
   
-            library.add_studio(studio)
-
-    def _load_vocabulary(
-        self,
-        library: MetadataLibrary,
-        metadata_path: Path,
-    ):
-        """
-        Load vocabulary metadata.
-        """
-
-        self._load_genres(library, metadata_path)
-        self._load_countries(library, metadata_path)
-        self._load_themes(library, metadata_path)
-        self._load_tags(library, metadata_path)
-        self._load_languages(library, metadata_path)
-
-
-    def _load_genres(
-        self,
-        library: MetadataLibrary,
-        metadata_path: Path,
-    ):
-        """
-        Load genre metadata.
-        """
-
-        path = metadata_path / "genres.json"
-
-        if not path.exists():
-            return
-
-        with open(path, "r", encoding="utf-8") as file:
-
-            data = json.load(file)
-
-        for item in data:
-
-            genre = Genre(
-                name=item["name"],
-                description=item.get("description", ""),
-            )
-
-            library.add_genre(genre)
-
-
-    def _load_countries(
-        self,
-        library: MetadataLibrary,
-        metadata_path: Path,
-    ):
-        """
-        Load country metadata.
-        """
-
-        path = metadata_path / "countries.json"
-
-        if not path.exists():
-            return
-
-        with open(path, "r", encoding="utf-8") as file:
-
-            data = json.load(file)
-
-        for item in data:
-
-            country = Country(
-                name=item["name"],
-                iso_alpha2=item.get("iso_alpha2", ""),
-                iso_alpha3=item.get("iso_alpha3", ""),
-                region=item.get("region", ""),
-            )
-
-            library.add_country(country)
-
-
-    def _load_themes(
-        self,
-        library: MetadataLibrary,
-        metadata_path: Path,
-    ):
-        """
-        Load theme metadata.
-        """
-
-        path = metadata_path / "themes.json"
-
-        if not path.exists():
-            return
-
-        with open(path, "r", encoding="utf-8") as file:
-
-            data = json.load(file)
-
-        for item in data:
-
-            theme = Theme(
-                name=item["name"],
-                description=item.get("description", ""),
-            )
-
-            library.add_theme(theme)
-
-
-    def _load_tags(
-        self,
-        library: MetadataLibrary,
-        metadata_path: Path,
-    ):
-        """
-        Load tag metadata.
-        """
-
-        path = metadata_path / "tags.json"
-
-        if not path.exists():
-            return
-
-        with open(path, "r", encoding="utf-8") as file:
-
-            data = json.load(file)
-
-        for item in data:
-
-            tag = Tag(
-                name=item["name"],
-                description=item.get("description", ""),
-                category=item.get("category", ""),
-            )
-
-            library.add_tag(tag)
-
+            library.add_studio(studio)  
+  
+    # ------------------------------------------------------------------  
+    # Vocabulary Loading  
+    # ------------------------------------------------------------------  
+  
+    def _load_vocabulary(  
+        self,  
+        library: MetadataLibrary,  
+        metadata_path: Path,  
+    ):  
+        """Load vocabulary metadata."""  
+  
+        self._load_genres(library, metadata_path)  
+        self._load_countries(library, metadata_path)  
+        self._load_themes(library, metadata_path)  
+        self._load_tags(library, metadata_path)  
+        self._load_languages(library, metadata_path)  
+  
+    def _load_genres(  
+        self,  
+        library: MetadataLibrary,  
+        metadata_path: Path,  
+    ):  
+        """Load genre metadata."""  
+  
+        path = metadata_path / "genres.json"  
+  
+        if not path.exists():  
+            return  
+  
+        with open(path, "r", encoding="utf-8") as file:  
+            data = json.load(file)  
+  
+        for item in data:  
+  
+            genre = Genre(  
+                name=item["name"],  
+                description=item.get("description", ""),  
+            )  
+  
+            library.add_genre(genre)  
+  
+    def _load_countries(  
+        self,  
+        library: MetadataLibrary,  
+        metadata_path: Path,  
+    ):  
+        """Load country metadata."""  
+  
+        path = metadata_path / "countries.json"  
+  
+        if not path.exists():  
+            return  
+  
+        with open(path, "r", encoding="utf-8") as file:  
+            data = json.load(file)  
+  
+        for item in data:  
+  
+            country = Country(  
+                name=item["name"],  
+                iso_alpha2=item.get("iso_alpha2", ""),  
+                iso_alpha3=item.get("iso_alpha3", ""),  
+                region=item.get("region", ""),  
+            )  
+  
+            library.add_country(country)  
+  
+    def _load_themes(  
+        self,  
+        library: MetadataLibrary,  
+        metadata_path: Path,  
+    ):  
+        """Load theme metadata."""  
+  
+        path = metadata_path / "themes.json"  
+  
+        if not path.exists():  
+            return  
+  
+        with open(path, "r", encoding="utf-8") as file:  
+            data = json.load(file)  
+  
+        for item in data:  
+  
+            theme = Theme(  
+                name=item["name"],  
+                description=item.get("description", ""),  
+            )  
+  
+            library.add_theme(theme)  
+  
+    def _load_tags(  
+        self,  
+        library: MetadataLibrary,  
+        metadata_path: Path,  
+    ):  
+        """Load tag metadata."""  
+  
+        path = metadata_path / "tags.json"  
+  
+        if not path.exists():  
+            return  
+  
+        with open(path, "r", encoding="utf-8") as file:  
+            data = json.load(file)  
+  
+        for item in data:  
+  
+            tag = Tag(  
+                name=item["name"],  
+                description=item.get("description", ""),  
+                category=item.get("category", ""),  
+            )  
+  
+            library.add_tag(tag)  
+  
     def _load_languages(  
         self,  
         library: MetadataLibrary,  
         metadata_path: Path,  
     ):  
-        """  
-        Load language metadata.  
-        """  
+        """Load language metadata."""  
   
         path = metadata_path / "languages.json"  
   
@@ -303,7 +286,6 @@ class MetadataLoader:
             return  
   
         with open(path, "r", encoding="utf-8") as file:  
-  
             data = json.load(file)  
   
         for item in data:  
@@ -315,12 +297,12 @@ class MetadataLoader:
                 native_name=item.get("native_name", ""),  
             )  
   
-            library.add_language(language)
-
-    # ------------------------------------------------------------------
-    # Loading Stages
-    # ------------------------------------------------------------------
-
+            library.add_language(language)  
+  
+    # ------------------------------------------------------------------  
+    # People  
+    # ------------------------------------------------------------------  
+  
     def _load_people(  
         self,  
         library: MetadataLibrary,  
@@ -351,6 +333,34 @@ class MetadataLoader:
   
             library.add_person(person)  
   
+    # ------------------------------------------------------------------  
+    # Franchises / Series / Seasons  
+    # ------------------------------------------------------------------  
+  
+    def _load_franchises(  
+        self,  
+        library: MetadataLibrary,  
+        metadata_path: Path,  
+    ):  
+        """Load franchise metadata."""  
+  
+        path = metadata_path / "franchises.json"  
+  
+        if not path.exists():  
+            return  
+  
+        with open(path, "r", encoding="utf-8") as file:  
+            data = json.load(file)  
+  
+        for item in data:  
+  
+            franchise = Franchise(  
+                id=item["id"],  
+                name=item["name"],  
+                description=item.get("description", ""),  
+            )  
+  
+            library.add_franchise(franchise)  
   
     def _load_series(  
         self,  
@@ -358,9 +368,6 @@ class MetadataLoader:
         metadata_path: Path,  
     ):  
         """Load series metadata."""  
-  
-        # Franchises first, so series can resolve their franchise ref.  
-        self._load_franchises(library, metadata_path)  
   
         path = metadata_path / "series.json"  
   
@@ -390,33 +397,6 @@ class MetadataLoader:
             )  
   
             library.add_series(series)  
-  
-  
-    def _load_franchises(  
-        self,  
-        library: MetadataLibrary,  
-        metadata_path: Path,  
-    ):  
-        """Load franchise metadata."""  
-  
-        path = metadata_path / "franchises.json"  
-  
-        if not path.exists():  
-            return  
-  
-        with open(path, "r", encoding="utf-8") as file:  
-            data = json.load(file)  
-  
-        for item in data:  
-  
-            franchise = Franchise(  
-                id=item["id"],  
-                name=item["name"],  
-                description=item.get("description", ""),  
-            )  
-  
-            library.add_franchise(franchise)  
-  
   
     def _load_seasons(  
         self,  
@@ -455,6 +435,114 @@ class MetadataLoader:
   
             library.add_season(season)  
   
+    # ------------------------------------------------------------------  
+    # Advertising Entities  
+    # ------------------------------------------------------------------  
+  
+    def _load_advertisers(  
+        self,  
+        library: MetadataLibrary,  
+        metadata_path: Path,  
+    ):  
+        """Load advertiser metadata."""  
+  
+        path = metadata_path / "advertisers.json"  
+  
+        if not path.exists():  
+            return  
+  
+        with open(path, "r", encoding="utf-8") as file:  
+            data = json.load(file)  
+  
+        for item in data:  
+  
+            advertiser = Advertiser(  
+                id=item["id"],  
+                name=item["name"],  
+                description=item.get("description", ""),  
+                country=item.get("country", ""),  
+            )  
+  
+            library.add_advertiser(advertiser)  
+  
+    def _load_products(  
+        self,  
+        library: MetadataLibrary,  
+        metadata_path: Path,  
+    ):  
+        """Load product metadata."""  
+  
+        path = metadata_path / "products.json"  
+  
+        if not path.exists():  
+            return  
+  
+        with open(path, "r", encoding="utf-8") as file:  
+            data = json.load(file)  
+  
+        advertiser_lookup = {a.get_id(): a for a in library.get_advertisers()}  
+  
+        for item in data:  
+  
+            advertiser = advertiser_lookup.get(item.get("advertiser"))  
+  
+            if advertiser is None:  
+                # Product requires an advertiser; skip if its parent  
+                # was not serialized.  
+                continue  
+  
+            product = Product(  
+                id=item["id"],  
+                name=item["name"],  
+                advertiser=advertiser,  
+                description=item.get("description", ""),  
+                category=item.get("category", ""),  
+                release_year=item.get("release_year", 0),  
+            )  
+  
+            library.add_product(product)  
+  
+    def _load_campaigns(  
+        self,  
+        library: MetadataLibrary,  
+        metadata_path: Path,  
+    ):  
+        """Load campaign metadata."""  
+  
+        path = metadata_path / "campaigns.json"  
+  
+        if not path.exists():  
+            return  
+  
+        with open(path, "r", encoding="utf-8") as file:  
+            data = json.load(file)  
+  
+        product_lookup = {p.get_id(): p for p in library.get_products()}  
+  
+        for item in data:  
+  
+            product = product_lookup.get(item.get("product"))  
+  
+            if product is None:  
+                # Campaign requires a product; skip if its parent  
+                # was not serialized.  
+                continue  
+  
+            campaign = Campaign(  
+                id=item["id"],  
+                name=item["name"],  
+                product=product,  
+                start_year=item.get("start_year", 0),  
+                end_year=item.get("end_year", 0),  
+                description=item.get("description", ""),  
+                slogan=item.get("slogan", ""),  
+            )  
+  
+            library.add_campaign(campaign)  
+  
+    # ------------------------------------------------------------------  
+    # Media  
+    # ------------------------------------------------------------------  
   
     def _load_media(  
         self,  
@@ -522,7 +610,11 @@ class MetadataLoader:
             obj._pending = item  
   
             library.add_media(obj)  
-
+  
+    # ------------------------------------------------------------------  
+    # Relationship Resolution  
+    # ------------------------------------------------------------------  
+  
     def _resolve_relationships(  
         self,  
         library: MetadataLibrary,  
@@ -535,6 +627,11 @@ class MetadataLoader:
         countries = {c.get_name(): c for c in library.get_countries()}  
         languages = {l.get_name(): l for l in library.get_languages()}  
         networks = {n.get_id(): n for n in library.get_networks()}  
+        advertisers = {a.get_id(): a for a in library.get_advertisers()}  
+        products = {p.get_id(): p for p in library.get_products()}  
+        campaigns = {c.get_id(): c for c in library.get_campaigns()}  
+        franchises = {f.get_id(): f for f in library.get_franchises()}  
+        music_genres = {g.get_name(): g for g in library.get_music_genres()}  
   
         for item in library.get_media():  
   
@@ -542,6 +639,26 @@ class MetadataLoader:
   
             if not pending:  
                 continue  
+  
+            advertiser = pending.get("advertiser")  
+            if advertiser in advertisers:  
+                item.set_advertiser(advertisers[advertiser])  
+  
+            product = pending.get("product")  
+            if product in products:  
+                item.set_product(products[product])  
+  
+            campaign = pending.get("campaign")  
+            if campaign in campaigns:  
+                item.set_campaign(campaigns[campaign])  
+  
+            franchise = pending.get("franchise")  
+            if franchise in franchises:  
+                item.set_franchise(franchises[franchise])  
+  
+            music_genre = pending.get("music_genre")  
+            if music_genre in music_genres:  
+                item.set_music_genre(music_genres[music_genre])  
   
             for name in pending.get("genres", []):  
                 if name in genres:  
