@@ -334,9 +334,9 @@ VISTOR possesses a complete metadata engine capable of describing, organizing, v
 - [x] Implement people loading stage  
 - [x] Implement series loading stage  
 - [x] Implement season loading stage  
-- [ ] Implement media loading stage  
-- [ ] Resolve object relationships  
-- [ ] Handle missing or malformed metadata files  
+- [x] Implement media loading stage  
+- [x] Resolve object relationships  
+- [x] Handle missing or malformed metadata files  
   
 ---  
   
@@ -344,8 +344,8 @@ VISTOR possesses a complete metadata engine capable of describing, organizing, v
   
 - [ ] Finalize physical media folder structure  
 - [ ] Organize existing media library  
-- [ ] Normalize filenames  
-- [ ] Verify media assets  
+- [x] Normalize filenames  
+- [x] Verify media assets  
   
 ---  
   

@@ -396,7 +396,39 @@ assert len(loaded_commercials) >= 1
 assert len(reloaded.get_people()) >= 1  
   
 print("Serialization round-trip verified (media exercised).")  
+
+# ----------------------------------------------------------------------  
+# Media Verifier  
+# ----------------------------------------------------------------------  
   
+print("\n=== Testing MediaVerifier ===")  
+  
+from metadata.services.media_verifier import (  
+    MediaVerifier,  
+    normalize_filename,  
+)  
+from metadata.services.metadata_population import MetadataPopulation  
+  
+verifier_library = MetadataPopulation().build_library()  
+  
+verifier = MediaVerifier(verifier_library)  
+report = verifier.verify()  
+  
+assert "total_media" in report  
+assert "total_assets" in report  
+assert isinstance(report["verified"], list)  
+assert isinstance(report["missing"], list)  
+  
+print("Media items checked:", report["total_media"])  
+print("Assets checked:", report["total_assets"])  
+print("Verified:", len(report["verified"]))  
+print("Missing:", len(report["missing"]))  
+  
+# Filename normalization checks  
+assert normalize_filename("Friends S01E01 (Pilot).MKV") == "friends_s01e01_pilot.mkv"  
+assert normalize_filename("  Weird##Name!!.MP4 ") == "weird_name.mp4"  
+  
+print("Filename normalization verified.")
   
 # ------------------------------------------------------------------  
 # Final Result  

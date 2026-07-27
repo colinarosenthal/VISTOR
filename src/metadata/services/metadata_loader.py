@@ -15,6 +15,8 @@ from pathlib import Path
   
 from metadata.services.metadata_library import MetadataLibrary  
   
+from core.logger import Logger  
+  
 # Vocabulary  
 from metadata.vocabulary.genre import Genre  
 from metadata.vocabulary.country import Country  
@@ -50,6 +52,43 @@ class MetadataLoader:
   
     def __init__(self):  
         pass  
+  
+    # ------------------------------------------------------------------  
+    # File Reading Helper  
+    # ------------------------------------------------------------------  
+  
+    def _read_json(self, path: Path):  
+        """  
+        Read a metadata JSON file safely.  
+  
+        Returns a list of records, or an empty list if the file is  
+        missing or malformed. Missing files are treated as "nothing  
+        to load" (info); malformed files are logged as errors and  
+        skipped so loading can continue.  
+        """  
+  
+        if not path.exists():  
+            Logger.info(f"Metadata file not found, skipping: {path.name}")  
+            return []  
+  
+        try:  
+            with open(path, "r", encoding="utf-8") as file:  
+                data = json.load(file)  
+        except json.JSONDecodeError as error:  
+            Logger.error(f"Malformed metadata file {path.name}: {error}")  
+            return []  
+        except OSError as error:  
+            Logger.error(f"Could not read metadata file {path.name}: {error}")  
+            return []  
+  
+        if not isinstance(data, list):  
+            Logger.error(  
+                f"Metadata file {path.name} must contain a list, "  
+                f"got {type(data).__name__}; skipping."  
+            )  
+            return []  
+  
+        return data  
   
     # ------------------------------------------------------------------  
     # Public Interface  
@@ -113,13 +152,7 @@ class MetadataLoader:
   
         path = metadata_path / "networks.json"  
   
-        if not path.exists():  
-            return  
-  
-        with open(path, "r", encoding="utf-8") as file:  
-            data = json.load(file)  
-  
-        for item in data:  
+        for item in self._read_json(path):  
   
             network = Network(  
                 id=item["id"],  
@@ -139,13 +172,7 @@ class MetadataLoader:
   
         path = metadata_path / "studios.json"  
   
-        if not path.exists():  
-            return  
-  
-        with open(path, "r", encoding="utf-8") as file:  
-            data = json.load(file)  
-  
-        for item in data:  
+        for item in self._read_json(path):  
   
             studio = Studio(  
                 id=item["id"],  
@@ -183,13 +210,7 @@ class MetadataLoader:
   
         path = metadata_path / "genres.json"  
   
-        if not path.exists():  
-            return  
-  
-        with open(path, "r", encoding="utf-8") as file:  
-            data = json.load(file)  
-  
-        for item in data:  
+        for item in self._read_json(path):  
   
             genre = Genre(  
                 name=item["name"],  
@@ -207,13 +228,7 @@ class MetadataLoader:
   
         path = metadata_path / "countries.json"  
   
-        if not path.exists():  
-            return  
-  
-        with open(path, "r", encoding="utf-8") as file:  
-            data = json.load(file)  
-  
-        for item in data:  
+        for item in self._read_json(path):  
   
             country = Country(  
                 name=item["name"],  
@@ -233,13 +248,7 @@ class MetadataLoader:
   
         path = metadata_path / "themes.json"  
   
-        if not path.exists():  
-            return  
-  
-        with open(path, "r", encoding="utf-8") as file:  
-            data = json.load(file)  
-  
-        for item in data:  
+        for item in self._read_json(path):  
   
             theme = Theme(  
                 name=item["name"],  
@@ -257,13 +266,7 @@ class MetadataLoader:
   
         path = metadata_path / "tags.json"  
   
-        if not path.exists():  
-            return  
-  
-        with open(path, "r", encoding="utf-8") as file:  
-            data = json.load(file)  
-  
-        for item in data:  
+        for item in self._read_json(path):  
   
             tag = Tag(  
                 name=item["name"],  
@@ -282,13 +285,7 @@ class MetadataLoader:
   
         path = metadata_path / "languages.json"  
   
-        if not path.exists():  
-            return  
-  
-        with open(path, "r", encoding="utf-8") as file:  
-            data = json.load(file)  
-  
-        for item in data:  
+        for item in self._read_json(path):  
   
             language = Language(  
                 name=item["name"],  
@@ -312,13 +309,7 @@ class MetadataLoader:
   
         path = metadata_path / "people.json"  
   
-        if not path.exists():  
-            return  
-  
-        with open(path, "r", encoding="utf-8") as file:  
-            data = json.load(file)  
-  
-        for item in data:  
+        for item in self._read_json(path):  
   
             person = Person(  
                 id=item["id"],  
@@ -346,13 +337,7 @@ class MetadataLoader:
   
         path = metadata_path / "franchises.json"  
   
-        if not path.exists():  
-            return  
-  
-        with open(path, "r", encoding="utf-8") as file:  
-            data = json.load(file)  
-  
-        for item in data:  
+        for item in self._read_json(path):  
   
             franchise = Franchise(  
                 id=item["id"],  
@@ -371,15 +356,9 @@ class MetadataLoader:
   
         path = metadata_path / "series.json"  
   
-        if not path.exists():  
-            return  
-  
-        with open(path, "r", encoding="utf-8") as file:  
-            data = json.load(file)  
-  
         franchises = {f.get_id(): f for f in library.get_franchises()}  
   
-        for item in data:  
+        for item in self._read_json(path):  
   
             franchise = None  
             franchise_id = item.get("franchise")  
@@ -407,15 +386,9 @@ class MetadataLoader:
   
         path = metadata_path / "seasons.json"  
   
-        if not path.exists():  
-            return  
-  
-        with open(path, "r", encoding="utf-8") as file:  
-            data = json.load(file)  
-  
         series_lookup = {s.get_id(): s for s in library.get_series()}  
   
-        for item in data:  
+        for item in self._read_json(path):  
   
             series = series_lookup.get(item.get("series"))  
   
@@ -448,13 +421,7 @@ class MetadataLoader:
   
         path = metadata_path / "advertisers.json"  
   
-        if not path.exists():  
-            return  
-  
-        with open(path, "r", encoding="utf-8") as file:  
-            data = json.load(file)  
-  
-        for item in data:  
+        for item in self._read_json(path):  
   
             advertiser = Advertiser(  
                 id=item["id"],  
@@ -474,15 +441,9 @@ class MetadataLoader:
   
         path = metadata_path / "products.json"  
   
-        if not path.exists():  
-            return  
-  
-        with open(path, "r", encoding="utf-8") as file:  
-            data = json.load(file)  
-  
         advertiser_lookup = {a.get_id(): a for a in library.get_advertisers()}  
   
-        for item in data:  
+        for item in self._read_json(path):  
   
             advertiser = advertiser_lookup.get(item.get("advertiser"))  
   
@@ -511,15 +472,9 @@ class MetadataLoader:
   
         path = metadata_path / "campaigns.json"  
   
-        if not path.exists():  
-            return  
-  
-        with open(path, "r", encoding="utf-8") as file:  
-            data = json.load(file)  
-  
         product_lookup = {p.get_id(): p for p in library.get_products()}  
   
-        for item in data:  
+        for item in self._read_json(path):  
   
             product = product_lookup.get(item.get("product"))  
   
@@ -553,15 +508,9 @@ class MetadataLoader:
   
         path = metadata_path / "media.json"  
   
-        if not path.exists():  
-            return  
-  
-        with open(path, "r", encoding="utf-8") as file:  
-            data = json.load(file)  
-  
         seasons = {s.get_id(): s for s in library.get_seasons()}  
   
-        for item in data:  
+        for item in self._read_json(path):  
   
             media_type = item.get("type")  
   
