@@ -342,42 +342,19 @@ VISTOR possesses a complete metadata engine capable of describing, organizing, v
   
 ## Library Organization  
   
-- [ ] Finalize physical media folder structure  
-- [ ] Organize existing media library  
-- [x] Normalize filenames  
+- [x] Finalize physical media folder structure  
+- [x] Organize existing media library  
+- [x] Normalize filenames
 - [x] Verify media assets  
-  
----  
-  
-## Media Acquisition  
-  
-### Programming  
-  
-- [ ] Television Shows  
-- [ ] Movies  
-- [ ] Sports  
-- [ ] News  
-- [ ] Documentaries  
-- [ ] Game Shows  
-- [ ] Talk Shows  
-  
-### Supporting Content  
-  
-- [ ] Commercials  
-- [ ] Station IDs  
-- [ ] Network Promos  
-- [ ] Music Videos  
-- [ ] Infomercials  
-- [ ] Ambient Loops  
-  
----  
+
+---
   
 ## Library Population  
   
 - [x] Scan Media Library  
 - [x] Associate Metadata  
-- [ ] Validate Media Library  
-- [ ] Resolve Missing Assets  
+- [x] Validate Media Library  
+- [x] Resolve Missing Assets  
   
 ---  
   
@@ -392,7 +369,7 @@ VISTOR possesses a fully populated broadcast library ready for scheduling.
 ## Player
 
 - [ ] Video Playback
-- [ ] Playlist Management
+- [x] Playlist Management
 - [ ] Channel Switching
 - [ ] Resume Playback After Channel Changes
 - [ ] Persistent Playback
@@ -445,6 +422,29 @@ VISTOR provides an authentic cable television user interface.
 ---
 
 # Phase 6 — Broadcast Experience
+  
+## Media Acquisition  
+  
+### Programming  
+  
+- [ ] Television Shows  
+- [ ] Movies  
+- [ ] Sports  
+- [ ] News  
+- [ ] Documentaries  
+- [ ] Game Shows  
+- [ ] Talk Shows  
+  
+### Supporting Content  
+  
+- [ ] Commercials  
+- [ ] Station IDs  
+- [ ] Network Promos  
+- [ ] Music Videos  
+- [ ] Infomercials  
+- [ ] Ambient Loops  
+  
+---  
 
 ## Channels
 

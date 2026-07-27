@@ -546,6 +546,45 @@ post_report = validator.validate()
 assert len(post_report["missing_assets"]) == 0  
   
 print("Media validation verified.")
+
+print("=== Testing Player + PlaybackQueue ===")  
+  
+from player.playback_queue import PlaybackQueue  
+from player.player import Player, PlaybackState  
+  
+# Build a queue and enqueue a few media items from the round-trip library.  
+playback_queue = PlaybackQueue()  
+  
+for media_item in round_trip_library.get_media():  
+    playback_queue.enqueue(media_item)  
+  
+# Wire the queue into the Player as its media source.  
+player = Player()  
+player.set_source(playback_queue)  
+  
+# Pull the first item from the queue and confirm it loaded.  
+assert player.load_next() is True  
+assert player.get_current_item() is not None  
+assert player.get_state() == PlaybackState.STOPPED  
+  
+# Begin playback.  
+player.play()  
+assert player.is_playing() is True  
+  
+# Advance the transport past the item's duration so it finishes.  
+duration = player.get_duration()  
+  
+player.tick(duration)  
+  
+assert player.is_finished() is True  
+assert player.get_position() == duration  
+  
+# Loading the next item resets position and returns to STOPPED.  
+if player.load_next():  
+    assert player.get_position() == 0  
+    assert player.get_state() == PlaybackState.STOPPED  
+  
+print("Player + PlaybackQueue verified.")
   
 # ------------------------------------------------------------------  
 # Final Result  
