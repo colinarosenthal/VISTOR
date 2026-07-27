@@ -100,11 +100,8 @@ class PlaybackQueue:
         """Remove all items and reset the cursor."""  
   
         self._items.clear()  
-  
         self._ordered.clear()  
-  
         self._cursor = 0  
-  
         self._dirty = False  
   
     def set_ordering_strategy(self, ordering_strategy):  

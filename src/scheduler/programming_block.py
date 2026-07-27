@@ -19,6 +19,8 @@ class ProgrammingBlock:
         self.end_hour = end_hour
         self.end_minute = end_minute
 
+        self.items = []
+
     # ------------------------------------------------------------------
     # Queries
     # ------------------------------------------------------------------
@@ -66,3 +68,18 @@ class ProgrammingBlock:
             self.end_hour,
             self.end_minute
         )
+    
+    def add_item(self, item):  
+        """Add a media item to this block."""  
+  
+        self.items.append(item)  
+  
+    def get_items(self):  
+        """Return the media items in this block."""  
+  
+        return self.items
+
+    def clear_items(self):  
+        """Remove all media items from this block."""  
+  
+        self.items.clear()

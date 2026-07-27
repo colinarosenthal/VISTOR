@@ -585,6 +585,28 @@ if player.load_next():
     assert player.get_state() == PlaybackState.STOPPED  
   
 print("Player + PlaybackQueue verified.")
+
+print("\n=== Testing Engine Broadcast Pipeline ===")  
+  
+from engine.engine import Engine  
+  
+engine = Engine()  
+engine.initialize()  
+  
+# Attach media to the current schedule's active block.  
+engine.scheduler.update()          # resolve current_block from the clock  
+current_block = engine.scheduler.get_current_block()  
+assert current_block is not None   # default block spans 00:00-23:59  
+current_block.add_item(movie)  
+  
+for movie in built.get_movies():  
+    current_block.add_item(movie)  
+  
+engine.update()  
+engine.update()  
+  
+assert engine.queue.size() >= 1  
+print("Engine broadcast pipeline verified.")
   
 # ------------------------------------------------------------------  
 # Final Result  

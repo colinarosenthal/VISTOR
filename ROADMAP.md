@@ -368,7 +368,7 @@ VISTOR possesses a fully populated broadcast library ready for scheduling.
 
 ## Player
 
-- [ ] Video Playback
+- [x] Video Playback
 - [x] Playlist Management
 - [ ] Channel Switching
 - [ ] Resume Playback After Channel Changes
