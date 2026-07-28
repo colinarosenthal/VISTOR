@@ -55,7 +55,10 @@ class MediaItem:
 
         self.release_year = release_year
 
-        self.runtime_minutes = runtime_minutes
+        self.runtime_minutes = runtime_minutes  
+  
+        # Scheduling weight; higher = more likely to be selected/aired.  
+        self.scheduling_priority: int = 0
 
         self.media_type = media_type
 
@@ -116,6 +119,16 @@ class MediaItem:
         """Set the runtime."""
 
         self.runtime_minutes = runtime
+
+    def get_scheduling_priority(self):  
+        """Return the scheduling priority."""  
+  
+        return self.scheduling_priority  
+  
+    def set_scheduling_priority(self, priority: int):  
+        """Set the scheduling priority."""  
+  
+        self.scheduling_priority = priority
 
     # ------------------------------------------------------------------
     # Classification

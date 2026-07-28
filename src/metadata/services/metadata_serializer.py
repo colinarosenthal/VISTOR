@@ -190,6 +190,7 @@ class MetadataSerializer:
             "description": item.get_description(),  
             "release_year": item.get_release_year(),  
             "runtime_minutes": item.get_runtime_minutes(),  
+            "scheduling_priority": item.get_scheduling_priority(),
             "content_rating": (  
                 {"system": rating.get_system(), "name": rating.get_name()}  
                 if rating else None  

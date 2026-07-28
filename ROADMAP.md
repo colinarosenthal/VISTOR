@@ -670,3 +670,16 @@ The objective is to recreate the feeling of sitting in front of a CRT television
 - Added MediaValidator and missing-asset resolution.  
 - Integrated PlaybackQueue (injectable ordering strategy) into the headless Player.  
 - Added BroadcastController and wired the Engine pipeline (Scheduler -> Broadcast Controller -> Playback Queue -> Player) with real elapsed time from Clock.
+
+---  
+  
+## 2026-07-27
+  
+- Integrated `PlaybackQueue` (injectable ordering strategy) into the headless `Player` as its `MediaSource`, completing Playlist Management.  
+- Added `BroadcastController` between Scheduler and Playback Queue; it owns queue population (`clear` + `enqueue`) with an injectable broadcast mode, so the Player never makes scheduling decisions.  
+- Wired `Engine.update()` to drive the Scheduler -> Broadcast Controller -> Playback Queue -> Player pipeline using real elapsed time diffed from `Clock`.  
+- Added `Channel` (owns its own Scheduler / Broadcast Controller / Playback Queue / Player) and `ChannelManager` (tracks active + previous channel; ticks every channel each update so all channels stay time-synced).  
+- Rewired `Engine` to drive all channels through a single shared `Clock` via `ChannelManager` instead of one `Scheduler`, satisfying "channels never stop."  
+- Added `set_channel_by_number` for on-screen numeric channel selection.  
+- Added `ChannelLoader` and externalized channel definitions to `channels.json` (add/edit channels with no code changes).  
+- Added the headless `RemoteController` in `src/remote/` mapping remote keys (channel up/down, numeric entry + enter, previous channel) to `ChannelManager` actions; unbound keys log a warning instead of crashing.

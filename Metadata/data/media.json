@@ -6,6 +6,7 @@
         "description": "",
         "release_year": 1960,
         "runtime_minutes": 103,
+        "scheduling_priority": 0,
         "content_rating": {
             "system": "MPAA",
             "name": "G"
@@ -32,6 +33,7 @@
         "description": "",
         "release_year": 1990,
         "runtime_minutes": 22,
+        "scheduling_priority": 0,
         "content_rating": {
             "system": "TV Parental Guidelines",
             "name": "TV-PG"
@@ -56,6 +58,7 @@
         "description": "",
         "release_year": 1985,
         "runtime_minutes": 4,
+        "scheduling_priority": 0,
         "content_rating": null,
         "original_network": null,
         "production_country": null,
@@ -72,6 +75,7 @@
         "description": "",
         "release_year": 2014,
         "runtime_minutes": 30,
+        "scheduling_priority": 0,
         "content_rating": null,
         "original_network": null,
         "production_country": null,
@@ -90,6 +94,7 @@
         "description": "",
         "release_year": 1990,
         "runtime_minutes": 22,
+        "scheduling_priority": 0,
         "content_rating": {
             "system": "TV Parental Guidelines",
             "name": "TV-PG"

@@ -555,6 +555,8 @@ class MetadataLoader:
   
             obj.description = item.get("description", "")  
   
+            obj.scheduling_priority = item.get("scheduling_priority", 0)  
+  
             # Stash flattened refs for _resolve_relationships.  
             obj._pending = item  
   
