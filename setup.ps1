@@ -139,7 +139,7 @@ $Folders = @(
     "ChannelConfigs",
 
     "src",
-    "src\channels",
+    "src\channel",
     "src\core",
     "src\engine",
     "src\metadata",
@@ -207,7 +207,7 @@ $GitKeepFolders = @(
 
     "Tools",
 
-    "src\channels",
+    "src\channel",
     "src\core",
     "src\engine",
     "src\metadata",

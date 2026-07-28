@@ -366,23 +366,23 @@ VISTOR possesses a fully populated broadcast library ready for scheduling.
 
 # Phase 4 — Playback System
 
+## Channel Management
+
+- [ ] Channel Definitions
+- [x] Channel Manager
+- [x] Previous Channel Support
+- [ ] Numeric Channel Entry
+
+---
+
 ## Player
 
 - [x] Video Playback
 - [x] Playlist Management
-- [ ] Channel Switching
-- [ ] Resume Playback After Channel Changes
-- [ ] Persistent Playback
+- [x] Channel Switching
+- [x] Resume Playback After Channel Changes
+- [x] Persistent Playback
 - [ ] Keyboard Controls
-
----
-
-## Channel Management
-
-- [ ] Channel Definitions
-- [ ] Channel Manager
-- [ ] Previous Channel Support
-- [ ] Numeric Channel Entry
 
 ---
 
@@ -656,22 +656,17 @@ The objective is to recreate the feeling of sitting in front of a CRT television
 - Fixed `MetadataLibrary.__init__` missing buckets and removed duplicate accessors.  
 - Verified full save → load metadata round-trip via `test_metadata.py`.
 
-### Known Issues — Deferred (documented YYYY-MM-DD, fix after Developer Guide pass)  
+---  
   
-- clock.py import path: `src/core/clock.py` imports `ScheduleType` from  
-`core.schedule_type`, but the module actually lives at  
-`src/scheduler/schedule_type.py`. Reconcile the import (or the file location) so it resolves on case-sensitive systems. [core/clock.py:7]  
+## 2026-07-26
   
-- Version string drift: `src/core/version.py` (VERSION = "0.2.0") and `src/core/config.py` (self.version = "0.2.0") disagree with the docs, which are being bumped to 0.3.0. Update both constants.  
-  
-- Path casing: test/loader use `Path("metadata/data")` (lowercase) but `src/core/paths.py` defines `self.metadata = project_root / "Metadata"` (capital M). Works on Windows only; breaks on Linux/macOS. Pick one casing.  
-  
-- Advertiser reference keying: advertiser refs are flattened/collected by get_name() while every other entity (network, studio, franchise, series, season, product, campaign) uses get_id(). Switch advertiser to get_id().  
-  
-- Media round-trip not fully exercised: save_to_directory / _media_to_dictionary and the loader stages reconstruct media, but the round-trip test only proves the people bucket. Episodes still need franchises/series/seasons serialized to reconstruct (Episode.__init__ requires a Season instance).
-  
-- In metadata_serializer.py, switch both advertiser spots to get_id(): _product_to_dictionary line 159 and _media_to_dictionary line 216. metadata_serializer.py:155-216
-
-- In metadata_loader.py, add _load_advertisers, _load_products, _load_campaigns stages (mirroring _load_franchises) and call them before _load_media. metadata_loader.py:395-418
-
-- Extend _resolve_relationships to look up advertiser/product/campaign (by id), franchise (by id), and music_genre (by name) from pending and set them on the reconstructed media before del item._pending. metadata_loader.py:562-570
+- Completed metadata reference round-trip (genres, tags, themes, languages, countries, networks, franchises, advertisers, products, campaigns, music genres resolved in _resolve_relationships).  
+- Added new loader stages (_load_advertisers, _load_products, _load_campaigns) and hardened _resolve_relationships against missing _pending refs.  
+- Added graceful handling of missing/malformed metadata files via the _read_json helper, routed through Logger.  
+- Closed the episode round-trip gap so series/seasons serialize and episodes reconstruct on load.  
+- Added MediaVerifier service and filename normalization (normalize_filename).  
+- Added MediaScanner for physical media discovery under Media/.  
+- Added MediaAssociator for manifest-driven asset association.  
+- Added MediaValidator and missing-asset resolution.  
+- Integrated PlaybackQueue (injectable ordering strategy) into the headless Player.  
+- Added BroadcastController and wired the Engine pipeline (Scheduler -> Broadcast Controller -> Playback Queue -> Player) with real elapsed time from Clock.

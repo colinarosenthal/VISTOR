@@ -5,11 +5,7 @@ VISTOR Engine
 from core.logger import Logger  
 from core.clock import Clock  
   
-from scheduler.scheduler import Scheduler  
-from scheduler.broadcast_controller import BroadcastController  
-  
-from player.player import Player  
-from player.playback_queue import PlaybackQueue  
+from channel.channel_manager import ChannelManager  
   
   
 class Engine:  
@@ -19,14 +15,13 @@ class Engine:
         self.running = False  
         self.library = None  
   
+        # One shared Clock drives every channel so all channels stay  
+        # time-synced and keep airing whether or not they are being watched.  
         self.clock = None  
-        self.scheduler = None  
   
-        self.queue = None  
-        self.broadcast_controller = None  
-        self.player = None  
-  
-        self.current_block = None  
+        # The ChannelManager owns the set of channels and tracks the active  
+        # (and previous) channel. Each channel owns its own broadcast pipeline.  
+        self.channel_manager = None  
   
     def initialize(self):  
         """Initialize the engine."""  
@@ -36,16 +31,11 @@ class Engine:
         self.clock = Clock()  
         self.clock.initialize()  
   
-        self.scheduler = Scheduler(self.clock)  
-        self.scheduler.initialize()  
-  
-        # Playback pipeline. The queue's ordering strategy is injectable,  
-        # so a future UI broadcast-structure setting can swap ordering  
-        # without touching the Engine or Player. The Broadcast Controller  
-        # owns block -> queue population; the Engine never enqueues directly.  
-        self.queue = PlaybackQueue()  
-        self.broadcast_controller = BroadcastController(self.queue)  
-        self.player = Player(self.queue)  
+        # Every channel is initialized against the shared Clock. Channels are  
+        # registered before initialize() (by a ChannelLoader in a later step)  
+        # or via channel_manager.add_channel(...).  
+        self.channel_manager = ChannelManager()  
+        self.channel_manager.initialize(self.clock)  
   
     def start(self):  
         """Start the engine."""  
@@ -61,7 +51,7 @@ class Engine:
     def update(self):  
         """Run one engine update."""  
   
-        # Capture real elapsed time from the Clock before advancing it.  
+        # Capture real elapsed time from the shared Clock before advancing it.  
         previous_time = self.clock.get_time()  
         self.clock.update()  
         current_time = self.clock.get_time()  
@@ -71,29 +61,36 @@ class Engine:
         else:  
             elapsed_seconds = 0.0  
   
-        self.scheduler.update()  
-  
-        # Refill the queue whenever the active programming block changes.  
-        block = self.scheduler.get_current_block()  
-  
-        if block is not self.current_block:  
-            self.current_block = block  
-            self._on_block_change(block)  
-  
-        # Drive playback with real elapsed time.  
-        self.player.tick(elapsed_seconds)  
+        # Tick EVERY channel with the same elapsed time so unattended channels  
+        # progress exactly as much as the one being watched. This is what makes  
+        # "channels never stop" and "resume playback after channel changes"  
+        # work: switching channels just changes which channel's player output  
+        # the viewer sees; no channel is ever paused or restarted.  
+        self.channel_manager.update(elapsed_seconds)  
   
         Logger.info("Engine update.")  
   
-    def _on_block_change(self, block):  
-        """Hand the new block to the Broadcast Controller to rebuild the queue."""  
+    # ------------------------------------------------------------------  
+    # Active Channel (what the viewer currently sees)  
+    # ------------------------------------------------------------------  
   
-        # The Broadcast Controller decides what goes in the queue (programs +  
-        # any interruptions). The Engine only coordinates; it does not enqueue.  
-        self.broadcast_controller.update(block)
+    def get_active_channel(self):  
+        """Return the channel the viewer is currently watching."""  
   
-        # Begin playback of the first queued item on the next tick.  
-        self.player.load_next()  
+        if self.channel_manager is None:  
+            return None  
+  
+        return self.channel_manager.get_active_channel()  
+  
+    def get_active_player(self):  
+        """Return the player of the currently watched channel."""  
+  
+        channel = self.get_active_channel()  
+  
+        if channel is None:  
+            return None  
+  
+        return channel.get_player()  
   
     def stop(self):  
         """Stop the engine."""  
@@ -109,8 +106,8 @@ class Engine:
   
         self.running = False  
   
-        if self.scheduler is not None:  
-            self.scheduler.shutdown()  
+        if self.channel_manager is not None:  
+            self.channel_manager.shutdown()  
   
         if self.clock is not None:  
             self.clock.shutdown()

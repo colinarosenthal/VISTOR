@@ -29,7 +29,9 @@ from metadata.services.metadata_population import MetadataPopulation
 from metadata.media.film.movie import Movie  
 from metadata.media.television.episode import Episode  
 from metadata.media.music.music_video import MusicVideo  
-from metadata.media.advertising.commercial import Commercial  
+from metadata.media.advertising.commercial import Commercial 
+
+from core.clock import Clock
   
   
 print("\n=== Metadata Import Test ===")  
@@ -593,11 +595,12 @@ from engine.engine import Engine
 engine = Engine()  
 engine.initialize()  
   
-# Attach media to the current schedule's active block.  
-engine.scheduler.update()          # resolve current_block from the clock  
-current_block = engine.scheduler.get_current_block()  
-assert current_block is not None   # default block spans 00:00-23:59  
-current_block.add_item(movie)  
+# Attach media to the active channel's current programming block.  
+channel = engine.channel_manager.get_active_channel()  
+  
+channel.scheduler.update()          # resolve current_block from the shared clock  
+current_block = channel.scheduler.get_current_block()  
+assert current_block is not None    # default block spans 00:00-23:59  
   
 for movie in built.get_movies():  
     current_block.add_item(movie)  
@@ -605,8 +608,34 @@ for movie in built.get_movies():
 engine.update()  
 engine.update()  
   
-assert engine.queue.size() >= 1  
+assert channel.queue.size() >= 1  
 print("Engine broadcast pipeline verified.")
+
+from channel.channel_manager import ChannelManager  
+from channel.channel import Channel  
+  
+print("\n=== Testing Channel Manager (time sync) ===")  
+  
+engine = Engine()  
+engine.clock = Clock()  
+engine.clock.initialize()  
+  
+manager = ChannelManager()  
+manager.add_channel(Channel(2, "Channel 2"))   # match your Channel constructor  
+manager.add_channel(Channel(4, "Channel 4"))  
+manager.initialize(engine.clock)  
+  
+# Attach media to each channel's current block, then tick.  
+engine.channel_manager = manager  
+engine.update()  
+engine.update()  
+  
+manager.channel_up()  
+assert manager.get_active_channel().get_number() == 4  
+manager.previous_channel()  
+assert manager.get_active_channel().get_number() == 2  
+  
+print("Channel Manager verified.")
   
 # ------------------------------------------------------------------  
 # Final Result  
