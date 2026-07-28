@@ -397,11 +397,11 @@ VISTOR behaves like a functional cable box using the keyboard.
 ## On-Screen Display
 
 - [x] Channel Banner
-- [ ] Program Information
+- [x] Program Information
 - [x] Volume Indicator
 - [x] Mute Indicator
-- [ ] Clock
-- [ ] Fade Animations
+- [x] Clock
+- [x] Fade Animations
 
 ---
 
@@ -417,7 +417,7 @@ VISTOR behaves like a functional cable box using the keyboard.
 
 ## Milestone
 
-VISTOR provides an authentic cable television user interface.
+VISTOR provides a cable television user interface.
 
 ---
 
@@ -691,3 +691,9 @@ Rewired the Engine to drive all channels through a single shared `Clock` via `Ch
 - Wired `ChannelManager` and `OSDManager` into `Engine.initialize()`; `Engine.update()` now ticks channels and the OSD with real elapsed seconds.  
 - Added an OSD-agnostic `on_channel_change` callback on `ChannelManager` so the Engine raises the channel banner on every switch path without the Channel/Player depending on the OSD.  
 - Channel Banner, Volume Indicator, and Mute Indicator now fire and auto-hide in the runtime; verified via `test_metadata.py`.
+- Added a `PROGRAM_INFO` overlay to `OSDManager` with `show_program_info()`, reusing the shared timed-visibility/fade model.  
+- Panel reads the now-playing `MediaItem` (title, description, year, runtime, rating, genres, media type) defensively and folds in the active `ProgrammingBlock` time-slot context.  
+- Wired `Engine.show_info()` to raise the panel for the active channel; verified via `test_metadata.py`.
+- Added the Clock OSD overlay: `Engine.show_clock()` formats the current `Clock` time as a 12-hour cable-box string and raises `OSDOverlay.CLOCK` through the shared timed-visibility model.  
+- Formalized Fade Animations: `OSDManager.get_opacity()` now applies smoothstep easing (`_ease`) to fade-in/out instead of a raw linear ramp, added `is_fading()` and `get_phase()` accessors.  
+- Completed the Phase 5 On-Screen Display section; verified via `test_metadata.py`.

@@ -147,7 +147,7 @@ class Engine:
         return self.channel_manager.previous_channel()  
   
     # ------------------------------------------------------------------  
-    # Audio Control (remote-facing) -> active channel's player + OSD  
+    # Audio Control (remote-facing)
     # ------------------------------------------------------------------  
   
     def _active_player(self):  
@@ -191,7 +191,42 @@ class Engine:
             return  
   
         player.toggle_mute()  
-        self.osd.show_mute(player.is_muted())  
+        self.osd.show_mute(player.is_muted())
+
+    def show_info(self):  
+        """Show the program-information panel for the active channel."""  
+  
+        if self.channel_manager is None or self.osd is None:  
+            return  
+  
+        channel = self.channel_manager.get_active_channel()  
+  
+        if channel is None:  
+            return  
+  
+        self.osd.show_program_info(channel, channel.get_player())
+
+    def show_clock(self):  
+        """Show the clock overlay with the current wall-clock time."""  
+  
+        if self.osd is None or self.clock is None:  
+            return  
+  
+        self.osd.show_clock(self._format_clock_text())  
+  
+    def _format_clock_text(self):  
+        """Format the current time as a 12-hour cable-box clock string."""  
+  
+        hour = self.clock.get_hour()  
+        minute = self.clock.get_minute()  
+  
+        suffix = "AM" if hour < 12 else "PM"  
+  
+        hour_12 = hour % 12  
+        if hour_12 == 0:  
+            hour_12 = 12  
+  
+        return f"{hour_12}:{minute:02d} {suffix}"
   
     # ------------------------------------------------------------------  
     # OSD callbacks  

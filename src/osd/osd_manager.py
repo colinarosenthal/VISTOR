@@ -3,8 +3,9 @@ VISTOR On-Screen Display (OSD) Manager
   
 Headless overlay state machine. The OSDManager does not render pixels; it  
 models which temporary overlay is currently on screen (channel banner,  
-volume, mute, clock), how opaque it is (for fade in/out), and when it  
-should auto-hide -- exactly like a late-1990s/early-2000s cable box.  
+program information, volume, mute, clock), how opaque it is (for fade  
+in/out), and when it should auto-hide -- exactly like a late-1990s/  
+early-2000s cable box.  
   
 A single timed-visibility model is shared by every overlay type, so the  
 channel banner and the volume indicator behave identically: show, hold,  
@@ -21,6 +22,7 @@ class OSDOverlay(Enum):
   
     NONE = "none"  
     CHANNEL_BANNER = "channel_banner"  
+    PROGRAM_INFO = "program_info"  
     VOLUME = "volume"  
     MUTE = "mute"  
     CLOCK = "clock"  
@@ -57,7 +59,7 @@ class OSDManager:
         self.payload = {}  
   
         # Time spent in the current phase.  
-        self._elapsed = 0.0  
+        self._elapsed = 0.0 
   
     # ------------------------------------------------------------------  
     # Showing overlays  
@@ -73,6 +75,19 @@ class OSDManager:
         self.phase = OSDPhase.FADE_IN  
         self._elapsed = 0.0  
   
+    def _resolve_player(self, channel, player=None):  
+        """Resolve a channel's Player (explicit arg, getter, then attribute)."""  
+  
+        source = player  
+  
+        if source is None and hasattr(channel, "get_player"):  
+            source = channel.get_player()  
+  
+        if source is None:  
+            source = getattr(channel, "player", None)  
+  
+        return source  
+  
     def show_channel_banner(self, channel, player=None):  
         """Show the channel banner for the given channel."""  
   
@@ -82,17 +97,74 @@ class OSDManager:
         }  
   
         # Best-effort now-playing title from the channel's player.  
-        source = player  
-        if source is None and hasattr(channel, "get_player"):  
-            source = channel.get_player()  
-        if source is None:  
-            source = getattr(channel, "player", None)  
+        source = self._resolve_player(channel, player)  
   
         if source is not None:  
             item = source.get_current_item()  
             payload["program"] = item.get_title() if item is not None else None  
   
         self.show(OSDOverlay.CHANNEL_BANNER, payload)  
+  
+    def show_program_info(self, channel, player=None):  
+        """Show the expanded program-information panel for the given channel.  
+  
+        Reads the now-playing MediaItem from the channel's Player and the  
+        current time-slot context from the channel's active ProgrammingBlock.  
+        Every field is read defensively: many library items have no content  
+        rating and no genres, so missing values collapse to None / [].  
+        """  
+  
+        payload = {  
+            "number": channel.get_number(),  
+            "channel_name": channel.get_name(),  
+            "title": None,  
+            "description": None,  
+            "release_year": None,  
+            "runtime_minutes": None,  
+            "rating": None,  
+            "genres": [],  
+            "media_type": None,  
+            "block_name": None,  
+            "block_start": None,  
+            "block_end": None,  
+        }  
+  
+        # --- Now-playing MediaItem (may be None if nothing is loaded) ---  
+        source = self._resolve_player(channel, player)  
+  
+        if source is not None:  
+            item = source.get_current_item()  
+  
+            if item is not None:  
+                payload["title"] = item.get_title()  
+                payload["description"] = item.get_description()  
+                payload["release_year"] = item.get_release_year()  
+                payload["runtime_minutes"] = item.get_runtime_minutes()  
+  
+                rating = item.get_content_rating()  
+                if rating is not None:  
+                    payload["rating"] = rating.get_name()  
+  
+                payload["genres"] = [g.get_name() for g in item.get_genres()]  
+  
+                media_type = item.get_media_type()  
+                if media_type is not None:  
+                    # Enum -> readable value where possible.  
+                    payload["media_type"] = getattr(  
+                        media_type, "value", str(media_type)  
+                    )  
+  
+        # --- Time-slot context from the active programming block ---  
+        block = None  
+        if hasattr(channel, "get_current_block"):  
+            block = channel.get_current_block()  
+  
+        if block is not None:  
+            payload["block_name"] = block.get_name()  
+            payload["block_start"] = block.get_start_time()  
+            payload["block_end"] = block.get_end_time()  
+  
+        self.show(OSDOverlay.PROGRAM_INFO, payload)  
   
     def show_volume(self, level, muted=False):  
         """Show the volume indicator (also used for unmute feedback)."""  
@@ -105,7 +177,7 @@ class OSDManager:
         self.show(OSDOverlay.MUTE, {"muted": muted})  
   
     def show_clock(self, time_text):  
-        """Show the clock overlay."""  
+        """Show the clock overlay with a preformatted time string."""  
   
         self.show(OSDOverlay.CLOCK, {"time": time_text})  
   
@@ -144,6 +216,27 @@ class OSDManager:
                 self.hide()  
   
     # ------------------------------------------------------------------  
+    # Fade Animations  
+    # ------------------------------------------------------------------  
+  
+    @staticmethod  
+    def _ease(fraction):  
+        """Smoothstep easing (ease-in/ease-out) for gentler fades.  
+  
+        Maps a linear 0.0-1.0 progress to an S-curve so overlays don't pop  
+        in/out with a hard linear ramp, matching period-correct OSD feel.  
+        """  
+  
+        fraction = max(0.0, min(1.0, fraction))  
+  
+        return fraction * fraction * (3.0 - 2.0 * fraction)  
+  
+    def is_fading(self):  
+        """Return whether the overlay is mid fade-in or fade-out."""  
+  
+        return self.phase in (OSDPhase.FADE_IN, OSDPhase.FADE_OUT)  
+  
+    # ------------------------------------------------------------------  
     # Introspection (for the future renderer)  
     # ------------------------------------------------------------------  
   
@@ -157,13 +250,18 @@ class OSDManager:
   
         return self.overlay  
   
+    def get_phase(self):  
+        """Return the current visibility phase."""  
+  
+        return self.phase  
+  
     def get_payload(self):  
         """Return the current overlay's snapshot data."""  
   
         return self.payload  
   
     def get_opacity(self):  
-        """Return current opacity 0.0-1.0 for fade rendering."""  
+        """Return current opacity 0.0-1.0 for fade rendering (eased)."""  
   
         if self.phase == OSDPhase.HIDDEN:  
             return 0.0  
@@ -175,9 +273,10 @@ class OSDManager:
             return 1.0  
   
         fraction = min(1.0, self._elapsed / self.fade_duration)  
+        eased = self._ease(fraction)  
   
         if self.phase == OSDPhase.FADE_IN:  
-            return fraction  
+            return eased  
   
         # FADE_OUT  
-        return 1.0 - fraction
+        return 1.0 - eased
