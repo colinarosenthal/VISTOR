@@ -25,6 +25,8 @@ class ChannelManager:
         self.channels = []  
         self.active_index = 0  
         self.previous_index = 0  
+   
+        self.on_channel_change = None  
   
         self.initialized = False  
   
@@ -119,7 +121,11 @@ class ChannelManager:
         Logger.info(  
             f"Switched to channel {channel.get_number()} "  
             f"'{channel.get_name()}'."  
-        )  
+        ) 
+
+        # Notify observers (e.g. the OSD) without restarting playback. 
+        if self.on_channel_change is not None:  
+            self.on_channel_change(channel)  
   
         return channel
 
@@ -132,6 +138,11 @@ class ChannelManager:
     
         Logger.warning(f"No channel with number {number}.")  
         return None
+
+    def set_on_channel_change(self, callback):  
+        """Register a callback fired with the new Channel after each switch."""  
+  
+        self.on_channel_change = callback
   
     def channel_up(self):  
         """Move to the next channel, wrapping around."""  

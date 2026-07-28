@@ -2,9 +2,9 @@
 
 **Project Status:** Pre-Alpha
 
-**Current Version:** 0.3.0
+**Current Version:** 0.5.0
 
-**Last Updated:** July 25, 2026
+**Last Updated:** July 27, 2026
 
 ---
 
@@ -32,7 +32,7 @@ Major features should be completed one at a time and thoroughly tested before ad
 
 # Current Milestone
 
-**Phase 3 — Media Library**
+**Phase 5 — Cable Box Experience**
 
 ---
 
@@ -396,10 +396,10 @@ VISTOR behaves like a functional cable box using the keyboard.
 
 ## On-Screen Display
 
-- [ ] Channel Banner
+- [x] Channel Banner
 - [ ] Program Information
-- [ ] Volume Indicator
-- [ ] Mute Indicator
+- [x] Volume Indicator
+- [x] Mute Indicator
 - [ ] Clock
 - [ ] Fade Animations
 
@@ -683,3 +683,11 @@ The objective is to recreate the feeling of sitting in front of a CRT television
 - Added `set_channel_by_number` for on-screen numeric channel selection.  
 - Added `ChannelLoader` and externalized channel definitions to `channels.json` (add/edit channels with no code changes).  
 - Added the headless `RemoteController` in `src/remote/` mapping remote keys (channel up/down, numeric entry + enter, previous channel) to `ChannelManager` actions; unbound keys log a warning instead of crashing.
+Rewired the Engine to drive all channels through a single shared `Clock` via `ChannelManager` so every channel stays time-synced regardless of which is being watched.  
+- Added `set_channel_by_number` to `ChannelManager` for on-screen numeric entry.   
+- Added `scheduling_priority` to `MediaItem` (with serializer/loader round-trip) and `download_status`/`last_played` to `MediaAsset` (model-only for now).
+- Fixed duplicated `Channel.__init__` block that discarded constructor args and created inconsistent field names; consolidated to canonical plural names (`programming_sources`, `commercial_pools`, `promotional_material`, `station_id_graphics`).  
+- Added headless volume/mute state to `Player` (`set_volume`/`volume_up`/`volume_down`/`set_mute`/`toggle_mute`, `get_volume`/`is_muted`, clamped 0-100).  
+- Wired `ChannelManager` and `OSDManager` into `Engine.initialize()`; `Engine.update()` now ticks channels and the OSD with real elapsed seconds.  
+- Added an OSD-agnostic `on_channel_change` callback on `ChannelManager` so the Engine raises the channel banner on every switch path without the Channel/Player depending on the OSD.  
+- Channel Banner, Volume Indicator, and Mute Indicator now fire and auto-hide in the runtime; verified via `test_metadata.py`.

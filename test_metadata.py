@@ -617,16 +617,14 @@ from channel.channel import Channel
 print("\n=== Testing Channel Manager (time sync) ===")  
   
 engine = Engine()  
-engine.clock = Clock()  
-engine.clock.initialize()  
+engine.initialize()   # builds clock, scheduler, channel_manager (from loader), osd  
   
-manager = ChannelManager()  
-manager.add_channel(Channel(2, "Channel 2"))   # match your Channel constructor  
-manager.add_channel(Channel(4, "Channel 4"))  
-manager.initialize(engine.clock)  
+# The engine self-populates its ChannelManager from ChannelConfigs/channels.json  
+# (channels 2 "VISTOR General" and 4 "VISTOR Movies").  
+manager = engine.channel_manager  
+assert manager.count() >= 2  
   
-# Attach media to each channel's current block, then tick.  
-engine.channel_manager = manager  
+# Channels progress in real time on every engine tick.  
 engine.update()  
 engine.update()  
   
@@ -662,6 +660,92 @@ remote.press("prev")
 remote.press("power")  
   
 print("Remote Controller verified.")
+
+print("=== Testing OSD Manager ===")  
+  
+from osd.osd_manager import OSDManager, OSDOverlay, OSDPhase  
+  
+osd = OSDManager(visible_duration=5.0, fade_duration=0.4)  
+  
+osd.show_volume(level=60, muted=False)  
+assert osd.get_overlay() == OSDOverlay.VOLUME  
+assert osd.phase == OSDPhase.FADE_IN  
+  
+osd.tick(0.4)                       # finish fade in  
+assert osd.phase == OSDPhase.VISIBLE  
+assert osd.get_opacity() == 1.0  
+  
+osd.tick(5.0)                       # hold elapses -> fade out  
+assert osd.phase == OSDPhase.FADE_OUT  
+  
+osd.tick(0.4)                       # fade out completes -> hidden  
+assert not osd.is_visible()  
+assert osd.get_overlay() == OSDOverlay.NONE  
+  
+print("OSD Manager verified.")
+
+print("\n=== Testing Player Volume + Mute ===")  
+  
+vol_player = Player()  
+assert vol_player.get_volume() == 50  
+assert vol_player.is_muted() is False  
+  
+vol_player.volume_up()  
+assert vol_player.get_volume() == 55  
+vol_player.volume_down()  
+assert vol_player.get_volume() == 50  
+  
+vol_player.set_volume(150)  
+assert vol_player.get_volume() == 100    # clamped high  
+vol_player.set_volume(-10)  
+assert vol_player.get_volume() == 0      # clamped low  
+vol_player.set_volume(40)  
+  
+vol_player.toggle_mute()  
+assert vol_player.is_muted() is True  
+vol_player.toggle_mute()  
+assert vol_player.is_muted() is False  
+  
+print("Player volume + mute verified.")  
+  
+  
+print("\n=== Testing Channel Banner + OSD Indicators ===")  
+  
+from osd.osd_manager import OSDManager, OSDOverlay  
+  
+# The engine (built above) owns a ChannelManager + OSDManager wired together.  
+assert engine.channel_manager is not None  
+assert engine.osd is not None  
+assert engine.channel_manager.count() >= 1  
+  
+# --- Channel Banner fires on channel change ---  
+engine.channel_up()  
+assert engine.osd.is_visible() is True  
+assert engine.osd.get_overlay() == OSDOverlay.CHANNEL_BANNER  
+  
+banner = engine.osd.get_payload()  
+active = engine.channel_manager.get_active_channel()  
+assert banner["number"] == active.get_number()  
+assert banner["name"] == active.get_name()  
+  
+# --- Auto-hide: tick() advances one phase per call (FADE_IN -> VISIBLE -> FADE_OUT -> HIDDEN) ---  
+engine.osd.tick(engine.osd.fade_duration + 0.1)      # FADE_IN  -> VISIBLE  
+engine.osd.tick(engine.osd.visible_duration + 0.1)   # VISIBLE  -> FADE_OUT  
+engine.osd.tick(engine.osd.fade_duration + 0.1)      # FADE_OUT -> HIDDEN  
+assert engine.osd.is_visible() is False  
+  
+# --- Volume Indicator ---  
+engine.volume_up()  
+assert engine.osd.get_overlay() == OSDOverlay.VOLUME  
+assert engine.osd.get_payload()["level"] == active.get_player().get_volume()  
+engine.osd.hide()  
+  
+# --- Mute Indicator ---  
+engine.toggle_mute()  
+assert engine.osd.get_overlay() == OSDOverlay.MUTE  
+assert engine.osd.get_payload()["muted"] == active.get_player().is_muted()  
+  
+print("Channel banner + OSD indicators verified.")
   
 # ------------------------------------------------------------------  
 # Final Result  

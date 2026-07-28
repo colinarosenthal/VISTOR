@@ -36,45 +36,26 @@ class Channel:
         station_id_graphics=None,  
         network_branding="",  
     ):  
-        # Identity / configuration  
+        # --- Identity / configuration (Design Bible Section 10) ---  
         self.number = number  
         self.name = name  
         self.logo = logo  
         self.primary_genre = primary_genre  
         self.target_audience = target_audience  
+        self.network_branding = network_branding  
+        self.broadcast_schedule = broadcast_schedule  
+  
+        # --- Content pools (canonical, plural names) ---  
+        # Preserve any values passed in by the ChannelLoader.  
         self.programming_sources = programming_sources or []  
         self.commercial_pools = commercial_pools or []  
         self.promotional_material = promotional_material or []  
-        self.broadcast_schedule = broadcast_schedule  
         self.station_id_graphics = station_id_graphics or []  
-        self.network_branding = network_branding  
-  
-        # Runtime pipeline (built in initialize()).  
-        self.initialized = False  
-  
-        self.clock = None  
-        self.scheduler = None  
-        self.broadcast_controller = None  
-        self.queue = None  
-        self.player = None  
-
-        # --- Identity (Design Bible Section 10) ---  
-        self.number = number  
-        self.name = name  
-        self.logo = logo  
-        self.primary_genre = primary_genre  
-        self.target_audience = target_audience  
-        self.network_branding = network_branding  
-  
-        # --- Content pools (populated from metadata in a later step) ---  
-        self.programming_sources = []  
-        self.commercial_pool = []  
-        self.promotional_material = []  
-        self.station_ids = []  
   
         # --- Broadcast pipeline (built in initialize) ---  
         # This channel owns its own Scheduler -> Broadcast Controller ->  
         # Playback Queue -> Player so it can keep airing independently.  
+        self.clock = None  
         self.scheduler = None  
         self.queue = None  
         self.broadcast_controller = None  
@@ -96,6 +77,8 @@ class Channel:
         advances with the same wall-clock time. This is what lets a channel  
         keep "airing" while the viewer is elsewhere.  
         """  
+  
+        self.clock = clock  
   
         # Schedule (time -> programming block)  
         self.scheduler = Scheduler(clock)  
@@ -241,30 +224,10 @@ class Channel:
   
         return self.target_audience  
   
-    def get_programming_sources(self):  
-        """Return the channel's programming sources."""  
-  
-        return self.programming_sources  
-  
-    def get_commercial_pools(self):  
-        """Return the channel's commercial pools."""  
-  
-        return self.commercial_pools  
-  
-    def get_promotional_material(self):  
-        """Return the channel's promotional material."""  
-  
-        return self.promotional_material  
-  
     def get_broadcast_schedule(self):  
         """Return the channel's broadcast schedule identifier."""  
   
         return self.broadcast_schedule  
-  
-    def get_station_id_graphics(self):  
-        """Return the channel's station identification graphics."""  
-  
-        return self.station_id_graphics  
   
     def get_network_branding(self):  
         """Return the channel's network branding."""  
@@ -292,12 +255,12 @@ class Channel:
     def add_commercial(self, commercial):  
         """Add a commercial to this channel's commercial pool."""  
   
-        self.commercial_pool.append(commercial)  
+        self.commercial_pools.append(commercial)  
   
-    def get_commercial_pool(self):  
-        """Return this channel's commercial pool."""  
+    def get_commercial_pools(self):  
+        """Return this channel's commercial pools."""  
   
-        return self.commercial_pool  
+        return self.commercial_pools  
   
     # ------------------------------------------------------------------  
     # Promotional Material  
@@ -320,9 +283,9 @@ class Channel:
     def add_station_id(self, station_id):  
         """Add a station identification asset to this channel."""  
   
-        self.station_ids.append(station_id)  
+        self.station_id_graphics.append(station_id)  
   
-    def get_station_ids(self):  
-        """Return this channel's station identification assets."""  
+    def get_station_id_graphics(self):  
+        """Return this channel's station identification graphics."""  
   
-        return self.station_ids
+        return self.station_id_graphics

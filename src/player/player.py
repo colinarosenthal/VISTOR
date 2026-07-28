@@ -57,6 +57,11 @@ class Player:
   
         self.duration_seconds = 0  
   
+        # Audio state (headless; a future renderer/audio layer reads these).  
+        self.volume = 50  
+  
+        self.muted = False
+  
     # ------------------------------------------------------------------  
     # Source  
     # ------------------------------------------------------------------  
@@ -244,3 +249,46 @@ class Player:
                 return runtime  
   
         return item.get_runtime_minutes() * 60
+
+    # ------------------------------------------------------------------  
+    # Audio  
+    # ------------------------------------------------------------------  
+  
+    def set_volume(self, level):  
+        """Set the volume, clamped to the 0-100 range."""  
+  
+        self.volume = max(0, min(100, int(level)))  
+  
+        Logger.info(f"Volume set to {self.volume}.")  
+  
+    def volume_up(self, step=5):  
+        """Increase the volume by step (clamped)."""  
+  
+        self.set_volume(self.volume + step)  
+  
+    def volume_down(self, step=5):  
+        """Decrease the volume by step (clamped)."""  
+  
+        self.set_volume(self.volume - step)  
+  
+    def set_mute(self, flag):  
+        """Set the mute state explicitly."""  
+  
+        self.muted = bool(flag)  
+  
+        Logger.info("Muted." if self.muted else "Unmuted.")  
+  
+    def toggle_mute(self):  
+        """Toggle the mute state."""  
+  
+        self.set_mute(not self.muted)  
+  
+    def get_volume(self):  
+        """Return the current volume (0-100)."""  
+  
+        return self.volume  
+  
+    def is_muted(self):  
+        """Return whether the player is muted."""  
+  
+        return self.muted
