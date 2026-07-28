@@ -854,6 +854,47 @@ fade.tick(0.6)
 assert fade.is_visible() is False  
   
 print("Fade animations verified.")
+
+print("\n=== Testing TV Guide ===")  
+  
+# The engine (built above) owns a Guide over its ChannelManager + Clock.  
+assert engine.guide is not None  
+  
+# Opening the guide builds one row per channel.  
+engine.open_guide()  
+assert engine.guide.is_open() is True  
+assert engine.guide.get_row_count() == engine.channel_manager.count()  
+  
+# Each row exposes the channel's number + name.  
+first_row = engine.guide.get_rows()[0]  
+first_channel = engine.channel_manager.get_channels()[0]  
+assert first_row["number"] == first_channel.get_number()  
+assert first_row["name"] == first_channel.get_name()  
+  
+# Current + upcoming program labels are always populated (placeholder if empty).  
+assert engine.guide.get_current_program(0) is not None  
+assert engine.guide.get_upcoming_program(0) is not None  
+  
+# Time display is a non-empty 12-hour string.  
+time_text = engine.guide.get_time_text()  
+assert isinstance(time_text, str) and time_text  
+assert ("AM" in time_text) or ("PM" in time_text)  
+  
+# Navigation: cursor starts at 0, moves down, and clamps at the ends.  
+assert engine.guide.get_selected_row() == 0  
+engine.guide_down()  
+if engine.channel_manager.count() > 1:  
+    assert engine.guide.get_selected_row() == 1  
+engine.guide_up()  
+assert engine.guide.get_selected_row() == 0  
+engine.guide_up()                     # clamp at top  
+assert engine.guide.get_selected_row() == 0  
+  
+# Closing hides it.  
+engine.close_guide()  
+assert engine.guide.is_open() is False  
+  
+print("TV Guide verified.")
   
 # ------------------------------------------------------------------  
 # Final Result  

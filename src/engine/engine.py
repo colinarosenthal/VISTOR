@@ -14,6 +14,8 @@ from player.playback_queue import PlaybackQueue
 from channel.channel_manager import ChannelManager  
   
 from osd.osd_manager import OSDManager  
+
+from guide.guide import Guide  
   
   
 class Engine:  
@@ -34,7 +36,9 @@ class Engine:
   
         # Channel + OSD subsystems.  
         self.channel_manager = None  
-        self.osd = None  
+        self.osd = None
+
+        self.guide = None
   
     def initialize(self):  
         """Initialize the engine."""  
@@ -60,7 +64,9 @@ class Engine:
         # On-Screen Display. Raise the channel banner whenever the active  
         # channel changes; the ChannelManager stays OSD-agnostic.  
         self.osd = OSDManager()  
-        self.channel_manager.set_on_channel_change(self._on_channel_change)  
+        self.channel_manager.set_on_channel_change(self._on_channel_change)
+
+        self.guide = Guide(self.channel_manager, self.clock)
   
     def start(self):  
         """Start the engine."""  
@@ -110,7 +116,10 @@ class Engine:
         if self.osd is not None:  
             self.osd.tick(elapsed_seconds)  
   
-        Logger.info("Engine update.")  
+        Logger.info("Engine update.")
+
+        if self.guide is not None and self.guide.is_open():  
+            self.guide.refresh_time()
   
     def _on_block_change(self, block):  
         """Hand the new block to the Broadcast Controller to rebuild the queue."""  
@@ -227,6 +236,50 @@ class Engine:
             hour_12 = 12  
   
         return f"{hour_12}:{minute:02d} {suffix}"
+
+    # ------------------------------------------------------------------  
+    # Guide Control
+    # ------------------------------------------------------------------  
+
+    def open_guide(self):  
+        """Open the TV guide (rebuilds rows from the current lineup)."""  
+  
+        if self.guide is None:  
+            return  
+  
+        self.guide.open()  
+  
+    def close_guide(self):  
+        """Close the TV guide."""  
+  
+        if self.guide is None:  
+            return  
+  
+        self.guide.close()  
+  
+    def toggle_guide(self):  
+        """Toggle the TV guide open/closed."""  
+  
+        if self.guide is None:  
+            return  
+  
+        self.guide.toggle()  
+  
+    def guide_up(self):  
+        """Move the guide selection up one channel row."""  
+  
+        if self.guide is None:  
+            return  
+  
+        self.guide.move_up()  
+  
+    def guide_down(self):  
+        """Move the guide selection down one channel row."""  
+  
+        if self.guide is None:  
+            return  
+  
+        self.guide.move_down()
   
     # ------------------------------------------------------------------  
     # OSD callbacks  

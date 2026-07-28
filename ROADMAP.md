@@ -407,11 +407,11 @@ VISTOR behaves like a functional cable box using the keyboard.
 
 ## TV Guide
 
-- [ ] Guide Layout
-- [ ] Current Program
-- [ ] Upcoming Program
-- [ ] Time Display
-- [ ] Navigation
+- [x] Guide Layout
+- [x] Current Program
+- [x] Upcoming Program
+- [x] Time Display
+- [x] Navigation
 
 ---
 
@@ -697,3 +697,6 @@ Rewired the Engine to drive all channels through a single shared `Clock` via `Ch
 - Added the Clock OSD overlay: `Engine.show_clock()` formats the current `Clock` time as a 12-hour cable-box string and raises `OSDOverlay.CLOCK` through the shared timed-visibility model.  
 - Formalized Fade Animations: `OSDManager.get_opacity()` now applies smoothstep easing (`_ease`) to fade-in/out instead of a raw linear ramp, added `is_fading()` and `get_phase()` accessors.  
 - Completed the Phase 5 On-Screen Display section; verified via `test_metadata.py`.
+- Added a headless `Guide` subsystem (`src/guide/guide.py`) that builds an electronic program guide from every channel's Scheduler ProgrammingBlocks: one row per channel with current + upcoming program labels/time-slots, a 12-hour time display, and a clamped selection cursor.  
+- Wired `Engine.open_guide`/`close_guide`/`toggle_guide`/`guide_up`/`guide_down`; `Engine.update()` refreshes the guide's time while open.  
+- Added an optional remote `"guide"` button routing through `Engine.toggle_guide()`.
