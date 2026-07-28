@@ -57,11 +57,10 @@ class MetadataSerializer:
   
         directory.mkdir(parents=True, exist_ok=True)  
   
-        # Flat objects (all attributes are primitives / lists of primitives)  
+        # Flat objects (all attributes are primitives / lists of primitives)   
         flat = {  
             "genres": self.library.get_genres(),  
             "tags": self.library.get_tags(),  
-            "themes": self.library.get_themes(),  
             "countries": self.library.get_countries(),  
             "languages": self.library.get_languages(),  
             "content_ratings": self.library.get_content_ratings(),  
@@ -70,7 +69,7 @@ class MetadataSerializer:
             "franchises": self.library.get_franchises(),  
             "advertisers": self.library.get_advertisers(),  
             "people": self.library.get_people(),  
-        }  
+        }
   
         for name, items in flat.items():  
             self._write_json(  
@@ -80,9 +79,9 @@ class MetadataSerializer:
   
         # Objects with nested references need dedicated flatteners  
         self._write_json(  
-            directory / "music_genres.json",  
-            [self._music_genre_to_dictionary(m) for m in self.library.get_music_genres()],  
-        )  
+            directory / "themes.json",  
+            [self._theme_to_dictionary(t) for t in self.library.get_themes()],  
+        )
         self._write_json(  
             directory / "series.json",  
             [self._series_to_dictionary(s) for s in self.library.get_series()],  
@@ -129,7 +128,15 @@ class MetadataSerializer:
             "name": genre.get_name(),  
             "description": genre.get_description(),  
             "parent_genre": parent.get_name() if parent else None,  
-        }  
+        }
+
+    def _theme_to_dictionary(self, theme):  
+        parent = theme.get_parent_theme()  
+        return {  
+            "name": theme.get_name(),  
+            "description": theme.get_description(),  
+            "parent_theme": parent.get_name() if parent else None,  
+        }
   
     def _series_to_dictionary(self, series):  
         franchise = series.get_franchise()  
@@ -200,7 +207,8 @@ class MetadataSerializer:
             "languages": [l.get_name() for l in item.get_languages()],  
             "genres": [g.get_name() for g in item.get_genres()],  
             "tags": [t.get_name() for t in item.get_tags()],  
-            "themes": [t.get_name() for t in item.get_themes()],  
+            "themes": [t.get_name() for t in item.get_themes()],
+            "assets": [a.to_dictionary() for a in item.get_media_assets()],
         }  
   
         if isinstance(item, Episode):  
@@ -222,3 +230,28 @@ class MetadataSerializer:
             data["music_genre"] = music_genre.get_name() if music_genre else None  
   
         return data
+
+    def _media_asset_to_dictionary(self, asset):  
+        """Flatten a MediaAsset (Path -> str, enum -> name)."""  
+  
+        return {  
+            "asset_id": asset.get_asset_id(),  
+            "path": str(asset.get_path()),  
+            "checksum": asset.get_checksum(),  
+            "runtime_seconds": asset.get_runtime_seconds(),  
+            "file_size": asset.get_file_size(),  
+            "video_codec": asset.get_video_codec(),  
+            "audio_codec": asset.get_audio_codec(),  
+            "container": asset.get_container(),  
+            "width": asset.get_resolution()[0],  
+            "height": asset.get_resolution()[1],  
+            "frame_rate": asset.get_frame_rate(),  
+            "verified": asset.is_verified(),  
+            "download_status": asset.get_download_status().name,  
+            "last_played": asset.get_last_played(),  
+            "sources": asset.get_sources(),  
+            "pinned": asset.is_pinned(),  
+            "broadcast_score": asset.get_broadcast_score(),  
+            "retention_score": asset.get_retention_score(),  
+            "fingerprint": asset.get_fingerprint(),
+        }

@@ -2,7 +2,7 @@
 
 **Project Status:** Pre-Alpha
 
-**Current Version:** 0.5.0
+**Current Version:** 0.6.0
 
 **Last Updated:** July 27, 2026
 
@@ -32,7 +32,7 @@ Major features should be completed one at a time and thoroughly tested before ad
 
 # Current Milestone
 
-**Phase 5 — Cable Box Experience**
+**Phase 6 — Broadcast Experience**
 
 ---
 
@@ -73,14 +73,6 @@ Major features should be completed one at a time and thoroughly tested before ad
 
 ---
 
-## Milestone
-
-VISTOR has a complete project structure and is ready for software development.
-
----
-
-# Phase 1.5 — Core Application Foundation
-
 ## Application Skeleton
 
 - [x] Create Python entry point (`main.py`)
@@ -97,33 +89,9 @@ VISTOR has a complete project structure and is ready for software development.
 
 ---
 
-## Runtime Engine
-
-## Runtime Engine
-
-- [x] Implement engine update loop
-- [x] Add engine state management
-- [x] Add graceful runtime shutdown
-- [ ] Build engine timing system
-- [ ] Integrate channel manager
-- [ ] Integrate media player
-- [ ] Integrate scheduler
-- [ ] Integrate weather service
-- [ ] Integrate on-screen display (OSD)
-- [ ] Integrate remote input system
-
-## Core Infrastructure
-
-- [ ] Create application configuration manager
-- [ ] Implement centralized logging
-- [ ] Create reusable path utilities
-- [ ] Create basic exception handling framework
-
----
-
 ## Milestone
 
-VISTOR successfully launches as an application and establishes the foundation upon which all future systems will be built.
+VISTOR has a complete project structure and is ready for software development.
 
 ---
 
@@ -421,7 +389,51 @@ VISTOR provides a cable television user interface.
 
 ---
 
-# Phase 6 — Broadcast Experience
+# Phase 6 — Broadcast Experience  
+  
+## Intelligent Content Management  
+  
+### Asset State Foundation  
+  
+- [x] Download Status  
+- [x] Last-Played Tracking  
+- [x] Ranked Source Descriptors  
+- [x] Asset Serialization  
+  
+---  
+  
+### Keyframe Fingerprinting  
+  
+- [ ] Fingerprint Generation  
+- [ ] Fingerprint Persistence  
+- [ ] Keyframe Match Search  
+  
+---  
+  
+### Multi-Archive Resolver  
+  
+- [ ] Source Registry  
+- [ ] Takedown Handling  
+- [ ] Fingerprint-Based Replacement Search  
+- [ ] Relevant-Media Substitution Fallback  
+  
+---  
+  
+### Scoring  
+  
+- [ ] Broadcast Score  
+- [ ] Retention Score  
+- [ ] Pinning  
+  
+---  
+  
+### Rolling Cache  
+  
+- [ ] Rolling Episode Window  
+- [ ] Retention-Driven Eviction  
+- [ ] Deleted-Content Metadata Retention  
+  
+---  
   
 ## Media Acquisition  
   
@@ -435,6 +447,8 @@ VISTOR provides a cable television user interface.
 - [ ] Game Shows  
 - [ ] Talk Shows  
   
+---  
+  
 ### Supporting Content  
   
 - [ ] Commercials  
@@ -445,56 +459,56 @@ VISTOR provides a cable television user interface.
 - [ ] Ambient Loops  
   
 ---  
-
-## Channels
-
-- [ ] Cartoon Network
-- [ ] Nickelodeon
-- [ ] Movie Channel
-- [ ] Music Video Channel
-- [ ] Sports Channel
-- [ ] News Channel
-- [ ] Weather Channel
-- [ ] Aquarium Channel
-- [ ] Fireplace Channel
-- [ ] Infomercial Channel
-
----
-
-## Commercial System
-
-- [ ] Commercial Pools
-- [ ] Network Promos
-- [ ] Station IDs
-- [ ] Time-Based Commercial Selection
-- [ ] Seasonal Commercial Selection
-
----
-
-## Seasonal Programming
-
-- [ ] Halloween Marathons
-- [ ] Thanksgiving Specials
-- [ ] Christmas Programming
-- [ ] Summer Programming
-- [ ] Weekend Marathons
-
----
-
-## Weather Channel
-
-- [ ] Live Weather API
-- [ ] Forecast Generation
-- [ ] Radar Graphics
-- [ ] Local Forecast
-- [ ] Classic Weather Channel Styling
-
----
-
-## Milestone
-
-VISTOR delivers a believable television broadcast experience.
-
+  
+## Channels  
+  
+- [ ] Cartoon Network  
+- [ ] Nickelodeon  
+- [ ] Movie Channel  
+- [ ] Music Video Channel  
+- [ ] Sports Channel  
+- [ ] News Channel  
+- [ ] Weather Channel  
+- [ ] Aquarium Channel  
+- [ ] Fireplace Channel  
+- [ ] Infomercial Channel  
+  
+---  
+  
+## Commercial System  
+  
+- [ ] Commercial Pools  
+- [ ] Network Promos  
+- [ ] Station IDs  
+- [ ] Time-Based Commercial Selection  
+- [ ] Seasonal Commercial Selection  
+  
+---  
+  
+## Seasonal Programming  
+  
+- [ ] Halloween Marathons  
+- [ ] Thanksgiving Specials  
+- [ ] Christmas Programming  
+- [ ] Summer Programming  
+- [ ] Weekend Marathons  
+  
+---  
+  
+## Weather Channel  
+  
+- [ ] Live Weather API  
+- [ ] Forecast Generation  
+- [ ] Radar Graphics  
+- [ ] Local Forecast  
+- [ ] Classic Weather Channel Styling  
+  
+---  
+  
+## Milestone  
+  
+VISTOR delivers a television broadcast experience.  
+  
 ---
 
 # Phase 7 — Raspberry Pi Deployment
@@ -559,9 +573,9 @@ VISTOR Version 1.0 is complete.
 
 Potential additions after Version 1.0 include:
 
-- Multiple fictional cable providers
+- Remote tape/record function preventing 
+episode/movie deletion
 - Additional regional channel lineups
-- Premium movie packages
 - Local access channels
 - Public bulletin board channel
 - Emergency Alert System simulation
@@ -584,25 +598,6 @@ Once development reaches a stable architecture, expand the documentation into:
 - VISTOR_User_Manual.md
 
 Until that point, continue maintaining the Design Bible as the authoritative description of VISTOR.
-
----
-
-# Definition of Success
-
-VISTOR Version 1.0 will be considered complete when:
-
-- It operates as a dedicated cable box.
-- Channels continue playing whether they are being watched or not.
-- Programming schedules feel authentic.
-- Commercials are inserted naturally.
-- Seasonal programming behaves automatically.
-- The system boots directly into VISTOR.
-- Navigation is performed using a standard television remote.
-- The experience faithfully recreates late-1990s and early-2000s cable television.
-
-The objective is not simply to build software.
-
-The objective is to recreate the feeling of sitting in front of a CRT television and watching cable television as it existed before the era of streaming.
 
 ---
 
@@ -700,3 +695,7 @@ Rewired the Engine to drive all channels through a single shared `Clock` via `Ch
 - Added a headless `Guide` subsystem (`src/guide/guide.py`) that builds an electronic program guide from every channel's Scheduler ProgrammingBlocks: one row per channel with current + upcoming program labels/time-slots, a 12-hour time display, and a clamped selection cursor.  
 - Wired `Engine.open_guide`/`close_guide`/`toggle_guide`/`guide_up`/`guide_down`; `Engine.update()` refreshes the guide's time while open.  
 - Added an optional remote `"guide"` button routing through `Engine.toggle_guide()`.
+- Added `DownloadStatus` enum and extended `MediaAsset` with availability state (`download_status`, `sources`, `pinned`, `broadcast_score`, `retention_score`, `fingerprint`, `last_played`) plus `to_dictionary()`/`from_dictionary()`, `needs_download()`, `is_available()`.  
+- Taught `MetadataSerializer._media_to_dictionary` to emit an `"assets"` block and `MetadataLoader._load_media` to rebuild assets; fixed a loader key mismatch (`"media_assets"` -> `"assets"`) that dropped assets on reload.  
+- Fixed `Theme` `parent_theme` serialization (two-pass parent resolution) that broke `save_to_directory`.  
+- Verified the full asset persistence round-trip via `test_metadata.py`.

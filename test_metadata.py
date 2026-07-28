@@ -895,6 +895,55 @@ engine.close_guide()
 assert engine.guide.is_open() is False  
   
 print("TV Guide verified.")
+
+print("\n=== Testing Intelligent Content Management (asset persistence) ===")  
+  
+import tempfile  
+from pathlib import Path as _Path  
+  
+from metadata.relationships.media_asset import MediaAsset  
+from metadata.enums.download_status import DownloadStatus  
+from metadata.services.metadata_serializer import MetadataSerializer  
+from metadata.services.metadata_loader import MetadataLoader  
+  
+# Attach an asset carrying full ICM state to a real media item.  
+sample = built.get_media()[0]  
+  
+asset = MediaAsset(asset_id="cm_test_asset", path="Media/cm_test.mkv")  
+asset.set_download_status(DownloadStatus.DOWNLOADED)  
+asset.add_source("internet_archive", "entiretyofeva/endofevaalldub.mkv")  
+asset.set_pinned(True)  
+asset.set_broadcast_score(7.5)  
+asset.set_retention_score(3.2)  
+asset.set_last_played("1999-10-04T20:00:00")  
+sample.add_media_asset(asset)  
+  
+# Round-trip through disk.  
+tmp_dir = _Path(tempfile.mkdtemp())  
+MetadataSerializer(built).save_to_directory(tmp_dir)  
+loaded = MetadataLoader().load(tmp_dir)  
+  
+reloaded = next(m for m in loaded.get_media() if m.get_id() == sample.get_id())  
+assets = reloaded.get_media_assets()  
+assert len(assets) >= 1  
+  
+reloaded_asset = next(a for a in assets if a.get_asset_id() == "cm_test_asset")  
+assert reloaded_asset.get_download_status() == DownloadStatus.DOWNLOADED  
+assert reloaded_asset.is_available() is True  
+assert reloaded_asset.is_pinned() is True  
+assert reloaded_asset.get_broadcast_score() == 7.5  
+assert reloaded_asset.get_retention_score() == 3.2  
+assert reloaded_asset.get_last_played() == "1999-10-04T20:00:00"  
+assert any(  
+    s["provider"] == "internet_archive" for s in reloaded_asset.get_sources()  
+)  
+  
+# A fresh asset with no file should report as needing download.  
+fresh = MediaAsset(asset_id="cm_fresh", path="Media/missing.mkv")  
+assert fresh.needs_download() is True  
+assert fresh.is_available() is False  
+  
+print("Intelligent content management asset persistence verified.")
   
 # ------------------------------------------------------------------  
 # Final Result  

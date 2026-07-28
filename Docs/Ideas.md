@@ -369,3 +369,65 @@ Scheduling determines what should happen.
 Broadcast Controller determines when interruptions occur.
 
 Player determines how media is played.
+
+## Resilient Acquisition and Replacement  
+  
+Media availability on public archives is not guaranteed. An upload that  
+satisfies a scheduled program today may be removed tomorrow. VISTOR must  
+therefore treat every remote source as unreliable and be able to recover  
+from a takedown automatically rather than failing the broadcast.  
+  
+### Multi-Archive Sources  
+  
+Each media asset should carry a ranked list of remote sources rather than  
+a single origin. A source is a lightweight descriptor (provider, remote  
+identifier / URL). When a file is missing locally, VISTOR walks the ranked  
+sources in order and downloads from the first that responds. A removed page  
+simply returns an error (e.g. 404 / 403); the resolver treats that as  
+"source unavailable" and advances to the next source instead of crashing.  
+  
+### Keyframe Fingerprints  
+  
+Every asset VISTOR successfully obtains is fingerprinted from its keyframes  
+before it can ever be evicted. The fingerprint is small and is retained  
+permanently even after the underlying file is deleted. When all known  
+sources for an asset fail, VISTOR uses the stored fingerprint to search  
+across multiple archives for a matching re-upload of the same content, so a  
+takedown does not permanently lose the ability to reacquire the file.  
+  
+### Relevant-Media Substitution  
+  
+If no acceptable match can be found for a specific missing item (for example  
+the next episode of a series is genuinely unavailable from every source),  
+VISTOR does not leave a gap. Instead it substitutes a different piece of  
+relevant media so the broadcast continues uninterrupted, and re-queues the  
+missing item for a later acquisition attempt. There is no low-quality  
+"cold storage" copy of the file; only the permanent fingerprint and metadata  
+are kept, which is enough to find and restore a full-quality replacement.  
+  
+### Two Independent Scores  
+  
+VISTOR maintains two deliberately separate scores per media item:  
+  
+1. Broadcast Score — how likely the item is to air. Driven by repurposability  
+   (applicable to more channels scores higher), non-seasonal content sitting  
+   in a higher bracket than seasonal, and overall appeal. This score alone  
+   drives broadcast frequency / selection for streaming.  
+  
+2. Retention Score — whether the file should stay on disk. This is a combined  
+   score derived from the Broadcast Score, the "at-risk" fragility of the  
+   item's sources (scarce or unreliable sources raise retention priority),  
+   and the storage footprint the file occupies (larger files are more  
+   expensive to keep). This score alone drives disk eviction decisions.  
+  
+The scores are kept separate because a frequently-aired item on a rock-solid,  
+widely-mirrored source may not need aggressive on-disk pinning, while a  
+medium-frequency item that survives on a single fragile upload should be  
+pinned. Collapsing them into one number would lose this distinction.  
+  
+### Deleted-Content Metadata Retention  
+  
+Deleting a file never deletes its metadata or its fingerprint. The metadata  
+library remains the complete catalog regardless of what exists on disk, so a  
+previously-evicted item can always be reverse-searched (via fingerprint and  
+metadata) and reacquired when the schedule needs it again.

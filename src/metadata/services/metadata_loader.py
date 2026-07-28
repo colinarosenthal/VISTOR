@@ -11,12 +11,12 @@ a fully populated MetadataLibrary instance.
   
 import json  
   
-from pathlib import Path  
-  
-from metadata.services.metadata_library import MetadataLibrary  
+from pathlib import Path    
   
 from core.logger import Logger  
-  
+
+from metadata.services.metadata_library import MetadataLibrary
+
 # Vocabulary  
 from metadata.vocabulary.genre import Genre  
 from metadata.vocabulary.country import Country  
@@ -41,6 +41,9 @@ from metadata.media.film.movie import Movie
 from metadata.media.television.episode import Episode  
 from metadata.media.advertising.commercial import Commercial  
 from metadata.media.music.music_video import MusicVideo  
+
+from metadata.relationships.media_asset import MediaAsset  
+from metadata.enums.download_status import DownloadStatus
   
   
 class MetadataLoader:  
@@ -248,7 +251,10 @@ class MetadataLoader:
   
         path = metadata_path / "themes.json"  
   
-        for item in self._read_json(path):  
+        records = self._read_json(path)  
+  
+        # First pass: create every theme without its parent link.  
+        for item in records:  
   
             theme = Theme(  
                 name=item["name"],  
@@ -256,6 +262,22 @@ class MetadataLoader:
             )  
   
             library.add_theme(theme)  
+  
+        # Second pass: resolve parent_theme references by name.  
+        theme_lookup = {t.get_name(): t for t in library.get_themes()}  
+  
+        for item in records:  
+  
+            parent_name = item.get("parent_theme")  
+  
+            if parent_name is None:  
+                continue  
+  
+            child = theme_lookup.get(item["name"])  
+            parent = theme_lookup.get(parent_name)  
+  
+            if child is not None and parent is not None:  
+                child.parent_theme = parent 
   
     def _load_tags(  
         self,  
@@ -554,8 +576,10 @@ class MetadataLoader:
                 continue  
   
             obj.description = item.get("description", "")  
-  
-            obj.scheduling_priority = item.get("scheduling_priority", 0)  
+            obj.scheduling_priority = item.get("scheduling_priority", 0)
+
+            for asset_data in item.get("assets", []):  
+                obj.add_media_asset(MediaAsset.from_dictionary(asset_data)) 
   
             # Stash flattened refs for _resolve_relationships.  
             obj._pending = item  
@@ -565,7 +589,7 @@ class MetadataLoader:
     # ------------------------------------------------------------------  
     # Relationship Resolution  
     # ------------------------------------------------------------------  
-  
+
     def _resolve_relationships(  
         self,  
         library: MetadataLibrary,  

@@ -24,6 +24,7 @@
             "Widescreen"
         ],
         "themes": [],
+        "assets": [],
         "franchise": null
     },
     {
@@ -48,6 +49,7 @@
         ],
         "tags": [],
         "themes": [],
+        "assets": [],
         "episode_number": 1,
         "season": "example_series_s1"
     },
@@ -66,6 +68,7 @@
         "genres": [],
         "tags": [],
         "themes": [],
+        "assets": [],
         "music_genre": "Jazz"
     },
     {
@@ -83,6 +86,7 @@
         "genres": [],
         "tags": [],
         "themes": [],
+        "assets": [],
         "advertiser": "coca_cola",
         "product": null,
         "campaign": null
@@ -109,6 +113,7 @@
         ],
         "tags": [],
         "themes": [],
+        "assets": [],
         "episode_number": 1,
         "season": "example_series_s1"
     }
