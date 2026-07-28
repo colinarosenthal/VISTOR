@@ -642,7 +642,7 @@ from remote.remote_controller import RemoteController
 # Reuse the engine/channel_manager already built in the earlier block.  
 manager = engine.channel_manager  
   
-remote = RemoteController(manager)  
+remote = RemoteController(manager, engine)  
   
 # Channel up / down cycle through the registered channels.  
 remote.press("channel_up")  
@@ -657,7 +657,14 @@ assert manager.get_active_channel().get_number() == 4
 remote.press("prev")  
   
 # Unknown key should warn, not crash.  
-remote.press("power")  
+remote.press("power") 
+
+# Clock button flashes the 5-second summoned clock overlay.  
+from osd.osd_manager import OSDOverlay  
+remote.press("clock")  
+assert engine.osd.get_overlay() == OSDOverlay.CLOCK  
+assert engine.osd.is_visible() is True  
+engine.osd.hide()   # reset so later overlay assertions start clean
   
 print("Remote Controller verified.")
 
@@ -708,7 +715,6 @@ assert vol_player.is_muted() is False
   
 print("Player volume + mute verified.")  
   
-  
 print("\n=== Testing Channel Banner + OSD Indicators ===")  
   
 from osd.osd_manager import OSDManager, OSDOverlay  
@@ -746,6 +752,108 @@ assert engine.osd.get_overlay() == OSDOverlay.MUTE
 assert engine.osd.get_payload()["muted"] == active.get_player().is_muted()  
   
 print("Channel banner + OSD indicators verified.")
+
+print("\n=== Testing Program Information ===")  
+  
+from osd.osd_manager import OSDOverlay  
+  
+# Ensure the active channel has a now-playing item to describe.  
+active = engine.channel_manager.get_active_channel()  
+active_block = active.get_current_block()  
+assert active_block is not None  
+  
+# Reuse a movie from the built library (guaranteed to have a title).  
+info_movie = built.get_movies()[0]  
+active_block.add_item(info_movie)  
+  
+# Tick the channel so its player loads/plays the item from the block.  
+engine.update()  
+engine.update()  
+  
+# --- Program Information fires ---  
+engine.show_info()  
+assert engine.osd.is_visible() is True  
+assert engine.osd.get_overlay() == OSDOverlay.PROGRAM_INFO  
+  
+info = engine.osd.get_payload()  
+assert info["number"] == active.get_number()  
+assert info["channel_name"] == active.get_name()  
+# Title is present when something is playing; tolerate None if the block is empty.  
+if active.get_player().get_current_item() is not None:  
+    assert info["title"] == active.get_player().get_current_item().get_title()  
+# Defensive fields must always exist, even when unpopulated.  
+assert "rating" in info  
+assert isinstance(info["genres"], list)  
+  
+# --- Auto-hide (tick advances one phase per call) ---  
+engine.osd.tick(engine.osd.fade_duration + 0.1)      # FADE_IN  -> VISIBLE  
+engine.osd.tick(engine.osd.visible_duration + 0.1)   # VISIBLE  -> FADE_OUT  
+engine.osd.tick(engine.osd.fade_duration + 0.1)      # FADE_OUT -> HIDDEN  
+assert engine.osd.is_visible() is False  
+  
+print("Program Information verified.")
+
+print("\n=== Testing Clock Overlay ===")  
+  
+from osd.osd_manager import OSDOverlay, OSDPhase  
+  
+engine.show_clock()  
+assert engine.osd.is_visible() is True  
+assert engine.osd.get_overlay() == OSDOverlay.CLOCK  
+  
+clock_payload = engine.osd.get_payload()  
+assert "time" in clock_payload  
+assert isinstance(clock_payload["time"], str)  
+assert clock_payload["time"]                       # non-empty  
+assert ("AM" in clock_payload["time"]) or ("PM" in clock_payload["time"])  
+  
+# Auto-hide (tick advances one phase per call).  
+engine.osd.tick(engine.osd.fade_duration + 0.1)    # FADE_IN  -> VISIBLE  
+engine.osd.tick(engine.osd.visible_duration + 0.1) # VISIBLE  -> FADE_OUT  
+engine.osd.tick(engine.osd.fade_duration + 0.1)    # FADE_OUT -> HIDDEN  
+assert engine.osd.is_visible() is False  
+  
+print("Clock overlay verified.")  
+  
+  
+print("\n=== Testing Fade Animations ===")  
+  
+from osd.osd_manager import OSDManager  
+  
+fade = OSDManager(visible_duration=5.0, fade_duration=1.0)  
+  
+# Fresh overlay begins fading in from 0.  
+fade.show_clock("12:00 PM")  
+assert fade.get_phase() == OSDPhase.FADE_IN  
+assert fade.is_fading() is True  
+assert fade.get_opacity() == 0.0                   # eased(0) == 0  
+  
+# Partway through the fade-in, opacity is strictly between 0 and 1.  
+fade.tick(0.5)                                      # halfway through 1.0s fade  
+mid_in = fade.get_opacity()  
+assert 0.0 < mid_in < 1.0  
+  
+# Completing the fade-in reaches full opacity and the VISIBLE phase.  
+fade.tick(0.6)                                      # crosses fade_duration  
+assert fade.get_phase() == OSDPhase.VISIBLE  
+assert fade.get_opacity() == 1.0  
+assert fade.is_fading() is False  
+  
+# Hold elapses, then a partial fade-out sits strictly between 1 and 0.  
+fade.tick(5.1)                                      # VISIBLE -> FADE_OUT  
+assert fade.get_phase() == OSDPhase.FADE_OUT  
+fade.tick(0.5)                                      # halfway through fade-out  
+mid_out = fade.get_opacity()  
+assert 0.0 < mid_out < 1.0  
+  
+# Smoothstep is symmetric: fade-out midpoint mirrors fade-in midpoint.  
+assert abs(mid_out - (1.0 - mid_in)) < 1e-9  
+  
+# Finishing the fade-out hides the overlay.  
+fade.tick(0.6)  
+assert fade.is_visible() is False  
+  
+print("Fade animations verified.")
   
 # ------------------------------------------------------------------  
 # Final Result  

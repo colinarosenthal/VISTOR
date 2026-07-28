@@ -20,8 +20,14 @@ class RemoteController:
     # Construction  
     # ------------------------------------------------------------------  
   
-    def __init__(self, channel_manager):  
+    def __init__(self, channel_manager, engine=None):  
         self.channel_manager = channel_manager  
+  
+        # Optional reference to the Engine, needed for actions that live on  
+        # the runtime rather than the ChannelManager (e.g. the summoned  
+        # clock overlay, which is raised via Engine.show_clock()). Kept  
+        # optional so channel-only usage/tests still work.  
+        self.engine = engine  
   
         # Buffer for multi-digit numeric channel entry (e.g. "1", "2" -> 12).  
         self._digit_buffer = ""  
@@ -32,6 +38,7 @@ class RemoteController:
             "channel_up": self._on_channel_up,  
             "channel_down": self._on_channel_down,  
             "prev": self._on_previous_channel,  
+            "clock": self._on_clock,  
         }  
   
     # ------------------------------------------------------------------  
@@ -77,6 +84,15 @@ class RemoteController:
         """Previous (last-watched) channel button."""  
   
         self.channel_manager.previous_channel()  
+  
+    def _on_clock(self):  
+        """Clock button: flash the 5-second summoned clock overlay."""  
+  
+        if self.engine is None:  
+            Logger.warning("Clock button pressed but no engine is bound.")  
+            return  
+  
+        self.engine.show_clock()  
   
     def _on_digit(self, digit):  
         """Accumulate a digit for numeric channel entry."""  
