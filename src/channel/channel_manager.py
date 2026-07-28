@@ -121,7 +121,17 @@ class ChannelManager:
             f"'{channel.get_name()}'."  
         )  
   
-        return channel  
+        return channel
+
+    def set_channel_by_number(self, number):  
+        """Switch to the channel with the given on-screen number (Numeric Channel Entry)."""  
+    
+        for index, channel in enumerate(self.channels):  
+            if channel.get_number() == number:  
+                return self.set_channel(index)  
+    
+        Logger.warning(f"No channel with number {number}.")  
+        return None
   
     def channel_up(self):  
         """Move to the next channel, wrapping around."""  

@@ -1,0 +1,28 @@
+[  
+    {  
+        "number": 2,  
+        "name": "VISTOR General",  
+        "logo": "Assets/Logos/vistor_general.png",  
+        "primary_genre": "Variety",  
+        "target_audience": "General",  
+        "programming_sources": [],  
+        "commercial_pools": [],  
+        "promotional_material": [],  
+        "broadcast_schedule": "default",  
+        "station_id_graphics": [],  
+        "network_branding": ""  
+    },  
+    {  
+        "number": 4,  
+        "name": "VISTOR Movies",  
+        "logo": "Assets/Logos/vistor_movies.png",  
+        "primary_genre": "Film",  
+        "target_audience": "General",  
+        "programming_sources": [],  
+        "commercial_pools": [],  
+        "promotional_material": [],  
+        "broadcast_schedule": "default",  
+        "station_id_graphics": [],  
+        "network_branding": ""  
+    }  
+]

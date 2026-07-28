@@ -368,10 +368,10 @@ VISTOR possesses a fully populated broadcast library ready for scheduling.
 
 ## Channel Management
 
-- [ ] Channel Definitions
+- [x] Channel Definitions
 - [x] Channel Manager
 - [x] Previous Channel Support
-- [ ] Numeric Channel Entry
+- [x] Numeric Channel Entry
 
 ---
 
@@ -382,7 +382,7 @@ VISTOR possesses a fully populated broadcast library ready for scheduling.
 - [x] Channel Switching
 - [x] Resume Playback After Channel Changes
 - [x] Persistent Playback
-- [ ] Keyboard Controls
+- [x] Remote Controls
 
 ---
 

@@ -636,6 +636,32 @@ manager.previous_channel()
 assert manager.get_active_channel().get_number() == 2  
   
 print("Channel Manager verified.")
+
+print("\n=== Testing Remote Controller ===")  
+  
+from remote.remote_controller import RemoteController  
+  
+# Reuse the engine/channel_manager already built in the earlier block.  
+manager = engine.channel_manager  
+  
+remote = RemoteController(manager)  
+  
+# Channel up / down cycle through the registered channels.  
+remote.press("channel_up")  
+remote.press("channel_down")  
+  
+# Numeric entry: type "4" then Enter to jump to channel number 4.  
+remote.press("digit_4")  
+remote.press("enter")  
+assert manager.get_active_channel().get_number() == 4  
+  
+# Previous-channel button returns to the last-watched channel.  
+remote.press("prev")  
+  
+# Unknown key should warn, not crash.  
+remote.press("power")  
+  
+print("Remote Controller verified.")
   
 # ------------------------------------------------------------------  
 # Final Result  

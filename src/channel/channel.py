@@ -27,10 +27,37 @@ class Channel:
         number,  
         name,  
         logo="",  
-        primary_genre=None,  
+        primary_genre="",  
         target_audience="",  
+        programming_sources=None,  
+        commercial_pools=None,  
+        promotional_material=None,  
+        broadcast_schedule="default",  
+        station_id_graphics=None,  
         network_branding="",  
     ):  
+        # Identity / configuration  
+        self.number = number  
+        self.name = name  
+        self.logo = logo  
+        self.primary_genre = primary_genre  
+        self.target_audience = target_audience  
+        self.programming_sources = programming_sources or []  
+        self.commercial_pools = commercial_pools or []  
+        self.promotional_material = promotional_material or []  
+        self.broadcast_schedule = broadcast_schedule  
+        self.station_id_graphics = station_id_graphics or []  
+        self.network_branding = network_branding  
+  
+        # Runtime pipeline (built in initialize()).  
+        self.initialized = False  
+  
+        self.clock = None  
+        self.scheduler = None  
+        self.broadcast_controller = None  
+        self.queue = None  
+        self.player = None  
+
         # --- Identity (Design Bible Section 10) ---  
         self.number = number  
         self.name = name  
@@ -186,11 +213,11 @@ class Channel:
         return self.scheduler.get_current_schedule()  
   
     # ------------------------------------------------------------------  
-    # Identity (Design Bible Section 10)  
+    # Configuration Accessors  
     # ------------------------------------------------------------------  
   
     def get_number(self):  
-        """Return the channel number."""  
+        """Return the on-screen channel number."""  
   
         return self.number  
   
@@ -200,44 +227,49 @@ class Channel:
         return self.name  
   
     def get_logo(self):  
-        """Return the channel logo."""  
+        """Return the channel logo path."""  
   
         return self.logo  
-  
-    def set_logo(self, logo):  
-        """Set the channel logo."""  
-  
-        self.logo = logo  
   
     def get_primary_genre(self):  
         """Return the channel's primary genre."""  
   
         return self.primary_genre  
   
-    def set_primary_genre(self, genre):  
-        """Set the channel's primary genre."""  
-  
-        self.primary_genre = genre  
-  
     def get_target_audience(self):  
         """Return the channel's target audience."""  
   
         return self.target_audience  
   
-    def set_target_audience(self, target_audience):  
-        """Set the channel's target audience."""  
+    def get_programming_sources(self):  
+        """Return the channel's programming sources."""  
   
-        self.target_audience = target_audience  
+        return self.programming_sources  
+  
+    def get_commercial_pools(self):  
+        """Return the channel's commercial pools."""  
+  
+        return self.commercial_pools  
+  
+    def get_promotional_material(self):  
+        """Return the channel's promotional material."""  
+  
+        return self.promotional_material  
+  
+    def get_broadcast_schedule(self):  
+        """Return the channel's broadcast schedule identifier."""  
+  
+        return self.broadcast_schedule  
+  
+    def get_station_id_graphics(self):  
+        """Return the channel's station identification graphics."""  
+  
+        return self.station_id_graphics  
   
     def get_network_branding(self):  
         """Return the channel's network branding."""  
   
         return self.network_branding  
-  
-    def set_network_branding(self, network_branding):  
-        """Set the channel's network branding."""  
-  
-        self.network_branding = network_branding  
   
     # ------------------------------------------------------------------  
     # Programming Sources  
