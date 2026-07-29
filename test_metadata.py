@@ -1188,6 +1188,84 @@ keeper.set_retention_score(9.0)
 assert scorer.should_evict(keeper) is False  
   
 print("Scoring verified.")
+
+# ------------------------------------------------------------------  
+# Intelligent Content Management: Rolling Cache  
+# ------------------------------------------------------------------  
+  
+print("\n=== Testing Rolling Cache ===")  
+  
+from metadata.services.rolling_cache import RollingCache  
+  
+# --- Rolling episode window --------------------------------------  
+  
+class _StubEpisode:  
+    """Minimal stand-in with just the accessors RollingCache uses."""  
+  
+    def __init__(self, ep_id, available):  
+        self._id = ep_id  
+        asset = MediaAsset(asset_id=ep_id, path=f"Media/{ep_id}.mkv")  
+        if available:  
+            asset.set_download_status(DownloadStatus.DOWNLOADED)  
+        self._assets = [asset]  
+  
+    def get_media_assets(self):  
+        return self._assets  
+  
+  
+# Episodes 1..6; first 3 aired, ep 3-4-5 should be the window.  
+episodes = [_StubEpisode(f"ep{n}", available=(n <= 5)) for n in range(1, 7)]  
+  
+cache = RollingCache(window_size=3)  
+plan = cache.plan_window(episodes, aired_count=2)  
+  
+# Window = episodes[2:5] -> ep3, ep4, ep5 (all available -> keep).  
+assert [e._id for e in plan["keep"]] == ["ep3", "ep4", "ep5"]  
+assert plan["fetch"] == []  
+# Already aired and available -> ep1, ep2 are evictable.  
+assert [e._id for e in plan["evict"]] == ["ep1", "ep2"]  
+  
+# A window episode with no file should land in "fetch", not "keep".  
+episodes2 = [_StubEpisode(f"fx{n}", available=(n != 3)) for n in range(1, 7)]  
+plan2 = cache.plan_window(episodes2, aired_count=2)  
+assert [e._id for e in plan2["fetch"]] == ["fx3"]  
+  
+# --- Retention-driven eviction (with pinning) --------------------  
+  
+def _resident(asset_id, retention, size, pinned=False):  
+    a = MediaAsset(asset_id=asset_id, path=f"Media/{asset_id}.mkv")  
+    a.set_download_status(DownloadStatus.DOWNLOADED)  
+    a.set_retention_score(retention)  
+    a.file_size = size  
+    a.set_pinned(pinned)  
+    return a  
+  
+low   = _resident("rc_low",   retention=1.0, size=100)  
+mid   = _resident("rc_mid",   retention=5.0, size=100)  
+high  = _resident("rc_high",  retention=9.0, size=100)  
+pinned = _resident("rc_pinned", retention=0.0, size=100, pinned=True)  
+  
+assets = [high, low, pinned, mid]  
+  
+# Total 400 bytes, budget 250 -> must free >=150 bytes (>=2 files).  
+evicted = cache.evict_to_budget(assets, budget_bytes=250)  
+  
+# Lowest retention evicted first; pinned never evicted despite 0.0 score.  
+assert "rc_low" in evicted  
+assert "rc_mid" in evicted  
+assert "rc_pinned" not in evicted  
+assert low.get_download_status() == DownloadStatus.MISSING  
+assert pinned.get_download_status() == DownloadStatus.DOWNLOADED  
+  
+# Deleted-content metadata retention: evicted asset still carries its  
+# metadata (score/sources survive), so it can be re-fetched later.  
+assert low.get_retention_score() == 1.0  
+assert low.needs_download() is True  
+  
+# Under budget -> no eviction.  
+assert cache.evict_to_budget([high], budget_bytes=1000) == []  
+  
+print("Rolling cache verified.")
   
 # ------------------------------------------------------------------  
 # Final Result  

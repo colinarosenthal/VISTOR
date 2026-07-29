@@ -429,9 +429,9 @@ VISTOR provides a cable television user interface.
   
 ### Rolling Cache  
   
-- [ ] Rolling Episode Window  
-- [ ] Retention-Driven Eviction  
-- [ ] Deleted-Content Metadata Retention  
+- [x] Rolling Episode Window  
+- [x] Retention-Driven Eviction  
+- [x] Deleted-Content Metadata Retention  
   
 ---  
   
@@ -717,3 +717,11 @@ Rewired the Engine to drive all channels through a single shared `Clock` via `Ch
 - Broadcast Score is airplay-only (repurposability across channels, evergreen vs seasonal bracket, appeal); Retention Score combines broadcast, source fragility (scarcity + posting age via `get_source_age_days()`), and storage footprint.  
 - `should_evict()` enforces pinning as a hard override — pinned assets are never evicted regardless of score.  
 - Verified broadcast ordering, retention ordering, and pin/eviction behavior via `test_metadata.py`.
+- Added headless `RollingCache` service (`src/metadata/services/rolling_cache.py`)  
+  implementing the rolling episode window (keep/fetch/evict planning),  
+  retention-driven eviction (lowest retention_score first, ties by larger  
+  file_size, pinned assets never evicted), and deleted-content metadata  
+  retention (eviction sets download_status -> MISSING and keeps the asset +  
+  MediaItem in the library so fingerprint/sources survive for re-fetch).  
+- Completes the Intelligent Content Management section of Phase 6.  
+- Verified via test_metadata.py.
