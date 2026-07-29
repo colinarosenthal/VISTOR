@@ -431,3 +431,19 @@ Deleting a file never deletes its metadata or its fingerprint. The metadata
 library remains the complete catalog regardless of what exists on disk, so a  
 previously-evicted item can always be reverse-searched (via fingerprint and  
 metadata) and reacquired when the schedule needs it again.
+
+### Catalogue Expansion (Future)  
+  
+The discovery service described above operates over the *known* metadata  
+catalog: it can only select and acquire items VISTOR already knows about.  
+A true "find a show I have never catalogued" capability is a separate,  
+later feature that requires a metadata-ingest step first: querying an  
+external source, parsing series/episode metadata, and inserting new  
+MediaItems into the Library before any acquisition can target them.  
+  
+This is intentionally deferred until the core program is complete. The  
+buildable, testable core today is: (1) a provider-agnostic fetcher that  
+can pull from any backend (Internet Archive, YouTube, Smithsonian, etc.),  
+(2) a rolling acquisition loop that keeps the window filled and evicts  
+aired content, and (3) channel-spec discovery over the existing catalog.  
+Catalogue expansion layers on top of these once metadata ingest exists.

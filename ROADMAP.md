@@ -436,6 +436,16 @@ VISTOR provides a cable television user interface.
 ---  
   
 ## Media Acquisition  
+
+### Acquisition Engine    
+    
+- [x] Provider-Agnostic Fetcher    
+- [x] Per-Provider Backends (Internet Archive, YouTube, Smithsonian, ...)    
+- [x] Rolling Acquisition Loop    
+- [x] Channel-Spec Discovery (known catalog)    
+- [ ] Catalogue Expansion (uncatalogued search) — deferred    
+
+---
   
 ### Programming  
   
@@ -725,3 +735,21 @@ Rewired the Engine to drive all channels through a single shared `Clock` via `Ch
   MediaItem in the library so fingerprint/sources survive for re-fetch).  
 - Completes the Intelligent Content Management section of Phase 6.  
 - Verified via test_metadata.py.
+- Added a pluggable multi-provider fetcher so acquisition is provider-agnostic  
+  (Internet Archive, YouTube, Smithsonian, etc.): each provider is a backend  
+  behind a common fetch(provider, reference) -> FetchResult interface, with an  
+  unknown provider returning a 501-style unsupported result. Keeps the network  
+  mockable and out of the test run.  
+- Added a headless rolling acquisition loop that fetches missing in-window  
+  episodes and reports aired episodes as evictable, tying the rolling window  
+  to the fetcher so the queue stays filled as episodes air.  
+- Added the ChannelDiscovery service: ranks catalog MediaItems against a  
+  Channel's spec using richer criteria (primary genre + target audience +  
+  tag overlap), with programming_sources acting as a hard allow-list when  
+  non-empty, so free disk space can be filled with channel-appropriate content.  
+- Renamed the Audience enum member CHILDREN -> KIDS and updated all references.  
+- Recorded the deferred uncatalogued-internet-search feature under  
+  Docs/Ideas.md "Catalogue Expansion".  
+- Verified fetcher dispatch/unsupported-provider, acquisition-loop  
+  fetch/evict planning, and channel discovery ranking + allow-list filtering  
+  via test_metadata.py.

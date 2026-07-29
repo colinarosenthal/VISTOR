@@ -24,7 +24,7 @@ class Audience(Enum):
     # Age Demographics
     # ------------------------------------------------------------------
 
-    CHILDREN = auto()
+    KIDS = auto()
 
     TEEN = auto()
 

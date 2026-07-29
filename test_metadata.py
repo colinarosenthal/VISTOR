@@ -1266,6 +1266,107 @@ assert low.needs_download() is True
 assert cache.evict_to_budget([high], budget_bytes=1000) == []  
   
 print("Rolling cache verified.")
+
+print("\n=== Testing Channel Discovery ===")  
+  
+from metadata.services.channel_discovery import ChannelDiscovery  
+from metadata.enums.audience import Audience  
+  
+  
+class _StubNamed:  
+    """Minimal genre/tag stand-in exposing get_name()."""  
+  
+    def __init__(self, name):  
+        self._name = name  
+  
+    def get_name(self):  
+        return self._name  
+  
+  
+class _StubItem:  
+    """Catalog item exposing only the accessors ChannelDiscovery uses."""  
+  
+    def __init__(self, item_id, genres=None, audience=None, tags=None):  
+        self._id = item_id  
+        self._genres = [_StubNamed(g) for g in (genres or [])]  
+        self._audience = audience  
+        self._tags = [_StubNamed(t) for t in (tags or [])]  
+  
+    def get_id(self):  
+        return self._id  
+  
+    def get_genres(self):  
+        return self._genres  
+  
+    def get_audience(self):  
+        return self._audience  
+  
+    def get_tags(self):  
+        return self._tags  
+  
+  
+class _StubChannel:  
+    """Channel stand-in exposing the spec accessors used for matching."""  
+  
+    def __init__(self, name, primary_genre, target_audience,  
+                 programming_sources=None):  
+        self.name = name  
+        self._primary_genre = primary_genre  
+        self._target_audience = target_audience  
+        self._programming_sources = programming_sources or []  
+  
+    def get_primary_genre(self):  
+        return self._primary_genre  
+  
+    def get_target_audience(self):  
+        return self._target_audience  
+  
+    def get_programming_sources(self):  
+        return self._programming_sources  
+  
+  
+discovery = ChannelDiscovery()  
+  
+kids_channel = _StubChannel(  
+    name="Cartoon Zone",  
+    primary_genre="Animation",  
+    target_audience="KIDS",  
+)  
+  
+# Strong: right genre + KIDS audience + genre-word tag.  
+strong = _StubItem(  
+    "toon_strong",  
+    genres=["Animation"],  
+    audience=Audience.KIDS,  
+    tags=["animation-block"],  
+)  
+# Weak: right genre only, adult audience.  
+weak = _StubItem("toon_weak", genres=["Animation"], audience=Audience.ADULT)  
+# Miss: unrelated genre -> excluded (score 0).  
+miss = _StubItem("news_item", genres=["News"], audience=Audience.ADULT)  
+# Audience None must not crash scoring.  
+no_aud = _StubItem("toon_no_aud", genres=["Animation"], audience=None)  
+  
+ranked = discovery.discover(kids_channel, [miss, weak, strong, no_aud])  
+ids = [i.get_id() for i in ranked]  
+  
+# Unrelated item excluded; strongest match ranked first.  
+assert "news_item" not in ids  
+assert ids[0] == "toon_strong"  
+assert "toon_weak" in ids  
+assert "toon_no_aud" in ids  # None audience handled without crashing  
+  
+# programming_sources allow-list is a hard filter.  
+gated_channel = _StubChannel(  
+    name="Gated Toons",  
+    primary_genre="Animation",  
+    target_audience="KIDS",  
+    programming_sources=["toon_strong"],  
+)  
+gated_ids = [i.get_id() for i in discovery.discover(gated_channel, [strong, weak, miss])]  
+assert gated_ids == ["toon_strong"]  
+  
+print("Channel discovery verified.")
   
 # ------------------------------------------------------------------  
 # Final Result  
