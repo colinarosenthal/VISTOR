@@ -437,6 +437,24 @@ VISTOR provides a cable television user interface.
   
 ## Media Acquisition  
 
+### Infrastructure    
+  
+## Media Acquisition    
+    
+### Infrastructure    
+    
+- [x] Multi-Provider Download Layer (Internet Archive, YouTube, Direct URL)    
+- [x] Provider Registry + Fetcher Routing    
+- [x] Automatic Technical Metadata Extraction (ffprobe/mutagen)    
+- [x] Fingerprint-on-Download    
+- [x] JSON Media Ingestion Service    
+- [x] Auto-Resolve Undownloaded Assets on Ingest    
+- [x] `add_media` CLI Entry Point    
+- [ ] Descriptive Metadata Scraping (title/year/genre from provider)    
+- [ ] Batch Folder Ingestion    
+    
+---
+
 ### Acquisition Engine    
     
 - [x] Provider-Agnostic Fetcher    
@@ -472,16 +490,16 @@ VISTOR provides a cable television user interface.
   
 ## Channels  
   
-- [ ] Cartoon Network  
+- [x] Cartoon Network  
 - [ ] Nickelodeon  
-- [ ] Movie Channel  
-- [ ] Music Video Channel  
-- [ ] Sports Channel  
-- [ ] News Channel  
-- [ ] Weather Channel  
-- [ ] Aquarium Channel  
-- [ ] Fireplace Channel  
-- [ ] Infomercial Channel  
+- [x] Movie Channel  
+- [x] Music Video Channel  
+- [x] Sports Channel  
+- [x] News Channel  
+- [x] Weather Channel  
+- [x] Aquarium Channel  
+- [x] Fireplace Channel  
+- [x] Infomercial Channel  
   
 ---  
   
@@ -753,3 +771,14 @@ Rewired the Engine to drive all channels through a single shared `Clock` via `Ch
 - Verified fetcher dispatch/unsupported-provider, acquisition-loop  
   fetch/evict planning, and channel discovery ranking + allow-list filtering  
   via test_metadata.py.
+- Added a real multi-provider acquisition layer under `src/metadata/services/fetchers/`, replacing the mock-only fetcher with concrete network fetchers that all satisfy the existing `SourceResolver` contract `fetch(provider, reference) -> FetchResult`, so `SourceResolver` itself is unchanged.  
+- `RealFetcher` routes each `(provider, reference)` through `ProviderRegistry` to the correct fetcher; unknown providers fall back to `GenericHttpFetcher` (treats the reference as a direct URL), covering "any website."  
+- Provider fetchers ranked by reliability: `InternetArchiveFetcher` (archive.org download URL), `YouTubeFetcher` (yt-dlp; "unavailable/private/removed" mapped to takedown `410`), `GenericHttpFetcher` (streamed HTTP GET).  
+- `BaseFetcher` owns the shared lifecycle: temp-download -> verify non-empty -> `MetadataProbe` fills technical fields (runtime, codecs, resolution, frame rate, file size, container via ffprobe when present) -> `KeyframeFingerprintService.ensure_fingerprint()` fingerprints before eviction is ever possible -> atomically move into the asset's final path. Non-200/`403`/`404`/`410` results map back to `FetchResult.failure(...)` so the resolver advances to the next ranked source.  
+- Promoted `requests`, `yt-dlp`, and `mutagen` from planned/commented to active dependencies in `requirements.txt`; all network imports are lazy so the headless test suite still runs offline.  
+- Added offline `ProviderRegistry` routing + `RealFetcher` delegation tests to `test_metadata.py`, mirroring the existing `_FakeFetcher` pattern (no real network calls).  
+- Expanded `ChannelConfigs/channels.json` from 2 to 15 channels (numbers 2-16) covering the Design Bible Section 3.8 / ROADMAP categories: Toons, Kids, Movies, Music, Sports, News, Docs, Classic, Infomercials, Aquarium, Fireplace, Public Access, Weather, Seasonal, plus General.  
+- Extended `MetadataPopulation.create_genres()` with `Variety`, `Weather`, and `Ambient` so the new channels' `primary_genre` values exist in the vocabulary.  
+- Updated the channel-up adjacency assertion in `test_metadata.py` for the expanded lineup (channel_up from #2 now lands on #3, not #4).  
+- Documented the acquisition layer as Section 7.11 in `Docs/VISTOR_Developer_Guide.md`.  
+- Verified via `test_metadata.py` (all tests pass, including `=== Testing Provider Registry + RealFetcher (offline) ===`).

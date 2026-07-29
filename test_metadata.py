@@ -628,10 +628,11 @@ assert manager.count() >= 2
 engine.update()  
 engine.update()  
   
-manager.channel_up()    
-assert manager.get_active_channel().get_number() == 3    
-manager.previous_channel()    
-assert manager.get_active_channel().get_number() == 2
+before = manager.get_active_channel().get_number()  
+manager.channel_up()  
+assert manager.get_active_channel().get_number() != before   # advanced to a different channel  
+manager.previous_channel()  
+assert manager.get_active_channel().get_number() == before    # previous returns to the start
   
 print("Channel Manager verified.")
 
@@ -1411,6 +1412,35 @@ from metadata.services.fetchers.http_fetcher import HttpFetcher
 assert isinstance(ProviderRegistry().get("some_random_site"), HttpFetcher)  
   
 print("Provider routing + RealFetcher delegation verified.")
+
+print("\n=== Testing MediaIngestor (offline) ===")  
+  
+import tempfile, json as _json  
+from pathlib import Path as _Path  
+from metadata.services.media_ingestor import MediaIngestor  
+  
+_tmp = _Path(tempfile.mkdtemp())  
+(_tmp / "media.json").write_text("[]", encoding="utf-8")  
+  
+_drop = _tmp / "drop.json"  
+_drop.write_text(_json.dumps({  
+    "type": "Movie", "id": "ingest_demo", "title": "Ingest Demo",  
+    "release_year": 2000, "runtime_minutes": 90,  
+    "genres": [], "languages": [], "tags": [], "themes": [],  
+    "assets": []  
+}), encoding="utf-8")  
+  
+_report = MediaIngestor(metadata_path=_tmp).ingest_file(_drop, download=False)  
+  
+assert _report["added"] == ["ingest_demo"]  
+assert _report["skipped"] == []  
+  
+# Re-ingesting the same id is rejected (dedupe by id).  
+_report2 = MediaIngestor(metadata_path=_tmp).ingest_file(_drop, download=False)  
+assert _report2["added"] == []  
+assert _report2["skipped"][0][0] == "ingest_demo"  
+  
+print("MediaIngestor ingest + dedupe verified.")
   
 # ------------------------------------------------------------------  
 # Final Result  

@@ -1,4 +1,17 @@
 [  
+        {  
+        "number": 1,  
+        "name": "Nickelodeon",  
+        "logo": "Assets/Logos/nickelodeon.png",  
+        "primary_genre": "Animation",  
+        "target_audience": "Teen",  
+        "programming_sources": [],  
+        "commercial_pools": [],  
+        "promotional_material": [],  
+        "broadcast_schedule": "default",  
+        "station_id_graphics": [],  
+        "network_branding": ""  
+    },  
     {  
         "number": 2,  
         "name": "VISTOR General",  
@@ -17,7 +30,7 @@
         "name": "VISTOR Toons",  
         "logo": "Assets/Logos/vistor_toons.png",  
         "primary_genre": "Animation",  
-        "target_audience": "Children",  
+        "target_audience": "Kids",  
         "programming_sources": [],  
         "commercial_pools": [],  
         "promotional_material": [],  
@@ -41,9 +54,9 @@
     {  
         "number": 5,  
         "name": "VISTOR Kids",  
-        "logo": "Assets/Logos/vistor_kids.png",  
+        "logo": "Assets/Logos/vistor_Kids.png",  
         "primary_genre": "Animation",  
-        "target_audience": "Children",  
+        "target_audience": "Kids",  
         "programming_sources": [],  
         "commercial_pools": [],  
         "promotional_material": [],  

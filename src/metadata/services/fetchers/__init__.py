@@ -17,13 +17,17 @@ from metadata.services.fetchers.http_fetcher import HttpFetcher
 from metadata.services.fetchers.provider_registry import ProviderRegistry  
 from metadata.services.fetchers.real_fetcher import RealFetcher  
 from metadata.services.fetchers.metadata_probe import MetadataProbe  
+
+from metadata.services.source_resolver import SourceResolver, FetchResult  
+from metadata.services.media_ingestor import MediaIngestor  
   
 __all__ = [  
-    "BaseFetcher",  
-    "InternetArchiveFetcher",  
-    "YouTubeFetcher",  
-    "HttpFetcher",  
-    "ProviderRegistry",  
-    "RealFetcher",  
-    "MetadataProbe",  
+    "MetadataLibrary",  
+    "MetadataLoader",  
+    "MetadataValidator",  
+    "MetadataSearch",  
+    "MetadataSerializer",  
+    "SourceResolver",  
+    "FetchResult",  
+    "MediaIngestor",  
 ]
