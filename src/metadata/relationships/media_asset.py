@@ -224,16 +224,29 @@ class MediaAsset:
     # Sources (for re-acquisition across multiple archives)  
     # ------------------------------------------------------------------  
   
-    def add_source(self, provider: str, reference: str, quality: str = ""):  
-        """Add a ranked fetch source for this asset."""  
+    def add_source(  
+        self,  
+        provider: str,  
+        reference: str,  
+        quality: str = "",  
+        date_posted: str = "",  
+    ):  
+        """Add a ranked fetch source for this asset.  
+  
+        date_posted is an ISO-8601 date/datetime string for when the  
+        source first appeared (e.g. an Internet Archive upload date).  
+        Older postings are less likely to be taken down, which lowers  
+        the asset's takedown risk / retention fragility.  
+        """  
   
         self.sources.append(  
             {  
                 "provider": provider,  
                 "reference": reference,  
                 "quality": quality,  
+                "date_posted": date_posted,  
             }  
-        )  
+        )
   
     def get_sources(self):  
         """Return the ranked list of fetch sources."""  
@@ -248,7 +261,43 @@ class MediaAsset:
     def has_source(self):  
         """Return whether any fetch source is known."""  
   
-        return len(self.sources) > 0  
+        return len(self.sources) > 0
+
+    def get_source_age_days(self):  
+        """Return the age in days of the longest-standing source posting.  
+  
+        Uses the oldest `date_posted` across all sources (the longer a  
+        copy has survived, the lower its takedown risk). Sources with a  
+        missing or unparseable date are ignored. Returns 0 if no source  
+        has a usable date_posted.  
+        """  
+  
+        from datetime import datetime  
+  
+        oldest = None  
+  
+        for source in self.sources:  
+            raw = source.get("date_posted", "")  
+  
+            if not raw:  
+                continue  
+  
+            try:  
+                posted = datetime.fromisoformat(raw)  
+            except ValueError:  
+                continue  
+  
+            # Normalize to naive for a consistent comparison/subtraction.  
+            if posted.tzinfo is not None:  
+                posted = posted.replace(tzinfo=None)  
+  
+            if oldest is None or posted < oldest:  
+                oldest = posted  
+  
+        if oldest is None:  
+            return 0  
+  
+        return (datetime.now() - oldest).days
   
     # ------------------------------------------------------------------  
     # Retention / Scoring  

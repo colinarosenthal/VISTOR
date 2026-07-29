@@ -404,9 +404,9 @@ VISTOR provides a cable television user interface.
   
 ### Keyframe Fingerprinting  
   
-- [ ] Fingerprint Generation  
-- [ ] Fingerprint Persistence  
-- [ ] Keyframe Match Search  
+- [x] Fingerprint Generation  
+- [x] Fingerprint Persistence  
+- [x] Keyframe Match Search  
   
 ---  
   
@@ -699,3 +699,13 @@ Rewired the Engine to drive all channels through a single shared `Clock` via `Ch
 - Taught `MetadataSerializer._media_to_dictionary` to emit an `"assets"` block and `MetadataLoader._load_media` to rebuild assets; fixed a loader key mismatch (`"media_assets"` -> `"assets"`) that dropped assets on reload.  
 - Fixed `Theme` `parent_theme` serialization (two-pass parent resolution) that broke `save_to_directory`.  
 - Verified the full asset persistence round-trip via `test_metadata.py`.
+
+---  
+  
+## 2026-07-28
+  
+- Added a headless keyframe fingerprint service that computes a deterministic, zero-dependency fingerprint for each `MediaAsset` and stores it via `set_fingerprint()`, so identical/twin assets hash identically and distinct assets differ.  
+- Implemented keyframe match search: given a fingerprint, the service returns matching assets, enabling replacement lookup for missing media.  
+- Fingerprints persist across the save -> load round-trip (survive eviction) through the existing `MediaAsset.to_dictionary()`/`from_dictionary()` and the serializer/loader `"assets"` block.  
+- Extended `MediaAsset.add_source` with a `date_posted` field and added `get_source_age_days()` so source age can feed the retention "at-risk" term (older postings imply lower takedown risk / lower retention priority).  
+- Verified fingerprint generation, twin-matching, and source-age via `test_metadata.py` (all tests pass).

@@ -10,6 +10,7 @@ from metadata.services.metadata_loader import MetadataLoader
 from metadata.services.metadata_validator import MetadataValidator
 from metadata.services.metadata_search import MetadataSearch
 from metadata.services.metadata_serializer import MetadataSerializer
+from metadata.services.keyframe_fingerprint import KeyframeFingerprintService
 
 __all__ = [
     "MetadataLibrary",

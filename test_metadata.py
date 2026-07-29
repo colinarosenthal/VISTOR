@@ -944,6 +944,118 @@ assert fresh.needs_download() is True
 assert fresh.is_available() is False  
   
 print("Intelligent content management asset persistence verified.")
+
+print("\n=== Testing Keyframe Fingerprinting ===")  
+  
+from metadata.services.keyframe_fingerprint import KeyframeFingerprintService  
+  
+fingerprinter = KeyframeFingerprintService()  
+  
+# Deterministic, fixed-length generation.  
+fp_asset = MediaAsset(  
+    asset_id="fp_original",  
+    path="Media/fp_original.mkv",  
+    checksum="abc123",  
+    runtime_seconds=1500,  
+    width=1920,  
+    height=1080,  
+)  
+fp1 = fingerprinter.generate(fp_asset)  
+assert fp1 == fp_asset.get_fingerprint()  
+assert len(fp1) == 32  
+  
+# Same visual identity -> identical fingerprint (distance 0).  
+fp_twin = MediaAsset(  
+    asset_id="fp_twin",  
+    path="Media/fp_original.mkv",  
+    checksum="abc123",  
+    runtime_seconds=1500,  
+    width=1920,  
+    height=1080,  
+)  
+fingerprinter.generate(fp_twin)  
+assert fingerprinter.distance(  
+    fp_asset.get_fingerprint(), fp_twin.get_fingerprint()  
+) == 0.0  
+  
+# Different content -> non-zero distance.  
+fp_other = MediaAsset(  
+    asset_id="fp_other",  
+    path="Media/other.mkv",  
+    checksum="zzz999",  
+    runtime_seconds=90,  
+    width=640,  
+    height=480,  
+)  
+fingerprinter.generate(fp_other)  
+assert fingerprinter.distance(  
+    fp_asset.get_fingerprint(), fp_other.get_fingerprint()  
+) > 0.0  
+  
+# ensure_fingerprint must not overwrite an existing fingerprint.  
+before = fp_asset.get_fingerprint()  
+fingerprinter.ensure_fingerprint(fp_asset)  
+assert fp_asset.get_fingerprint() == before  
+  
+# Replacement search finds the visual twin, not the unrelated file.  
+match = fingerprinter.find_match(  
+    fp_asset.get_fingerprint(),  
+    [fp_other, fp_twin],  
+)  
+assert match is not None  
+matched_asset, matched_distance = match  
+assert matched_asset.get_asset_id() == "fp_twin"  
+assert matched_distance == 0.0  
+  
+# Fingerprint survives eviction (persists through serialization).  
+fp_asset.set_download_status(DownloadStatus.DOWNLOADED)  
+sample.add_media_asset(fp_asset)  
+  
+tmp_dir_fp = _Path(tempfile.mkdtemp())  
+MetadataSerializer(built).save_to_directory(tmp_dir_fp)  
+loaded_fp = MetadataLoader().load(tmp_dir_fp)  
+reloaded_fp_media = next(  
+    m for m in loaded_fp.get_media() if m.get_id() == sample.get_id()  
+)  
+reloaded_fp_asset = next(  
+    a for a in reloaded_fp_media.get_media_assets()  
+    if a.get_asset_id() == "fp_original"  
+)  
+assert reloaded_fp_asset.get_fingerprint() == fp1  
+  
+print("Keyframe fingerprinting verified.")  
+  
+  
+print("\n=== Testing Source Age (takedown risk) ===")  
+  
+from datetime import datetime, timedelta  
+  
+aged_asset = MediaAsset(asset_id="aged", path="Media/aged.mkv")  
+three_years_ago = (datetime.now() - timedelta(days=365 * 3)).isoformat()  
+ten_days_ago = (datetime.now() - timedelta(days=10)).isoformat()  
+aged_asset.add_source(  
+    "internet_archive", "old/ref.mkv", date_posted=three_years_ago  
+)  
+aged_asset.add_source("mirror", "new/ref.mkv", date_posted=ten_days_ago)  
+  
+# Oldest source drives the age -> ~3 years -> low takedown risk.  
+assert aged_asset.get_source_age_days() > 365 * 2  
+  
+# date_posted survives serialization on the source records.  
+sample.add_media_asset(aged_asset)  
+tmp_dir_age = _Path(tempfile.mkdtemp())  
+MetadataSerializer(built).save_to_directory(tmp_dir_age)  
+loaded_age = MetadataLoader().load(tmp_dir_age)  
+reloaded_age_media = next(  
+    m for m in loaded_age.get_media() if m.get_id() == sample.get_id()  
+)  
+reloaded_aged = next(  
+    a for a in reloaded_age_media.get_media_assets()  
+    if a.get_asset_id() == "aged"  
+)  
+assert any(s.get("date_posted") for s in reloaded_aged.get_sources())  
+  
+print("Source age verified.")
   
 # ------------------------------------------------------------------  
 # Final Result  
