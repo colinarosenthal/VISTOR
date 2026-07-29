@@ -421,9 +421,9 @@ VISTOR provides a cable television user interface.
   
 ### Scoring  
   
-- [ ] Broadcast Score  
-- [ ] Retention Score  
-- [ ] Pinning  
+- [x] Broadcast Score  
+- [x] Retention Score  
+- [x] Pinning  
   
 ---  
   
@@ -712,4 +712,8 @@ Rewired the Engine to drive all channels through a single shared `Clock` via `Ch
 - Added a headless multi-archive `SourceResolver` service that walks each `MediaAsset`'s ranked source list, fetching through a mockable fetcher interface so tests never hit the network.  
 - Handles takedowns cleanly: `404`/`403` responses warn and fall through to the next ranked source, driving `DownloadStatus` transitions (success → `DOWNLOADED`, exhausted → `FAILED`).  
 - On total source failure, falls back to a fingerprint-based replacement search, substituting a matching asset (e.g. `res_twin`) when one exists; logs an error only when no source and no replacement resolve.  
-- Verified via `test_metadata.py` (`=== Testing Multi-Archive Resolver ===`), which exercises the success, 404/403-rebind, fingerprint-substitution, and unresolvable-orphan paths.
+- Verified via `test_metadata.py` (`=== Testing Multi-Archive Resolver ===`), which exercises the success, 404/403-rebind, fingerprint-substitution, and unresolvable-orphan paths. 
+- Added a headless `AssetScorer` service (`src/metadata/services/asset_scorer.py`) computing the two independent scores per `MediaAsset`.  
+- Broadcast Score is airplay-only (repurposability across channels, evergreen vs seasonal bracket, appeal); Retention Score combines broadcast, source fragility (scarcity + posting age via `get_source_age_days()`), and storage footprint.  
+- `should_evict()` enforces pinning as a hard override — pinned assets are never evicted regardless of score.  
+- Verified broadcast ordering, retention ordering, and pin/eviction behavior via `test_metadata.py`.

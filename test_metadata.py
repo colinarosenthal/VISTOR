@@ -1120,6 +1120,74 @@ assert report3["replacement"] is None
 assert orphan.get_download_status() == DownloadStatus.FAILED  
   
 print("Multi-archive resolver verified.")
+
+# ------------------------------------------------------------------  
+# Scoring (broadcast / retention / pinning)  
+# ------------------------------------------------------------------  
+  
+print("\n=== Testing Scoring ===")  
+  
+from metadata.services.asset_scorer import AssetScorer  
+  
+scorer = AssetScorer()  
+  
+# A highly repurposable, non-seasonal, high-appeal asset should score  
+# HIGHER for broadcast than a seasonal, single-channel, low-appeal one.  
+evergreen = MediaAsset(asset_id="score_evergreen", path="Media/evergreen.mkv")  
+seasonal = MediaAsset(asset_id="score_seasonal", path="Media/seasonal.mkv")  
+  
+hi = scorer.compute_broadcast_score(  
+    evergreen, channel_count=4, is_seasonal=False, appeal=9.0  
+)  
+lo = scorer.compute_broadcast_score(  
+    seasonal, channel_count=1, is_seasonal=True, appeal=2.0  
+)  
+  
+assert hi > lo  
+assert 0.0 <= lo <= 10.0 and 0.0 <= hi <= 10.0  
+assert evergreen.get_broadcast_score() == hi  
+  
+# Retention: a fragile (single young source), small item should be kept  
+# more aggressively than a durable (many old sources), huge item even at  
+# the same broadcast score.  
+fragile = MediaAsset(asset_id="score_fragile", path="Media/fragile.mkv", file_size=100)  
+fragile.set_broadcast_score(6.0)  
+fragile.add_source(provider="internet_archive", reference="only/one.mkv")  
+  
+durable = MediaAsset(  
+    asset_id="score_durable",  
+    path="Media/durable.mkv",  
+    file_size=8 * 1024 * 1024 * 1024,  # 8 GiB, above the large-file cap  
+)  
+durable.set_broadcast_score(6.0)  
+durable.add_source(provider="internet_archive", reference="a.mkv")  
+durable.add_source(provider="mirror_archive", reference="b.mkv")  
+durable.add_source(provider="mirror_two", reference="c.mkv")  
+durable.add_source(provider="mirror_three", reference="d.mkv")  
+  
+frag_ret = scorer.compute_retention_score(fragile)  
+dur_ret = scorer.compute_retention_score(durable)  
+  
+assert frag_ret > dur_ret  
+assert fragile.get_retention_score() == frag_ret  
+  
+# Pinning is a hard override: a pinned asset is never evictable even with  
+# a zero retention score; an unpinned low-score asset is.  
+pinned_asset = MediaAsset(asset_id="score_pinned", path="Media/pinned.mkv")  
+pinned_asset.set_retention_score(0.0)  
+pinned_asset.set_pinned(True)  
+assert scorer.should_evict(pinned_asset) is False  
+  
+evictable = MediaAsset(asset_id="score_evictable", path="Media/evictable.mkv")  
+evictable.set_retention_score(0.0)  
+assert scorer.should_evict(evictable) is True  
+  
+# A high-retention unpinned asset is retained.  
+keeper = MediaAsset(asset_id="score_keeper", path="Media/keeper.mkv")  
+keeper.set_retention_score(9.0)  
+assert scorer.should_evict(keeper) is False  
+  
+print("Scoring verified.")
   
 # ------------------------------------------------------------------  
 # Final Result  
