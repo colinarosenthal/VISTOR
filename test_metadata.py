@@ -1056,6 +1056,70 @@ reloaded_aged = next(
 assert any(s.get("date_posted") for s in reloaded_aged.get_sources())  
   
 print("Source age verified.")
+
+print("\n=== Testing Multi-Archive Resolver ===")  
+  
+from metadata.services.source_resolver import SourceResolver, FetchResult  
+from metadata.relationships.media_asset import MediaAsset  
+from metadata.enums.download_status import DownloadStatus  
+  
+  
+class _FakeFetcher:  
+    """Canned fetcher: maps 'provider:reference' -> FetchResult."""  
+  
+    def __init__(self, responses):  
+        self._responses = responses  
+  
+    def fetch(self, provider, reference):  
+        key = f"{provider}:{reference}"  
+        return self._responses.get(key, FetchResult.failure(404))  
+  
+  
+# --- First source 404s, second source succeeds (takedown rebind) ---  
+primary = MediaAsset(asset_id="res_primary", path="Media/res.mkv")  
+primary.add_source("internet_archive", "dead/reference.mkv")  
+primary.add_source("mirror_archive", "live/reference.mkv")  
+  
+fetcher = _FakeFetcher({  
+    "internet_archive:dead/reference.mkv": FetchResult.failure(404),  
+    "mirror_archive:live/reference.mkv": FetchResult.success(),  
+})  
+  
+resolver = SourceResolver(fetcher)  
+report = resolver.resolve(primary)  
+  
+assert report["resolved"] is True  
+assert report["used_source"]["provider"] == "mirror_archive"  
+assert primary.get_download_status() == DownloadStatus.DOWNLOADED  
+assert len(report["attempts"]) == 2  
+  
+# --- All sources fail (403), fingerprint replacement substitutes ---  
+missing = MediaAsset(asset_id="res_missing", path="Media/missing.mkv")  
+missing.add_source("internet_archive", "gone/reference.mkv")  
+missing.set_fingerprint("abc123")  
+  
+twin = MediaAsset(asset_id="res_twin", path="Media/twin.mkv")  
+twin.set_fingerprint("abc123")  
+twin.set_download_status(DownloadStatus.DOWNLOADED)  
+  
+dead_fetcher = _FakeFetcher({  
+    "internet_archive:gone/reference.mkv": FetchResult.failure(403),  
+})  
+  
+report2 = SourceResolver(dead_fetcher).resolve(missing, candidates=[missing, twin])  
+  
+assert report2["resolved"] is False  
+assert report2["replacement"] == "res_twin"  
+assert missing.get_download_status() == DownloadStatus.FAILED  
+  
+# --- No sources, no candidates -> clean failure ---  
+orphan = MediaAsset(asset_id="res_orphan", path="Media/orphan.mkv")  
+report3 = SourceResolver(_FakeFetcher({})).resolve(orphan)  
+assert report3["resolved"] is False  
+assert report3["replacement"] is None  
+assert orphan.get_download_status() == DownloadStatus.FAILED  
+  
+print("Multi-archive resolver verified.")
   
 # ------------------------------------------------------------------  
 # Final Result  

@@ -412,10 +412,10 @@ VISTOR provides a cable television user interface.
   
 ### Multi-Archive Resolver  
   
-- [ ] Source Registry  
-- [ ] Takedown Handling  
-- [ ] Fingerprint-Based Replacement Search  
-- [ ] Relevant-Media Substitution Fallback  
+- [x] Source Registry  
+- [x] Takedown Handling  
+- [x] Fingerprint-Based Replacement Search  
+- [x] Relevant-Media Substitution Fallback  
   
 ---  
   
@@ -709,3 +709,7 @@ Rewired the Engine to drive all channels through a single shared `Clock` via `Ch
 - Fingerprints persist across the save -> load round-trip (survive eviction) through the existing `MediaAsset.to_dictionary()`/`from_dictionary()` and the serializer/loader `"assets"` block.  
 - Extended `MediaAsset.add_source` with a `date_posted` field and added `get_source_age_days()` so source age can feed the retention "at-risk" term (older postings imply lower takedown risk / lower retention priority).  
 - Verified fingerprint generation, twin-matching, and source-age via `test_metadata.py` (all tests pass).
+- Added a headless multi-archive `SourceResolver` service that walks each `MediaAsset`'s ranked source list, fetching through a mockable fetcher interface so tests never hit the network.  
+- Handles takedowns cleanly: `404`/`403` responses warn and fall through to the next ranked source, driving `DownloadStatus` transitions (success → `DOWNLOADED`, exhausted → `FAILED`).  
+- On total source failure, falls back to a fingerprint-based replacement search, substituting a matching asset (e.g. `res_twin`) when one exists; logs an error only when no source and no replacement resolve.  
+- Verified via `test_metadata.py` (`=== Testing Multi-Archive Resolver ===`), which exercises the success, 404/403-rebind, fingerprint-substitution, and unresolvable-orphan paths.
