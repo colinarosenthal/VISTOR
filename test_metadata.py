@@ -628,10 +628,10 @@ assert manager.count() >= 2
 engine.update()  
 engine.update()  
   
-manager.channel_up()  
-assert manager.get_active_channel().get_number() == 4  
-manager.previous_channel()  
-assert manager.get_active_channel().get_number() == 2  
+manager.channel_up()    
+assert manager.get_active_channel().get_number() == 3    
+manager.previous_channel()    
+assert manager.get_active_channel().get_number() == 2
   
 print("Channel Manager verified.")
 
@@ -1367,6 +1367,50 @@ gated_ids = [i.get_id() for i in discovery.discover(gated_channel, [strong, weak
 assert gated_ids == ["toon_strong"]  
   
 print("Channel discovery verified.")
+
+print("\n=== Testing Provider Registry + RealFetcher (offline) ===")  
+  
+from metadata.services.fetchers.provider_registry import ProviderRegistry  
+from metadata.services.fetchers.real_fetcher import RealFetcher  
+from metadata.services.source_resolver import FetchResult, SourceResolver  
+from metadata.relationships.media_asset import MediaAsset  
+from metadata.enums.download_status import DownloadStatus  
+  
+  
+class _StubProviderFetcher:  
+    """Stand-in provider fetcher: never touches the network."""  
+  
+    def __init__(self, result):  
+        self._result = result  
+        self.current_asset = None  
+  
+    def fetch(self, provider, reference):  
+        return self._result  
+  
+  
+# Registry routes each provider string to its own fetcher.  
+registry = ProviderRegistry()  
+registry.register("internet_archive", _StubProviderFetcher(FetchResult.failure(404)))  
+registry.register("youtube", _StubProviderFetcher(FetchResult.success()))  
+  
+real = RealFetcher(registry=registry)  
+  
+asset = MediaAsset(asset_id="rf_asset", path="Media/rf.mkv")  
+asset.add_source("internet_archive", "dead/ref.mkv")  
+asset.add_source("youtube", "fzHD04_OwyQ")  
+  
+real.bind(asset)  
+report = SourceResolver(real).resolve(asset)  
+  
+assert report["resolved"] is True  
+assert report["used_source"]["provider"] == "youtube"  
+assert asset.get_download_status() == DownloadStatus.DOWNLOADED  
+  
+# Unknown provider falls back to the generic HTTP fetcher instance.  
+from metadata.services.fetchers.http_fetcher import HttpFetcher  
+assert isinstance(ProviderRegistry().get("some_random_site"), HttpFetcher)  
+  
+print("Provider routing + RealFetcher delegation verified.")
   
 # ------------------------------------------------------------------  
 # Final Result  

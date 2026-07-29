@@ -1,8 +1,8 @@
 # VISTOR Developer Guide  
   
-**Version:** 0.3.0  
+**Version:** 0.5.0  
   
-**Last Updated:** July 26, 2026  
+**Last Updated:** July 28, 2026  
   
 ---  
   
@@ -49,9 +49,10 @@
     7.5 Library Models  
     7.6 Relationship Models  
     7.7 Media Models  
-    7.8 Metadata Services  
-    7.9 Serialization and Loading  
-    7.10 Metadata Population  
+    7.8 Metadata Services    
+    7.9 Serialization and Loading    
+    7.10 Metadata Population    
+    7.11 Media Acquisition and Source Resolution
   
 8. Subsystems (Not Yet Implemented)  
     8.1 Player  
@@ -483,6 +484,118 @@ Because references are stored and restored by identifier, a populated library
 can be written to disk and reconstructed with every shared reference intact,  
 giving a complete save → load round-trip with no duplicated entities.  
   
+---
+
+## 7.11 Media Acquisition and Source Resolution    
+    
+VISTOR separates a media item's existence from its local availability. The    
+metadata library is the complete broadcast catalog regardless of what exists    
+on disk, so acquisition is the runtime process that turns a catalogued    
+MediaAsset into a verified local file. Because metadata is permanent and    
+availability is a dynamic state, acquisition can run, fail, retry, and    
+substitute without ever mutating the catalog.    
+    
+### Source Resolution    
+    
+Every MediaAsset carries a ranked list of remote `sources`, each a lightweight    
+descriptor `{provider, reference, quality, date_posted}`. Order is preference:    
+the resolver tries them top-down and advances on failure.    
+    
+`SourceResolver` (services/source_resolver.py) owns this logic. It marks the    
+asset DOWNLOADING, walks the ranked sources, and on the first success marks it    
+DOWNLOADED and verified. HTTP-style takedown statuses (403, 404, 410) are    
+treated as "source gone" and cause it to advance to the next source rather    
+than fail. If every source fails, it attempts a keyframe-fingerprint-based    
+replacement before finally reporting failure.    
+    
+The network fetch itself is delegated to a pluggable "fetcher" object so the    
+resolver stays fully testable without touching the network. A fetcher only    
+needs to expose one method:    
+    
+    fetch(provider: str, reference: str) -> FetchResult    
+    
+`FetchResult` is a small value object with `success()` and `failure(status)`    
+factory helpers. The smoke test supplies a canned `_FakeFetcher`; production    
+supplies `RealFetcher`.    
+    
+### Fetchers Package    
+    
+The `services/fetchers/` package provides the production fetchers. All of them    
+satisfy the resolver's fetcher contract, so `SourceResolver` itself is never    
+modified:    
+    
+```  
+services/fetchers/    
+    __init__.py                    Exports the fetcher classes    
+    base_fetcher.py                BaseFetcher — shared download lifecycle    
+    metadata_probe.py              MetadataProbe — ffprobe/mutagen extraction    
+    internet_archive_fetcher.py    InternetArchiveFetcher (rank 1)    
+    youtube_fetcher.py             YouTubeFetcher (rank 2, yt-dlp)    
+    generic_http_fetcher.py        GenericHttpFetcher (catch-all)    
+    provider_registry.py           ProviderRegistry — provider -> fetcher    
+    real_fetcher.py                RealFetcher — SourceResolver entry point    
+```  
+    
+- RealFetcher is the object passed to `SourceResolver(fetcher=...)`. It routes    
+  each `(provider, reference)` through the ProviderRegistry to the correct    
+  fetcher and forwards the target MediaAsset so technical fields are populated    
+  on success.    
+- ProviderRegistry maps a source's `provider` string to a concrete fetcher.    
+  Known providers are `internet_archive`, `youtube`, and `generic_http` /    
+  `direct_url`; unknown providers fall back to GenericHttpFetcher, which treats    
+  the reference as a direct URL so effectively any website is downloadable.    
+- Providers are ranked by reliability. Internet Archive is preferred first    
+  because its references are stable and dated; YouTube is second via yt-dlp;    
+  arbitrary direct links are the catch-all.    
+- BaseFetcher owns the shared lifecycle every provider reuses: download to    
+  `Media/tmp/`, verify the file is present and non-empty, probe technical    
+  metadata, fingerprint, then atomically move the file to the asset's final    
+  path. Provider subclasses implement only `_download(reference, temp_path)`,    
+  returning an HTTP-style status code, and map "gone/forbidden" outcomes to    
+  403/404/410 so the resolver advances to the next source.    
+    
+### Automatic Metadata Extraction    
+    
+MetadataProbe fills the MediaAsset technical fields that already exist on the    
+model (`runtime_seconds`, `video_codec`, `audio_codec`, `container`, `width`,    
+`height`, `frame_rate`, `file_size`). It uses `ffprobe` when present on PATH    
+for full stream information and degrades gracefully to file-size-only when it    
+is not, so a missing tool never fails a download. Every successfully obtained    
+asset is then fingerprinted from its keyframes before it can ever be evicted;    
+the fingerprint is retained permanently even after the file is deleted, which    
+is what allows a taken-down asset to be reverse-searched and reacquired later.    
+    
+### Dependencies    
+    
+Acquisition adds three third-party dependencies — `requests`, `yt-dlp`, and    
+`mutagen`. All network imports are performed lazily inside the fetcher methods    
+so the headless smoke test (Section 9) continues to run offline with no    
+third-party packages installed.    
+    
+### Acquisition Flow    
+    
+```  
+SourceResolver.resolve(asset)    
+    RealFetcher.fetch(provider, reference)    
+        ProviderRegistry.get(provider)    
+            internet_archive -> InternetArchiveFetcher    
+            youtube          -> YouTubeFetcher (yt-dlp)    
+            generic_http     -> GenericHttpFetcher    
+            direct_url       -> GenericHttpFetcher    
+            <unknown>        -> GenericHttpFetcher (fallback)    
+                BaseFetcher.fetch()    
+                    1. temp-download to Media/tmp/    
+                    2. verify (status 200, non-empty)    
+                    3. MetadataProbe.populate()  -> runtime/codecs/res/size    
+                    4. ensure_fingerprint()      -> keyframe fingerprint    
+                    5. move temp -> asset final path    
+                    6. FetchResult.success() / .failure(status)    
+```  
+    
+Dependencies point downward: acquisition lives in the metadata `services`    
+layer and depends only on `core` (Logger) and the metadata models, never on    
+the scheduler or engine.
+
 ---
 
 # 8. Subsystems  

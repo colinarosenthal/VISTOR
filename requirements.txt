@@ -12,11 +12,22 @@
 #
 # ==========================================================
 
-# ------------------------------------------------------------------
-# Current Dependencies
-# ------------------------------------------------------------------
-
-# No third-party packages are currently required.
+# ------------------------------------------------------------------  
+# Current Dependencies  
+# ------------------------------------------------------------------  
+  
+requests           # HTTP downloads (Internet Archive, generic sites, weather)  
+yt-dlp             # YouTube and other site video acquisition  
+mutagen            # Read audio/video metadata  
+  
+# ------------------------------------------------------------------  
+# Planned Dependencies (Subject to Change)  
+# ------------------------------------------------------------------  
+  
+# python-mpv       # MPV media player integration  
+# Pillow           # Image processing and OSD graphics  
+# watchdog         # Automatic media library monitoring  
+# python-dateutil  # Advanced date and schedule calculations
 
 # ------------------------------------------------------------------
 # Planned Dependencies (Subject to Change)
