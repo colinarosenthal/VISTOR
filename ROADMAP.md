@@ -451,19 +451,26 @@ VISTOR provides a cable television user interface.
 - [x] Auto-Resolve Undownloaded Assets on Ingest    
 - [x] `add_media` CLI Entry Point    
 - [ ] Descriptive Metadata Scraping (title/year/genre from provider)    
-- [ ] Batch Folder Ingestion    
+- [ ] Batch Folder Ingestion
+
+### Ingestion Front-End    
+  
+- [x] URL -> (provider, reference) Link Resolver    
+- [x] Descriptive Metadata Scraper (yt-dlp info-dict)    
+- [x] Deterministic Type/Genre Classifier (best-guess + override)    
+- [x] Link-Driven `add_media` CLI    
     
 ---
 
-### Acquisition Engine    
-    
-- [x] Provider-Agnostic Fetcher    
-- [x] Per-Provider Backends (Internet Archive, YouTube, Smithsonian, ...)    
-- [x] Rolling Acquisition Loop    
-- [x] Channel-Spec Discovery (known catalog)    
-- [ ] Catalogue Expansion (uncatalogued search) — deferred    
-
----
+### Authoritative Enrichment  
+  
+- [x] Authoritative Source Interface (pluggable lookup provider)  
+- [x] TMDB Lookup Backend (title/year search)  
+- [x] Genre Mapping (external genres -> controlled Genre vocabulary)  
+- [x] Metadata Enricher (overrides > authoritative > classified > default)  
+- [x] Graceful Offline Degradation (no API key / no network -> fall back)  
+- [ ] IMDb / Wikidata Backends — deferred  
+- [ ] LLM Classifier Backend — deferred
   
 ### Programming  
   
@@ -782,3 +789,18 @@ Rewired the Engine to drive all channels through a single shared `Clock` via `Ch
 - Updated the channel-up adjacency assertion in `test_metadata.py` for the expanded lineup (channel_up from #2 now lands on #3, not #4).  
 - Documented the acquisition layer as Section 7.11 in `Docs/VISTOR_Developer_Guide.md`.  
 - Verified via `test_metadata.py` (all tests pass, including `=== Testing Provider Registry + RealFetcher (offline) ===`).
+- Added a URL-first ingestion front-end so a pasted link becomes a full media  
+record without hand-authored JSON.  
+- `LinkResolver` parses a pasted YouTube / Internet Archive / direct URL into  
+the `(provider, reference)` pair the fetchers expect (youtu.be & `watch?v=` -> youtube video id; `archive.org/download/<id>/<file>` -> internet_archive `<id>/<file>`; anything else -> `direct_url`).  
+- `MediaDescriber` harvests yt-dlp's info-dict (title, upload year, duration,  description) with no second tool, auto-filling the descriptive fields.  
+- Added `MediaClassifier`: `classify_type` maps the yt-dlp category/duration to the `MediaType` vocabulary and `classify_genres` maps YouTube categories/tags through a controlled table to VISTOR's 13 `Genre` names only (unmapped tags dropped) — a best-guess with a logged warning, not a hard truth.  
+- `RecordBuilder` assembles a media.json-shaped record; precedence is overrides > classified/scraped > default, so `--type`/`--genres` always win.  
+- `add_media.py` gained a `--link`/URL mode with `--type`/`--genres` now optional (omitting them triggers auto-classification); JSON-file mode kept.  
+- All network/yt-dlp imports remain lazy so the headless smoke test still runs offline with no third-party packages installed.  
+- Verified via `test_metadata.py` (all tests pass).
+- Added an authoritative metadata enrichment layer: a pluggable AuthoritativeSource abstraction with a TMDB backend that looks a title up by name/year and returns canonical title, release_year, genres, description, and runtime.  
+- Added MetadataEnricher, which fills only empty/zero descriptive fields on a built record so the precedence chain overrides > authoritative > classified > scraped > default holds and manual flags / confident classifier guesses are never overwritten.  
+- Wired MetadataEnricher into RecordBuilder.build() so a pasted link now flows: LinkResolver -> MediaDescriber -> MediaClassifier -> MetadataEnricher -> ingest-ready record.  
+- Kept the layer offline-safe: with no TMDB_API_KEY the lookup returns None and the enricher is a no-op, so test_metadata.py still runs with no network or API key.  
+- Verified fill, override-preservation, and no-op behavior via test_metadata.py (=== Testing MetadataEnricher (offline) ===).

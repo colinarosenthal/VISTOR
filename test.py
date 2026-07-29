@@ -1441,6 +1441,50 @@ assert _report2["added"] == []
 assert _report2["skipped"][0][0] == "ingest_demo"  
   
 print("MediaIngestor ingest + dedupe verified.")
+
+print("\n=== Testing MetadataEnricher (offline) ===")  
+  
+from metadata.services.enrichment.metadata_enricher import MetadataEnricher  
+  
+  
+class _StubSource:  
+    """Canned authoritative source: no network."""  
+  
+    def lookup(self, title, year=None, media_type=None):  
+        return {  
+            "title": "Redline",  
+            "release_year": 2009,  
+            "runtime_minutes": 102,  
+            "description": "A high-stakes underground street race.",  
+            "media_type": "Movie",  
+            "genres": ["Animation", "Action"],  
+        }  
+  
+  
+# Fill-if-missing: empty fields get filled...  
+_rec = {"type": "", "title": "redline", "release_year": 0,  
+        "runtime_minutes": 0, "description": "", "genres": []}  
+_rec = MetadataEnricher(_StubSource()).enrich(_rec)  
+assert _rec["release_year"] == 2009  
+assert _rec["type"] == "Movie"  
+assert _rec["genres"] == ["Animation", "Action"]  
+  
+# ...but an explicit override is never clobbered.  
+_rec2 = {"type": "MusicVideo", "title": "redline", "release_year": 0,  
+         "runtime_minutes": 0, "description": "", "genres": ["Music"]}  
+_rec2 = MetadataEnricher(_StubSource()).enrich(_rec2)  
+assert _rec2["type"] == "MusicVideo"      # override wins  
+assert _rec2["genres"] == ["Music"]       # override wins  
+  
+# No-match source is a no-op.  
+class _NullSource:  
+    def lookup(self, *a, **k):  
+        return None  
+  
+_rec3 = {"type": "", "title": "obscure", "release_year": 0, "genres": []}  
+assert MetadataEnricher(_NullSource()).enrich(_rec3)["type"] == ""  
+  
+print("MetadataEnricher fill/override/no-op verified.")
   
 # ------------------------------------------------------------------  
 # Final Result  
