@@ -10,9 +10,15 @@ carrying an `assets` array with ranked `sources`). The ingestor:
     2. Merges them into Metadata/data/media.json (dedupe by id).  
     3. Reloads the library via MetadataLoader so every record becomes a  
        fully-wired MediaItem + MediaAsset (JSON -> object).  
-    4. Auto-resolves any asset still marked NOT_DOWNLOADED using the  
+    4. Auto-resolves any asset whose file is not present on disk using the  
        production RealFetcher + SourceResolver, so adding media also  
        downloads, probes, and fingerprints it.  
+  
+Self-healing: a record whose id already exists is NOT blindly skipped.  
+If its asset file is missing on disk (e.g. a previous download failed),  
+the record is treated as retry-eligible and re-resolved on the next run,  
+so a failed download heals itself instead of requiring a manual  
+media.json delete.  
   
 This is the seam a future UI targets: the GUI just emits the same JSON.  
   
@@ -50,6 +56,7 @@ class MediaIngestor:
         Returns a report dictionary:  
             {  
                 "added": [id, ...],  
+                "retried": [id, ...],  
                 "skipped": [(id, reason), ...],  
                 "resolved": [id, ...],  
                 "unresolved": [id, ...],  
@@ -65,6 +72,7 @@ class MediaIngestor:
   
         report = {  
             "added": [],  
+            "retried": [],  
             "skipped": [],  
             "resolved": [],  
             "unresolved": [],  
@@ -76,6 +84,27 @@ class MediaIngestor:
         for record in records:  
   
             problem = self._validate(record, existing_ids)  
+  
+            # A pre-existing id is not necessarily a dead end: if its asset  
+            # file is missing on disk, the earlier download must have  
+            # failed, so re-resolve it instead of skipping.  
+            if problem == self.DUPLICATE_ID:  
+  
+                if self._record_needs_retry(record):  
+                    report["retried"].append(record["id"])  
+                    Logger.info(  
+                        f"Record '{record['id']}' already exists but its "  
+                        f"asset is missing; scheduling download retry."  
+                    )  
+                else:  
+                    report["skipped"].append(  
+                        (record["id"], "already present and downloaded")  
+                    )  
+                    Logger.info(  
+                        f"Skipping media record '{record['id']}': "  
+                        f"already present and downloaded."  
+                    )  
+                continue  
   
             if problem is not None:  
                 report["skipped"].append((record.get("id", "?"), problem))  
@@ -94,11 +123,12 @@ class MediaIngestor:
         # Persist the merged catalog before reloading.  
         self._write_media_json(existing)  
   
-        if download and report["added"]:  
+        if download and (report["added"] or report["retried"]):  
             self._resolve_new_assets(report)  
   
         Logger.info(  
             f"Ingestion complete: {len(report['added'])} added, "  
+            f"{len(report['retried'])} retried, "  
             f"{len(report['skipped'])} skipped, "  
             f"{len(report['resolved'])} downloaded."  
         )  
@@ -108,6 +138,10 @@ class MediaIngestor:
     # ------------------------------------------------------------------  
     # Validation  
     # ------------------------------------------------------------------  
+  
+    # Sentinel so the caller can distinguish a duplicate id (retry-eligible)  
+    # from a genuinely invalid record.  
+    DUPLICATE_ID = "id already exists in media.json"  
   
     def _validate(self, record, existing_ids):  
         """Return a reason string if the record is invalid, else None."""  
@@ -126,16 +160,35 @@ class MediaIngestor:
             )  
   
         if record["id"] in existing_ids:  
-            return "id already exists in media.json"  
+            return self.DUPLICATE_ID  
   
         return None  
+  
+    def _record_needs_retry(self, record):  
+        """  
+        True if any of the record's assets has sources but no file on disk.  
+  
+        Disk presence is the source of truth: a record can exist in  
+        media.json while its download never completed, in which case the  
+        file at the asset's declared path will be absent.  
+        """  
+  
+        for asset in record.get("assets", []):  
+  
+            sources = asset.get("sources", [])  
+            path = asset.get("path", "")  
+  
+            if sources and not (path and Path(path).exists()):  
+                return True  
+  
+        return False  
   
     # ------------------------------------------------------------------  
     # Download / Resolution  
     # ------------------------------------------------------------------  
   
     def _resolve_new_assets(self, report):  
-        """Reload the library and resolve every NOT_DOWNLOADED asset."""  
+        """Reload the library and resolve every asset not present on disk."""  
   
         # Lazy import so importing MediaIngestor never requires network deps.  
         from metadata.services.source_resolver import SourceResolver  
@@ -146,16 +199,21 @@ class MediaIngestor:
         real = RealFetcher()  
         resolver = SourceResolver(real)  
   
-        added = set(report["added"])  
+        targets = set(report["added"]) | set(report["retried"])  
   
         for item in library.get_media():  
   
-            if item.get_id() not in added:  
+            if item.get_id() not in targets:  
                 continue  
+  
+            item_resolved = False  
   
             for asset in item.get_media_assets():  
   
-                if asset.get_download_status() != DownloadStatus.NOT_DOWNLOADED:  
+                # Skip only if the file is genuinely present on disk.  
+                path = asset.get_path()  
+  
+                if asset.is_available() and path and Path(path).exists():  
                     continue  
   
                 if not asset.get_sources():  
@@ -163,16 +221,23 @@ class MediaIngestor:
                         f"Asset '{asset.get_asset_id()}' has no sources; "  
                         f"cannot auto-download."  
                     )  
-                    report["unresolved"].append(item.get_id())  
                     continue  
+  
+                # Force a re-fetch: an asset loaded as DOWNLOADED but whose  
+                # file has vanished must be treated as needing download.  
+                if asset.is_available():  
+                    asset.set_download_status(DownloadStatus.MISSING)  
   
                 real.bind(asset)  
                 result = resolver.resolve(asset)  
   
                 if result.get("resolved"):  
-                    report["resolved"].append(item.get_id())  
-                else:  
-                    report["unresolved"].append(item.get_id())  
+                    item_resolved = True  
+  
+            if item_resolved:  
+                report["resolved"].append(item.get_id())  
+            else:  
+                report["unresolved"].append(item.get_id())  
   
     # ------------------------------------------------------------------  
     # File Helpers  

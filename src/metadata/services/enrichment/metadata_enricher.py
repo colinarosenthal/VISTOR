@@ -18,8 +18,13 @@ from core.logger import Logger
 class MetadataEnricher:  
     """Fill gaps in a media record from an AuthoritativeSource."""  
   
-    def __init__(self, source):  
-        self.source = source  
+    def __init__(self, source=None):  
+        if source is None:  
+            # Default authoritative backend. Offline-safe: with no  
+            # TMDB_API_KEY, its lookup() returns None and enrich() is a no-op.  
+            from metadata.services.enrichment.tmdb_source import TMDBSource  
+            source = TMDBSource()  
+        self.source = source
   
     def enrich(self, record):  
         """Return `record` with missing descriptive fields filled from the source."""  

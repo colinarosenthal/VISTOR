@@ -19,11 +19,14 @@ always ingest-ready even with no network, no API key, and no yt-dlp.
   
 import re  
   
-from core.logger import Logger  
+from core.logger import Logger 
+
 from metadata.services.link_resolver import LinkResolver  
 from metadata.services.media_describer import MediaDescriber  
-from metadata.services.media_classifier import MediaClassifier  
-from metadata.services.enrichment.metadata_enricher import MetadataEnricher  
+from metadata.services.media_classifier import MediaClassifier 
+
+from metadata.services.enrichment.metadata_enricher import MetadataEnricher 
+from metadata.services.enrichment.tmdb_source import TMDBSource 
   
   
 def _slugify(text):  
@@ -50,7 +53,7 @@ class RecordBuilder:
         self.resolver = resolver or LinkResolver()  
         self.describer = describer or MediaDescriber()  
         self.classifier = classifier or MediaClassifier()  
-        self.enricher = enricher or MetadataEnricher()  
+        self.enricher = enricher or MetadataEnricher(TMDBSource())
   
     def build(self, url, media_type=None, overrides=None):  
         overrides = overrides or {}  
