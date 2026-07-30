@@ -1,17 +1,17 @@
-# ==========================================================
-# VISTOR Python Requirements
-#
-# This file lists all third-party Python packages required
-# to develop and run VISTOR.
-#
-# Install all dependencies using:
-#
-#     pip install -r requirements.txt
-#
-# Dependencies will be added as features are implemented.
-#
-# ==========================================================
-
+# ==========================================================  
+# VISTOR Python Requirements  
+#  
+# This file lists all third-party Python packages required  
+# to develop and run VISTOR.  
+#  
+# Install all dependencies using:  
+#  
+#     pip install -r requirements.txt  
+#  
+# Dependencies will be added as features are implemented.  
+#  
+# ==========================================================  
+  
 # ------------------------------------------------------------------  
 # Current Dependencies  
 # ------------------------------------------------------------------  
@@ -19,6 +19,7 @@
 requests           # HTTP downloads (Internet Archive, generic sites, weather)  
 yt-dlp             # YouTube and other site video acquisition  
 mutagen            # Read audio/video metadata  
+Flask              # Local drag-and-drop web ingest UI (add_media_web.py)  
   
 # ------------------------------------------------------------------  
 # Planned Dependencies (Subject to Change)  
@@ -27,23 +28,12 @@ mutagen            # Read audio/video metadata
 # python-mpv       # MPV media player integration  
 # Pillow           # Image processing and OSD graphics  
 # watchdog         # Automatic media library monitoring  
-# python-dateutil  # Advanced date and schedule calculations
-
-# ------------------------------------------------------------------
-# Planned Dependencies (Subject to Change)
-# ------------------------------------------------------------------
-
-# python-mpv       # MPV media player integration
-# Pillow           # Image processing and OSD graphics
-# requests         # Weather API communication
-# watchdog         # Automatic media library monitoring
-# mutagen          # Read audio/video metadata
-# python-dateutil  # Advanced date and schedule calculations
-
-# The following libraries may be used depending on future design
-# decisions and implementation requirements.
-
-# opencv-python    # Video processing (optional)
-# numpy            # Numerical operations
-# lxml             # XML parsing
+# python-dateutil  # Advanced date and schedule calculations  
+  
+# The following libraries may be used depending on future design  
+# decisions and implementation requirements.  
+  
+# opencv-python    # Video processing (optional)  
+# numpy            # Numerical operations  
+# lxml             # XML parsing  
 # PyYAML           # YAML configuration support (optional)

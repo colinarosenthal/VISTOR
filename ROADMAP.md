@@ -4,7 +4,7 @@
 
 **Current Version:** 0.6.0
 
-**Last Updated:** July 27, 2026
+**Last Updated:** July 29, 2026
 
 ---
 
@@ -446,8 +446,9 @@ VISTOR provides a cable television user interface.
 - [x] JSON Media Ingestion Service    
 - [x] Auto-Resolve Undownloaded Assets on Ingest    
 - [x] `add_media` CLI Entry Point    
-- [ ] Descriptive Metadata Scraping (title/year/genre from provider)    
+- [x] Descriptive Metadata Scraping (title/year/genre from provider)    
 - [ ] Batch Folder Ingestion
+- [x] Rolling Episode Window (window-gated per-series acquisition)
 
 ### Link-Driven Ingestion  
   
@@ -457,18 +458,33 @@ VISTOR provides a cable television user interface.
 - [x] Record Builder (override > TMDB > classified > scraped > default)  
 - [x] Media Ingestor (dedupe-by-id, self-healing retry, write-back)  
 - [x] add_media CLI (link or JSON drop-in)  
+
+### Web Ingest UI  
   
-### Authoritative Enrichment  
+- [x] Flask drag-and-drop ingest front-end (`add_media_web.py` launcher + `src/ingest/web_app.py`)  
+- [x] IngestSession backend seam (build / candidates / build-from-tmdb / commit)  
+- [x] Live preview card (poster, title, year, runtime, genres, description)  
+- [x] TMDB "did you mean?" candidate picker (multi-result search instead of results[0])  
+- [x] Overwrite-on-commit (replace existing id instead of dedupe-skip)  
+- [x] Launcher env bootstrap (winget ffmpeg PATH injection + TMDB_API_KEY + browser auto-open)  
+- [x] Genre vocabulary bootstrap fix (populate genres.json so relinking survives round-trip)  
+- [ ] Persist vocabulary buckets automatically on setup (genres/tags/themes/countries/languages)
   
-- [x] Authoritative Source Interface (pluggable lookup provider)    
-- [x] TMDB Lookup Backend (title/year search)    
-- [x] Genre Mapping (external genres -> controlled Genre vocabulary)    
-- [x] Metadata Enricher (overrides > authoritative > classified > default)    
-- [x] Authoritative Year Precedence (TMDB year overrides provisional scraped year)    
-- [x] Cast / Crew Credits Enrichment (TMDB credits -> people.json upsert + appearances)    
-- [x] Studio Enrichment (TMDB production companies -> studios.json upsert)    
-- [x] Graceful Offline Degradation (no API key / no network -> fall back)    
-- [ ] IMDb / Wikidata Backends — deferred    
+### Authoritative Enrichment    
+    
+- [x] Authoritative Source Interface (pluggable lookup provider)      
+- [x] TMDB Lookup Backend (title/year search)      
+- [x] Genre Mapping (external genres -> controlled Genre vocabulary)      
+- [x] Metadata Enricher (overrides > authoritative > classified > default)      
+- [x] Authoritative Year Precedence (TMDB year overrides provisional scraped year)      
+- [x] Cast / Crew Credits Enrichment (TMDB credits -> people.json upsert + appearances)      
+- [x] Studio Enrichment (TMDB production companies -> studios.json upsert)      
+- [x] Graceful Offline Degradation (no API key / no network -> fall back)      
+- [x] TMDB Candidate List (search_candidates -> "did you mean ...?" picker)      
+- [x] TMDB Lookup-by-ID (user-chosen candidate -> full credits + poster)      
+- [x] Poster / Cover Art (poster_url on normalized results)      
+- [ ] TMDB Year+Match Scoring (smarter default pick, not just results[0])      
+- [ ] IMDb / Wikidata Backends — deferred      
 - [ ] LLM Classifier Backend — deferred
   
 ### Programming  
@@ -821,3 +837,20 @@ the `(provider, reference)` pair the fetchers expect (youtu.be & `watch?v=` -> y
 - Added a studios field (add_studio/get_studios) to MediaItem so studios attach to the media item, mirroring the committed appearances handling.  
 - Hardened media.json read/write so a malformed or empty file no longer soft-fails to an empty catalog and re-triggers a full re-download.  
 - Verified offline via test.py and end-to-end with the Redline youtu.be link (--reenrich): media.json, people.json, and studios.json all populate and re-link on reload with no asset re-download.
+- Added TMDB TV-chain lookup so dropping one episode link enriches and expands the whole series: franchise -> series -> seasons -> per-episode records.  
+- MediaIngestor now upserts franchises.json/series.json/seasons.json and writes one media.json record per episode (id tmdb-tv-<id>-sNeM), mapping the dropped asset onto its real chain slot rather than a parallel slug-id record.  
+- Gated episode downloads through RollingCache.plan_window: only window_size upcoming episodes are fetched; aired episodes are reported evictable and the rest stay NOT_DOWNLOADED with their metadata/sources retained.  
+- add_media.py parses --season/--episode as ints (mirroring --year).  
+- Added periodic download-progress logging to InternetArchiveFetcher/HttpFetcher so a large streaming .mkv is visibly progressing instead of appearing frozen.  
+- Verified with the Evangelion ep1 archive link: 26-episode chain built, ep1 holds the dropped file, downloads limited to the backlog window.
+- Added a TMDB candidate list (`TMDBSource.search_candidates`) and `lookup_by_id`, plus `poster_url` on normalized results, so ambiguous titles (e.g. Redline 2007 live-action vs 2009 anime) surface a "did you mean ...?" picker instead of blindly taking results[0].    
+- Added `src/ingest/` package: `IngestSession` (pass-through to RecordBuilder / TMDBSource / MediaIngestor) and a local Flask `web_app` with a drag-and-drop page, cover/year/genre/description preview card, candidate picker, and Confirm/Cancel before commit.    
+- Added `add_media_web.py` launcher and promoted Flask to an active dependency.
+- Added a local drag-and-drop web ingest UI: `add_media_web.py` launcher bootstraps the environment (puts `src/` on `sys.path`, injects the winget ffmpeg `bin` folder onto PATH so yt-dlp can merge, sets `TMDB_API_KEY`, auto-opens the browser) then serves a Flask single-page app on `127.0.0.1:5000`.  
+- Added `src/ingest/` package: `IngestSession` is a thin pass-through backend seam over the existing services (`build` -> RecordBuilder, `candidates` -> TMDB search, `build_from_tmdb` -> chosen candidate, `commit` -> MediaIngestor), and `web_app.py` exposes `/preview`, `/choose`, `/commit` routes.  
+- Added a "did you mean?" candidate picker: extended `TMDBSource` with `search_candidates()` / `lookup_by_id()` returning the full ranked results (with poster_url) instead of silently taking `results[0]`, so the wrong same-title film (e.g. 2007 vs. 2009 anime Redline) can be corrected before commit.  
+- Added `overwrite` to `MediaIngestor.ingest_records`: an existing id is replaced and re-resolved instead of dedupe-skipped, wired through `IngestSession.commit` and the `/commit` route so a corrected record can overwrite a prior one.  
+- Stripped the display-only `poster_url` key before commit so it never pollutes `media.json`.  
+- Fixed empty-genre round-trip: populated `Metadata/data/genres.json` from `MetadataPopulation.create_genres()` so the loader's exact-name relinking has a vocabulary to match against; genres (e.g. Animation / Action / Science Fiction) now survive ingest instead of dropping to `[]`.  
+- Promoted `Flask`, `Pillow`, and `tkinterdnd2` to active dependencies in `requirements.txt`.  
+- Verified end-to-end via the web UI: dropped the Redline youtu.be link, picked the 2009 anime candidate, confirmed with overwrite, and got `1 added / 1 downloaded` with a fingerprinted `.mkv` and full cast/crew/studios/genres in `media.json`.

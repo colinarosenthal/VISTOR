@@ -16,6 +16,7 @@ import os
 from core.logger import Logger  
   
 _BASE = "https://api.themoviedb.org/3"  
+_IMAGE_BASE = "https://image.tmdb.org/t/p/w342"  
   
 # TMDB genre name -> VISTOR controlled Genre vocabulary name. Only VISTOR's 13  
 # names may appear on the right; anything unmapped is dropped.  
@@ -36,7 +37,7 @@ _TMDB_GENRE_MAP = {
     "History": "Documentary",  
     "Family": "Adventure",  
 }  
-
+  
 # TMDB crew "department" -> VISTOR RoleType name. Unmapped crew is dropped.  
 _TMDB_DEPARTMENT_ROLE = {  
     "Directing": "DIRECTOR",  
@@ -45,7 +46,8 @@ _TMDB_DEPARTMENT_ROLE = {
     "Sound": "COMPOSER",  
     "Camera": "CINEMATOGRAPHER",  
     "Editing": "EDITOR",  
-}
+}  
+  
   
 class TMDBSource:  
     """Authoritative lookup backed by TMDB's /search + /details endpoints."""  
@@ -57,7 +59,7 @@ class TMDBSource:
     def lookup(self, title, year=None, media_type=None):  
         if not self.api_key:  
             Logger.info("TMDB_API_KEY not set; skipping authoritative lookup.")  
-            return None 
+            return None  
   
         import requests  # lazy: keeps smoke test offline  
   
@@ -82,106 +84,87 @@ class TMDBSource:
                 return None  
   
             best = results[0]  
-            detail_params = {"api_key": self.api_key, "append_to_response": "credits"}  
-            details = requests.get(  
-                f"{_BASE}/{endpoint}/{best['id']}",  
-                params=detail_params,  
-                timeout=self.timeout,  
-            )  
-            details.raise_for_status()  
-            return self._normalize(details.json(), endpoint)
+            return self._fetch_details(best["id"], endpoint)  
   
         except Exception as exc:  # noqa: BLE001 - lookup is best-effort  
             Logger.warning(f"TMDB lookup for '{title}' failed: {exc!r}.")  
             return None  
-
-    def lookup_tv_chain(self, title, year=None):  
-        """  
-        Look up a TV title and return its full Series -> Season -> Episode  
-        structure (plus series-level genres/cast/crew/studios), normalized for  
-        the ingestor. None offline / without an API key / on no match.  
-        """  
-        if not self.api_key:  
-            Logger.info("TMDB_API_KEY not set; skipping TV chain lookup.")  
-            return None  
   
-        import requests  # lazy: keeps smoke test offline  
+    # ------------------------------------------------------------------  
+    # Candidate search ("did you mean...?")  
+    # ------------------------------------------------------------------  
+  
+    def search_candidates(self, title, media_type=None, limit=8):  
+        """Return a list of candidate matches (not just results[0]) so the  
+        UI can show a 'did you mean...?' picker. Each item carries enough to  
+        render a chip and to re-fetch full details via lookup_by_id()."""  
+        if not self.api_key:  
+            Logger.info("TMDB_API_KEY not set; no candidates.")  
+            return []  
+  
+        import requests  # lazy  
+  
+        endpoint = "tv" if media_type in ("Episode", "TVShow", "TV_SHOW") else "movie"  
   
         try:  
-            search = requests.get(  
-                f"{_BASE}/search/tv",  
+            resp = requests.get(  
+                f"{_BASE}/search/{endpoint}",  
                 params={"api_key": self.api_key, "query": title},  
                 timeout=self.timeout,  
             )  
-            search.raise_for_status()  
-            results = search.json().get("results", [])  
-            if not results:  
-                Logger.warning(f"TMDB: no TV match for '{title}'.")  
-                return None  
+            resp.raise_for_status()  
+            results = resp.json().get("results", [])  
+        except Exception as exc:  # noqa: BLE001  
+            Logger.warning(f"TMDB candidate search for '{title}' failed: {exc!r}.")  
+            return []  
   
-            # Year scoring: TV search ignores a year param, so pick the  
-            # candidate whose first_air_date is closest to the requested year.  
-            best = results[0]  
-            if year:  
-                def _score(r):  
-                    d = (r.get("first_air_date") or "")[:4]  
-                    return abs(int(d) - year) if d.isdigit() else 9999  
-                best = min(results, key=_score)  
+        candidates = []  
+        for r in results[:limit]:  
+            date = r.get("release_date") or r.get("first_air_date") or ""  
+            year = int(date[:4]) if len(date) >= 4 and date[:4].isdigit() else 0  
+            poster = r.get("poster_path")  
+            candidates.append({  
+                "tmdb_id": r.get("id"),  
+                "title": r.get("title") or r.get("name") or "",  
+                "release_year": year,  
+                "media_type": "Movie" if endpoint == "movie" else "Episode",  
+                "poster_url": f"https://image.tmdb.org/t/p/w200{poster}" if poster else "",  
+            })  
+        return candidates
   
-            tv_id = best["id"]  
+    def lookup_by_id(self, tmdb_id, media_type="Movie"):  
+        """  
+        Fetch and normalize a single TMDB title by its id. Used when the user  
+        picks a specific candidate from the "did you mean...?" list. Returns  
+        None offline / without a key / on failure.  
+        """  
   
-            detail = requests.get(  
-                f"{_BASE}/tv/{tv_id}",  
-                params={"api_key": self.api_key,  
-                        "append_to_response": "credits"},  
-                timeout=self.timeout,  
-            )  
-            detail.raise_for_status()  
-            data = detail.json()  
+        if not self.api_key:  
+            Logger.info("TMDB_API_KEY not set; skipping authoritative lookup.")  
+            return None  
   
-            series = self._normalize(data, "tv")  
-            series["series_title"] = data.get("name", "")  
+        endpoint = "tv" if media_type in ("Episode", "TVShow", "TV_SHOW") else "movie"  
   
-            seasons = []  
-            for stub in data.get("seasons", []):  
-                number = stub.get("season_number")  
-                if number is None:  
-                    continue  
-                sresp = requests.get(  
-                    f"{_BASE}/tv/{tv_id}/season/{number}",  
-                    params={"api_key": self.api_key},  
-                    timeout=self.timeout,  
-                )  
-                if sresp.status_code != 200:  
-                    continue  
-                sdata = sresp.json()  
+        try:  
+            return self._fetch_details(tmdb_id, endpoint)  
+        except Exception as exc:  # noqa: BLE001  
+            Logger.warning(f"TMDB lookup_by_id({tmdb_id}) failed: {exc!r}.")  
+            return None  
   
-                episodes = []  
-                for ep in sdata.get("episodes", []):  
-                    rt = ep.get("runtime") or 0  
-                    episodes.append({  
-                        "episode_number": ep.get("episode_number", 0),  
-                        "title": ep.get("name", ""),  
-                        "description": ep.get("overview", "") or "",  
-                        "air_date": ep.get("air_date", "") or "",  
-                        "runtime_minutes": int(rt) if rt else 0,  
-                    })  
+    def _fetch_details(self, tmdb_id, endpoint):  
+        """Fetch /details + credits for a TMDB id and normalize it."""  
   
-                air = (sdata.get("air_date") or "")[:4]  
-                seasons.append({  
-                    "season_number": number,  
-                    "title": sdata.get("name", ""),  
-                    "description": sdata.get("overview", "") or "",  
-                    "premiere_year": int(air) if air.isdigit() else 0,  
-                    "episodes": episodes,  
-                })  
+        import requests  # lazy  
   
-            return {"tmdb_tv_id": tv_id, "series": series, "seasons": seasons}  
+        detail_params = {"api_key": self.api_key, "append_to_response": "credits"}  
+        details = requests.get(  
+            f"{_BASE}/{endpoint}/{tmdb_id}",  
+            params=detail_params,  
+            timeout=self.timeout,  
+        )  
+        details.raise_for_status()  
+        return self._normalize(details.json(), endpoint)  
   
-        except Exception as exc:  # noqa: BLE001 - lookup is best-effort  
-            Logger.warning(f"TMDB TV chain lookup for '{title}' failed: {exc!r}.")  
-            return None
-
     # ------------------------------------------------------------------  
     # Normalization  
     # ------------------------------------------------------------------  
@@ -239,6 +222,8 @@ class TMDBSource:
             if s.get("name")  
         ]  
   
+        poster = data.get("poster_path") or ""  
+  
         return {  
             "title": title,  
             "release_year": year,  
@@ -249,4 +234,5 @@ class TMDBSource:
             "cast": cast,  
             "crew": crew,  
             "studios": studios,  
+            "poster_url": (_IMAGE_BASE + poster) if poster else "",  
         }

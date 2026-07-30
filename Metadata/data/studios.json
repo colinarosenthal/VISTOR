@@ -40,5 +40,12 @@
         "country": "",
         "founded_year": 0,
         "description": ""
+    },
+    {
+        "id": "chicago_pictures",
+        "name": "Chicago Pictures",
+        "country": "",
+        "founded_year": 0,
+        "description": ""
     }
 ]

@@ -76,8 +76,12 @@ class MediaIngestor:
   
         return self.ingest_records(records, download=download, fetcher=fetcher)  
   
-    def ingest_records(self, records, download=True, fetcher=None):  
-        """Merge `records` into media.json, then optionally resolve assets."""  
+    def ingest_records(self, records, download=True, fetcher=None, overwrite=False):  
+        """Merge `records` into media.json, then optionally resolve assets.  
+  
+        overwrite=True replaces an existing record of the same id with the  
+        incoming one (and re-resolves its asset) instead of skipping it.  
+        """  
   
         report = {  
             "added": [],  
@@ -90,9 +94,9 @@ class MediaIngestor:
         # Persist any credit payload into people.json/studios.json and  
         # rewrite `cast`/`crew`/`studios` as a normalized `appearances`  
         # array plus a `studios` id-list BEFORE merging, so the credits  
-        # land in media.json too.
-        self._upsert_episode_chain(records)
-        self._upsert_credits(records)
+        # land in media.json too.  
+        self._upsert_episode_chain(records)  
+        self._upsert_credits(records)  
   
         existing = self._read_media_json()  
         existing_by_id = {r.get("id"): r for r in existing if r.get("id")}  
@@ -113,6 +117,15 @@ class MediaIngestor:
                 existing_by_id[media_id] = record  
                 report["added"].append(media_id)  
                 Logger.success(f"Ingested media record '{media_id}'.")  
+            elif overwrite:  
+                # Force-replace the existing record with the incoming one and  
+                # re-resolve its asset. Because the new record carries no  
+                # download_status: DOWNLOADED, putting its id in `added` makes  
+                # _resolve_new_assets re-download and re-fingerprint it.  
+                existing[existing.index(prior)] = record  
+                existing_by_id[media_id] = record  
+                report["added"].append(media_id)  
+                Logger.info(f"Overwriting media record '{media_id}'.")  
             elif self._record_needs_download(prior):  
                 # Present but its asset never landed -> retry (self-heal).  
                 # Refresh credits/appearances/studios from the incoming record.  
@@ -149,7 +162,7 @@ class MediaIngestor:
             f"{len(report['skipped'])} skipped, "  
             f"{len(report['resolved'])} downloaded."  
         )  
-        return report  
+        return report
   
     # ------------------------------------------------------------------  
     # Resolution + write-back  

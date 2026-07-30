@@ -11,7 +11,11 @@
         "original_network": null,
         "production_country": null,
         "languages": [],
-        "genres": [],
+        "genres": [
+            "Animation",
+            "Action",
+            "Science Fiction"
+        ],
         "tags": [],
         "themes": [],
         "appearances": [
@@ -258,10 +262,10 @@
                 "last_played": "",
                 "sources": [
                     {
+                        "date_posted": "",
                         "provider": "youtube",
-                        "reference": "fzHD04_OwyQ",
                         "quality": "",
-                        "date_posted": ""
+                        "reference": "fzHD04_OwyQ"
                     }
                 ],
                 "pinned": false,
