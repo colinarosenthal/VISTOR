@@ -89,7 +89,9 @@ class RecordBuilder:
             "genres": list(overrides.get("genres", [])),  
             "tags": overrides.get("tags", []),  
             "themes": overrides.get("themes", []),  
-            "languages": overrides.get("languages", []),  
+            "languages": overrides.get("languages", []),
+            "season_number": overrides.get("season_number", 0),  
+            "episode_number": overrides.get("episode_number", 0),
         }  
   
         # --- Layer 2: AUTHORITATIVE SOURCE (TMDB) ------------------------  
@@ -97,7 +99,22 @@ class RecordBuilder:
         # scrape but never an override. No-op offline / without TMDB_API_KEY  
         # / on no match. NOTE: enrich() reads record["title"] as its lookup  
         # key, so the (override-or-scraped) title above seeds the query.  
-        record = self.enricher.enrich(record)  
+        record = self.enricher.enrich(record)
+
+        # --- TV episode chain: fetch the whole Series -> Season -> Episode  
+        # structure so the ingestor can persist the full backlog, not just  
+        # the dropped episode. No-op offline / without TMDB_API_KEY.  
+        if (overrides.get("type") or media_type) == "Episode":  
+            source = getattr(self.enricher, "source", None)  
+            if source and hasattr(source, "lookup_tv_chain"):  
+                chain = source.lookup_tv_chain(  
+                    record["title"],  
+                    year=overrides.get("release_year") or None,  
+                )  
+                if chain:  
+                    record["tv_chain"] = chain  
+                    record["season_number"] = overrides.get("season_number", 1)  
+                    record["episode_number"] = overrides.get("episode_number", 1)
   
         # --- Layer 3: CLASSIFIER GUESS -----------------------------------  
         # Deterministic offline best-guess for the two fields the classifier  

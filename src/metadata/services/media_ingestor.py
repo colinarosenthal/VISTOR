@@ -36,6 +36,9 @@ from metadata.services.metadata_loader import MetadataLoader
 from metadata.services.metadata_serializer import MetadataSerializer  
 from metadata.services.source_resolver import SourceResolver  
 from metadata.services.fetchers.real_fetcher import RealFetcher  
+
+from metadata.services.rolling_cache import RollingCache  
+from metadata.media.television.episode import Episode
   
   
 class MediaIngestor:  
@@ -87,8 +90,9 @@ class MediaIngestor:
         # Persist any credit payload into people.json/studios.json and  
         # rewrite `cast`/`crew`/`studios` as a normalized `appearances`  
         # array plus a `studios` id-list BEFORE merging, so the credits  
-        # land in media.json too.  
-        self._upsert_credits(records)  
+        # land in media.json too.
+        self._upsert_episode_chain(records)
+        self._upsert_credits(records)
   
         existing = self._read_media_json()  
         existing_by_id = {r.get("id"): r for r in existing if r.get("id")}  
@@ -153,47 +157,178 @@ class MediaIngestor:
   
     def _resolve_new_assets(self, report, fetcher=None):  
         """  
-        Reload the merged library and resolve every asset that still needs  
-        downloading, then write the resolved library back to media.json so  
-        the download_status / fingerprint / technical metadata persist.  
+        Reload the merged library and resolve assets that still need  
+        downloading. Standalone media resolve directly; episodes are gated  
+        through RollingCache.plan_window so only the in-window backlog is  
+        fetched (not the whole season).  
         """  
   
         library = MetadataLoader().load(self.metadata_path)  
   
-        # Injected fetcher (tests) or the production RealFetcher.  
         real = fetcher or RealFetcher()  
         resolver = SourceResolver(real)  
   
         target_ids = set(report["added"]) | set(report["retried"])  
   
+        episodes_by_series = {}  
+        standalone = []  
+  
         for item in library.get_media():  
             if item.get_id() not in target_ids:  
                 continue  
+            if isinstance(item, Episode):  
+                series_id = item.get_series().get_id()  
+                episodes_by_series.setdefault(series_id, []).append(item)  
+            else:  
+                standalone.append(item)  
   
-            for asset in item.get_media_assets():  
-                if not asset.needs_download():  
-                    continue  
+        # Standalone media (Movie / MusicVideo / ...): resolve directly.  
+        for item in standalone:  
+            self._resolve_item_assets(item, real, resolver, report)  
   
-                # RealFetcher needs the asset bound so technical fields  
-                # land on it; fake/injected fetchers don't implement bind().  
-                if hasattr(real, "bind"):  
-                    real.bind(asset)  
+        # Episodes: only fetch the in-window backlog per series. On a fresh  
+        # ingest nothing has aired yet, so aired_count = 0.  
+        cache = RollingCache()  # window_size default; per-series config later  
+        for episodes in episodes_by_series.values():  
+            episodes.sort(  
+                key=lambda e: (  
+                    e.get_season().get_season_number(),  
+                    e.get_episode_number(),  
+                )  
+            )  
+            plan = cache.plan_window(episodes, aired_count=0)  
+            for episode in plan["fetch"]:  
+                self._resolve_item_assets(episode, real, resolver, report)  
   
-                result = resolver.resolve(asset)  
-  
-                if result["resolved"]:  
-                    report["resolved"].append(item.get_id())  
-                else:  
-                    report["unresolved"].append(item.get_id())  
-  
-        # Durable source of truth: re-serialize the resolved library so the  
-        # persisted records carry post-download status + fingerprint.  
+        # Durable source of truth: re-serialize the resolved library.  
         self._write_media_json(self._serialize_media(library))  
+  
+    def _resolve_item_assets(self, item, real, resolver, report):  
+        """Resolve every asset on `item` that still needs downloading."""  
+  
+        for asset in item.get_media_assets():  
+            if not asset.needs_download():  
+                continue  
+  
+            # RealFetcher needs the asset bound so technical fields land;  
+            # fake/injected fetchers don't implement bind().  
+            if hasattr(real, "bind"):  
+                real.bind(asset)  
+  
+            result = resolver.resolve(asset)  
+  
+            if result["resolved"]:  
+                report["resolved"].append(item.get_id())  
+            else:  
+                report["unresolved"].append(item.get_id())
   
     # ------------------------------------------------------------------  
     # Credit upsert (cast / crew / studios -> people.json / studios.json)  
     # ------------------------------------------------------------------  
+    
+    def _upsert_episode_chain(self, records):  
+        """  
+        Consume the transient `tv_chain` payload an episode record may carry.  
+        Persist Franchise/Series/Season buckets (dedupe by id) and expand the  
+        chain into one media record per episode (dropped episode keeps the  
+        real source; siblings get an empty source list to resolve later).  
+        """  
+        franchises = self._read_bucket("franchises.json")  
+        series_bucket = self._read_bucket("series.json")  
+        seasons_bucket = self._read_bucket("seasons.json")  
   
+        fr_by_id = {f.get("id"): f for f in franchises if f.get("id")}  
+        se_by_id = {s.get("id"): s for s in series_bucket if s.get("id")}  
+        sn_by_id = {s.get("id"): s for s in seasons_bucket if s.get("id")}  
+  
+        expanded = []  
+        touched = False  
+  
+        for record in list(records):  
+            chain = record.pop("tv_chain", None)  
+            if not chain:  
+                expanded.append(record)  
+                continue  
+            touched = True  
+  
+            series_info = chain.get("series", {})  
+            series_title = series_info.get("series_title") or record["title"]  
+            tv_id = chain.get("tmdb_tv_id")  
+            series_id = f"tmdb-tv-{tv_id}" if tv_id else self._slug(series_title)  
+            franchise_id = f"{series_id}-franchise"  
+  
+            # One franchise per series (TMDB has no franchise concept).  
+            if franchise_id not in fr_by_id:  
+                fr_by_id[franchise_id] = {  
+                    "id": franchise_id,  
+                    "name": series_title,  
+                    "description": series_info.get("description", ""),  
+                }  
+            if series_id not in se_by_id:  
+                se_by_id[series_id] = {  
+                    "id": series_id,  
+                    "title": series_title,  
+                    "franchise": franchise_id,  
+                    "description": series_info.get("description", ""),  
+                    "premiere_year": series_info.get("release_year", 0),  
+                    "finale_year": 0,  
+                }  
+  
+            dropped_sn = record.get("season_number", 1)  
+            dropped_ep = record.get("episode_number", 1)  
+  
+            for season in chain.get("seasons", []):  
+                s_num = season.get("season_number", 0)  
+                if s_num == 0:  
+                    continue  # skip "Specials"  
+                season_id = f"{series_id}-s{s_num}"  
+                if season_id not in sn_by_id:  
+                    sn_by_id[season_id] = {  
+                        "id": season_id,  
+                        "series": series_id,  
+                        "season_number": s_num,  
+                        "title": season.get("title", ""),  
+                        "description": season.get("description", ""),  
+                        "premiere_year": season.get("premiere_year", 0),  
+                    }  
+  
+                for ep in season.get("episodes", []):  
+                    e_num = ep.get("episode_number", 0)  
+                    is_dropped = (s_num == dropped_sn and e_num == dropped_ep)  
+                    ep_id = f"{series_id}-s{s_num}e{e_num}"  
+                    air = (ep.get("air_date") or "")[:4]  
+                    ep_record = {  
+                        "type": "Episode",  
+                        "id": ep_id,  
+                        "title": ep.get("title", ""),  
+                        "description": ep.get("description", ""),  
+                        "release_year": int(air) if air.isdigit() else 0,  
+                        "runtime_minutes": ep.get("runtime_minutes", 0),  
+                        "season": season_id,  
+                        "episode_number": e_num,  
+                        "genres": list(series_info.get("genres", [])),  
+                    }  
+                    if is_dropped:  
+                        # Carry the real source + credits from the dropped record.  
+                        ep_record["assets"] = record.get("assets", [])  
+                        for k in ("cast", "crew", "studios"):  
+                            if record.get(k):  
+                                ep_record[k] = record[k]  
+                    else:  
+                        # Backlog episode: no source yet (acquisition loop fills).  
+                        ep_record["assets"] = [{  
+                            "asset_id": f"{ep_id}-asset-1",  
+                            "path": f"Media/Episodes/{ep_id}.mkv",  
+                            "sources": [],  
+                        }]  
+                    expanded.append(ep_record)  
+  
+        if touched:  
+            records[:] = expanded  
+            self._write_bucket("franchises.json", list(fr_by_id.values()))  
+            self._write_bucket("series.json", list(se_by_id.values()))  
+            self._write_bucket("seasons.json", list(sn_by_id.values()))
+
     def _upsert_credits(self, records):  
         """  
         Consume the transient TMDB credit payload (`cast`/`crew`/`studios`)  

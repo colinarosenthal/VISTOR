@@ -12,5 +12,33 @@
         "country": "",
         "founded_year": 0,
         "description": ""
+    },
+    {
+        "id": "gainax",
+        "name": "GAINAX",
+        "country": "",
+        "founded_year": 0,
+        "description": ""
+    },
+    {
+        "id": "tv_tokyo",
+        "name": "TV Tokyo",
+        "country": "",
+        "founded_year": 0,
+        "description": ""
+    },
+    {
+        "id": "nas",
+        "name": "NAS",
+        "country": "",
+        "founded_year": 0,
+        "description": ""
+    },
+    {
+        "id": "tatsunoko_production",
+        "name": "Tatsunoko Production",
+        "country": "",
+        "founded_year": 0,
+        "description": ""
     }
 ]

@@ -43,6 +43,8 @@ def _parse_flags(argv):
         --type <MediaType>       -> overrides["type"]  (e.g. Movie, MusicVideo)  
         --title <title>          -> overrides["title"]  
         --year <YYYY>            -> overrides["release_year"]  
+        --season <N>             -> overrides["season_number"]  
+        --episode <M>            -> overrides["episode_number"]  
         --genres "A,B,C"         -> overrides["genres"] as a list  
     """  
   
@@ -68,6 +70,18 @@ def _parse_flags(argv):
             except ValueError:  
                 print(f"Ignoring non-numeric --year '{argv[i + 1]}'.")  
             i += 1  
+        elif arg == "--season" and i + 1 < len(argv):  
+            try:  
+                overrides["season_number"] = int(argv[i + 1])  
+            except ValueError:  
+                print(f"Ignoring non-numeric --season '{argv[i + 1]}'.")  
+            i += 1  
+        elif arg == "--episode" and i + 1 < len(argv):  
+            try:  
+                overrides["episode_number"] = int(argv[i + 1])  
+            except ValueError:  
+                print(f"Ignoring non-numeric --episode '{argv[i + 1]}'.")  
+            i += 1  
         elif arg == "--genres" and i + 1 < len(argv):  
             overrides["genres"] = [  
                 g.strip() for g in argv[i + 1].split(",") if g.strip()  
@@ -78,7 +92,7 @@ def _parse_flags(argv):
   
         i += 1  
   
-    return positional, download, overrides  
+    return positional, download, overrides
   
   
 def _ingest_link(url, download, overrides):  

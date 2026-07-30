@@ -814,16 +814,10 @@ the `(provider, reference)` pair the fetchers expect (youtu.be & `watch?v=` -> y
   
 ## 2026-07-29
   
-- Fixed authoritative year precedence: the enricher/record-builder now treat a scraped provider year (e.g. YouTube upload year 2019) as provisional so a confident TMDB year (2009) overwrites it, while explicit `--year` overrides still win. Redline now stores release_year 2009 / runtime_minutes 102 and a real description.  
-- Added TMDB year+match scoring so lookup no longer blindly takes results[0], reducing wrong-title matches on ambiguous names.  
-- Extended TMDBSource._normalize to return cast / crew / studios from the TMDB credits + production_companies payloads.  
-- Added cast/crew/studio upsert to MediaIngestor (_upsert_credits): people are upserted into people.json by TMDB id (no duplicates across titles), studios into studios.json, and the media record gains an appearances[] array with a stable id + person id per credit.  
-- Taught the loader to reconstruct Appearance objects from the record's appearances[] by re-linking to the shared Person by id.  
-- Hardened media.json handling so a momentarily empty/corrupt file no longer silently wipes or re-triggers a full re-download.  
-- Verified end-to-end: re-running the Redline youtu.be link with --reenrich now writes appearances into media.json and upserts 28 people + 2 studios (TFC, Madhouse), with the asset unchanged (not re-downloaded).
-- Linked studios directly to each media item, closing the gap where the TMDB credit upsert wrote studios.json but nothing on the media record referenced the studios (the people side was already wired via appearances).  
-- MediaIngestor now rewrites each record's normalized `studios` array (studio ids, deduped against studios.json by id) alongside the existing `appearances` array, so the record carries both its people and its studios.  
-- MetadataSerializer._media_to_dictionary now emits `studios` (studio ids) so the linkage survives a save/reload round-trip.  
-- MetadataLoader._resolve_relationships now resolves each record's `studios` ids back to shared Studio objects, mirroring the appearances resolution path (id-keyed lookup, missing ids skipped rather than crashing).  
-- Added `studios: list[Studio]` + add_studio/get_studios to MediaItem so studios are first-class on the item, matching its existing appearances handling.  
-- Verified via test.py: after re-ingesting Redline, the record links to the Madhouse/TFC Studio objects and they resolve on reload; offline suite passes.
+- Fixed release_year precedence: TMDB's authoritative year now overwrites a provisional scraped year (e.g. the YouTube upload year), while an explicit --year override is still never clobbered.  
+- Extended TMDBSource to return cast/crew/studios (from the TMDB credits endpoint + production_companies) in addition to the descriptive fields.  
+- Added MediaIngestor credit upsert: people are deduped into people.json and studios into studios.json by stable TMDB id, and each record's credits are rewritten as a normalized appearances array + a studios id list.  
+- Wired appearances/studios end-to-end through the serializer and loader so a reloaded MediaItem re-links to shared Person and Studio objects instead of duplicating them.  
+- Added a studios field (add_studio/get_studios) to MediaItem so studios attach to the media item, mirroring the committed appearances handling.  
+- Hardened media.json read/write so a malformed or empty file no longer soft-fails to an empty catalog and re-triggers a full re-download.  
+- Verified offline via test.py and end-to-end with the Redline youtu.be link (--reenrich): media.json, people.json, and studios.json all populate and re-link on reload with no asset re-download.

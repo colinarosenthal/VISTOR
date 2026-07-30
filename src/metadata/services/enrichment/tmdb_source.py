@@ -95,7 +95,93 @@ class TMDBSource:
             Logger.warning(f"TMDB lookup for '{title}' failed: {exc!r}.")  
             return None  
 
+    def lookup_tv_chain(self, title, year=None):  
+        """  
+        Look up a TV title and return its full Series -> Season -> Episode  
+        structure (plus series-level genres/cast/crew/studios), normalized for  
+        the ingestor. None offline / without an API key / on no match.  
+        """  
+        if not self.api_key:  
+            Logger.info("TMDB_API_KEY not set; skipping TV chain lookup.")  
+            return None  
   
+        import requests  # lazy: keeps smoke test offline  
+  
+        try:  
+            search = requests.get(  
+                f"{_BASE}/search/tv",  
+                params={"api_key": self.api_key, "query": title},  
+                timeout=self.timeout,  
+            )  
+            search.raise_for_status()  
+            results = search.json().get("results", [])  
+            if not results:  
+                Logger.warning(f"TMDB: no TV match for '{title}'.")  
+                return None  
+  
+            # Year scoring: TV search ignores a year param, so pick the  
+            # candidate whose first_air_date is closest to the requested year.  
+            best = results[0]  
+            if year:  
+                def _score(r):  
+                    d = (r.get("first_air_date") or "")[:4]  
+                    return abs(int(d) - year) if d.isdigit() else 9999  
+                best = min(results, key=_score)  
+  
+            tv_id = best["id"]  
+  
+            detail = requests.get(  
+                f"{_BASE}/tv/{tv_id}",  
+                params={"api_key": self.api_key,  
+                        "append_to_response": "credits"},  
+                timeout=self.timeout,  
+            )  
+            detail.raise_for_status()  
+            data = detail.json()  
+  
+            series = self._normalize(data, "tv")  
+            series["series_title"] = data.get("name", "")  
+  
+            seasons = []  
+            for stub in data.get("seasons", []):  
+                number = stub.get("season_number")  
+                if number is None:  
+                    continue  
+                sresp = requests.get(  
+                    f"{_BASE}/tv/{tv_id}/season/{number}",  
+                    params={"api_key": self.api_key},  
+                    timeout=self.timeout,  
+                )  
+                if sresp.status_code != 200:  
+                    continue  
+                sdata = sresp.json()  
+  
+                episodes = []  
+                for ep in sdata.get("episodes", []):  
+                    rt = ep.get("runtime") or 0  
+                    episodes.append({  
+                        "episode_number": ep.get("episode_number", 0),  
+                        "title": ep.get("name", ""),  
+                        "description": ep.get("overview", "") or "",  
+                        "air_date": ep.get("air_date", "") or "",  
+                        "runtime_minutes": int(rt) if rt else 0,  
+                    })  
+  
+                air = (sdata.get("air_date") or "")[:4]  
+                seasons.append({  
+                    "season_number": number,  
+                    "title": sdata.get("name", ""),  
+                    "description": sdata.get("overview", "") or "",  
+                    "premiere_year": int(air) if air.isdigit() else 0,  
+                    "episodes": episodes,  
+                })  
+  
+            return {"tmdb_tv_id": tv_id, "series": series, "seasons": seasons}  
+  
+        except Exception as exc:  # noqa: BLE001 - lookup is best-effort  
+            Logger.warning(f"TMDB TV chain lookup for '{title}' failed: {exc!r}.")  
+            return None
+
     # ------------------------------------------------------------------  
     # Normalization  
     # ------------------------------------------------------------------  
