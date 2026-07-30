@@ -79,6 +79,8 @@ class MediaItem:
 
         self.appearances: list[Appearance] = []
 
+        self.studios: list["Studio"] = []
+
         self.media_assets: list[MediaAsset] = []
 
     # ------------------------------------------------------------------
@@ -261,6 +263,21 @@ class MediaItem:
         """Return all appearances."""
 
         return self.appearances
+
+    # ------------------------------------------------------------------  
+    # Studios  
+    # ------------------------------------------------------------------  
+  
+    def add_studio(self, studio):  
+        """Add a production studio/distributor (dedupe by identity)."""  
+  
+        if studio not in self.studios:  
+            self.studios.append(studio)  
+  
+    def get_studios(self):  
+        """Return all production studios."""  
+  
+        return self.studios
 
     # ------------------------------------------------------------------
     # Media Assets

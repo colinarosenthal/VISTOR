@@ -7,22 +7,23 @@ A drop-in JSON file describes one or more media items (each optionally
 carrying an `assets` array with ranked `sources`). The ingestor:  
   
     1. Reads and validates the drop-in records.  
-    2. Merges them into Metadata/data/media.json (dedupe by id).  
-    3. Reloads the library via MetadataLoader so every record becomes a  
+    2. Upserts any TMDB credit payload (`cast`/`crew`/`studios`) into  
+       <metadata>/people.json + studios.json (dedupe by id) and rewrites it  
+       as a normalized `appearances` array plus a `studios` id-list on each  
+       record.  
+    3. Merges the records into <metadata>/media.json (dedupe by id, but  
+       records whose asset still needs downloading are RETRIED, not skipped).  
+    4. Reloads the library via MetadataLoader so every record becomes a  
        fully-wired MediaItem + MediaAsset (JSON -> object).  
-    4. Auto-resolves any asset whose file is not present on disk using the  
+    5. Auto-resolves any asset that still needs downloading using the  
        production RealFetcher + SourceResolver, so adding media also  
        downloads, probes, and fingerprints it.  
+    6. Writes the resolved library back to media.json (re-attaching the  
+       `appearances` and `studios` arrays the serializer does not emit) so  
+       the persisted record carries post-download download_status +  
+       fingerprint + technical metadata AND its credits.  
   
-Self-healing: a record whose id already exists is NOT blindly skipped.  
-If its asset file is missing on disk (e.g. a previous download failed),  
-the record is treated as retry-eligible and re-resolved on the next run,  
-so a failed download heals itself instead of requiring a manual  
-media.json delete.  
-  
-This is the seam a future UI targets: the GUI just emits the same JSON.  
-  
-Network imports are lazy so the headless test suite runs offline.  
+This is the seam a future UI targets: the GUI hands a record dict here.  
 """  
   
 import json  
@@ -30,16 +31,29 @@ import json
 from pathlib import Path  
   
 from core.logger import Logger  
+  
 from metadata.services.metadata_loader import MetadataLoader  
-from metadata.enums.download_status import DownloadStatus  
-  
-  
-# Media types the loader's type-switch can currently reconstruct.  
-SUPPORTED_TYPES = ("Movie", "Commercial", "MusicVideo", "Episode")  
+from metadata.services.metadata_serializer import MetadataSerializer  
+from metadata.services.source_resolver import SourceResolver  
+from metadata.services.fetchers.real_fetcher import RealFetcher  
   
   
 class MediaIngestor:  
-    """Adds media to the catalog from JSON and optionally downloads it."""  
+    """Adds media to VISTOR from JSON drop-in records."""  
+  
+    # TMDB crew "job" -> VISTOR RoleType name. Unmapped jobs are skipped  
+    # rather than mislabeled (RoleType has no generic "crew" member).  
+    _CREW_ROLE_MAP = {  
+        "Director": "DIRECTOR",  
+        "Producer": "PRODUCER",  
+        "Executive Producer": "EXECUTIVE_PRODUCER",  
+        "Writer": "WRITER",  
+        "Screenplay": "SCREENWRITER",  
+        "Original Music Composer": "COMPOSER",  
+        "Music": "COMPOSER",  
+        "Editor": "EDITOR",  
+        "Director of Photography": "CINEMATOGRAPHER",  
+    }  
   
     def __init__(self, metadata_path="Metadata/data"):  
         self.metadata_path = Path(metadata_path)  
@@ -49,26 +63,18 @@ class MediaIngestor:
     # Public Interface  
     # ------------------------------------------------------------------  
   
-    def ingest_file(self, drop_in_path, download=True):  
-        """  
-        Ingest a drop-in JSON file (a single record or a list of records).  
+    def ingest_file(self, path, download=True, fetcher=None):  
+        """Ingest one drop-in JSON file (a single record or a list)."""  
   
-        Returns a report dictionary:  
-            {  
-                "added": [id, ...],  
-                "retried": [id, ...],  
-                "skipped": [(id, reason), ...],  
-                "resolved": [id, ...],  
-                "unresolved": [id, ...],  
-            }  
-        """  
+        records = self._read_records(path)  
   
-        records = self._read_records(drop_in_path)  
+        if not records:  
+            Logger.warning(f"No ingestable records found in {path}.")  
   
-        return self.ingest_records(records, download=download)  
+        return self.ingest_records(records, download=download, fetcher=fetcher)  
   
-    def ingest_records(self, records, download=True):  
-        """Ingest already-parsed records (list of dicts)."""  
+    def ingest_records(self, records, download=True, fetcher=None):  
+        """Merge `records` into media.json, then optionally resolve assets."""  
   
         report = {  
             "added": [],  
@@ -78,53 +84,60 @@ class MediaIngestor:
             "unresolved": [],  
         }  
   
+        # Persist any credit payload into people.json/studios.json and  
+        # rewrite `cast`/`crew`/`studios` as a normalized `appearances`  
+        # array plus a `studios` id-list BEFORE merging, so the credits  
+        # land in media.json too.  
+        self._upsert_credits(records)  
+  
         existing = self._read_media_json()  
-        existing_ids = {r.get("id") for r in existing}  
+        existing_by_id = {r.get("id"): r for r in existing if r.get("id")}  
   
         for record in records:  
+            media_id = record.get("id")  
   
-            problem = self._validate(record, existing_ids)  
-  
-            # A pre-existing id is not necessarily a dead end: if its asset  
-            # file is missing on disk, the earlier download must have  
-            # failed, so re-resolve it instead of skipping.  
-            if problem == self.DUPLICATE_ID:  
-  
-                if self._record_needs_retry(record):  
-                    report["retried"].append(record["id"])  
-                    Logger.info(  
-                        f"Record '{record['id']}' already exists but its "  
-                        f"asset is missing; scheduling download retry."  
-                    )  
-                else:  
-                    report["skipped"].append(  
-                        (record["id"], "already present and downloaded")  
-                    )  
-                    Logger.info(  
-                        f"Skipping media record '{record['id']}': "  
-                        f"already present and downloaded."  
-                    )  
+            if not media_id:  
+                report["skipped"].append((None, "record has no id"))  
+                Logger.warning("Skipping record with no id.")  
                 continue  
   
-            if problem is not None:  
-                report["skipped"].append((record.get("id", "?"), problem))  
-                Logger.warning(  
-                    f"Skipping media record '{record.get('id', '?')}': "  
-                    f"{problem}."  
+            prior = existing_by_id.get(media_id)  
+  
+            if prior is None:  
+                # Brand-new record: append it.  
+                existing.append(record)  
+                existing_by_id[media_id] = record  
+                report["added"].append(media_id)  
+                Logger.success(f"Ingested media record '{media_id}'.")  
+            elif self._record_needs_download(prior):  
+                # Present but its asset never landed -> retry (self-heal).  
+                # Refresh credits/appearances/studios from the incoming record.  
+                prior["appearances"] = record.get(  
+                    "appearances", prior.get("appearances", [])  
                 )  
-                continue  
-  
-            existing.append(record)  
-            existing_ids.add(record["id"])  
-            report["added"].append(record["id"])  
-  
-            Logger.success(f"Ingested media record '{record['id']}'.")  
+                prior["studios"] = record.get(  
+                    "studios", prior.get("studios", [])  
+                )  
+                report["retried"].append(media_id)  
+                Logger.info(  
+                    f"Retrying media record '{media_id}': "  
+                    f"asset not yet downloaded."  
+                )  
+            else:  
+                # Present and already satisfied -> genuine skip.  
+                report["skipped"].append(  
+                    (media_id, "id already exists in media.json")  
+                )  
+                Logger.warning(  
+                    f"Skipping media record '{media_id}': "  
+                    f"id already exists in media.json."  
+                )  
   
         # Persist the merged catalog before reloading.  
         self._write_media_json(existing)  
   
         if download and (report["added"] or report["retried"]):  
-            self._resolve_new_assets(report)  
+            self._resolve_new_assets(report, fetcher=fetcher)  
   
         Logger.info(  
             f"Ingestion complete: {len(report['added'])} added, "  
@@ -132,146 +145,276 @@ class MediaIngestor:
             f"{len(report['skipped'])} skipped, "  
             f"{len(report['resolved'])} downloaded."  
         )  
-  
         return report  
   
     # ------------------------------------------------------------------  
-    # Validation  
+    # Resolution + write-back  
     # ------------------------------------------------------------------  
   
-    # Sentinel so the caller can distinguish a duplicate id (retry-eligible)  
-    # from a genuinely invalid record.  
-    DUPLICATE_ID = "id already exists in media.json"  
-  
-    def _validate(self, record, existing_ids):  
-        """Return a reason string if the record is invalid, else None."""  
-  
-        if not isinstance(record, dict):  
-            return "record is not a JSON object"  
-  
-        for field in ("type", "id", "title"):  
-            if field not in record:  
-                return f"missing required field '{field}'"  
-  
-        if record["type"] not in SUPPORTED_TYPES:  
-            return (  
-                f"type '{record['type']}' is not loadable yet "  
-                f"(supported: {', '.join(SUPPORTED_TYPES)})"  
-            )  
-  
-        if record["id"] in existing_ids:  
-            return self.DUPLICATE_ID  
-  
-        return None  
-  
-    def _record_needs_retry(self, record):  
+    def _resolve_new_assets(self, report, fetcher=None):  
         """  
-        True if any of the record's assets has sources but no file on disk.  
-  
-        Disk presence is the source of truth: a record can exist in  
-        media.json while its download never completed, in which case the  
-        file at the asset's declared path will be absent.  
+        Reload the merged library and resolve every asset that still needs  
+        downloading, then write the resolved library back to media.json so  
+        the download_status / fingerprint / technical metadata persist.  
         """  
   
-        for asset in record.get("assets", []):  
+        library = MetadataLoader().load(self.metadata_path)  
   
-            sources = asset.get("sources", [])  
-            path = asset.get("path", "")  
+        # Injected fetcher (tests) or the production RealFetcher.  
+        real = fetcher or RealFetcher()  
+        resolver = SourceResolver(real)  
   
-            if sources and not (path and Path(path).exists()):  
+        target_ids = set(report["added"]) | set(report["retried"])  
+  
+        for item in library.get_media():  
+            if item.get_id() not in target_ids:  
+                continue  
+  
+            for asset in item.get_media_assets():  
+                if not asset.needs_download():  
+                    continue  
+  
+                # RealFetcher needs the asset bound so technical fields  
+                # land on it; fake/injected fetchers don't implement bind().  
+                if hasattr(real, "bind"):  
+                    real.bind(asset)  
+  
+                result = resolver.resolve(asset)  
+  
+                if result["resolved"]:  
+                    report["resolved"].append(item.get_id())  
+                else:  
+                    report["unresolved"].append(item.get_id())  
+  
+        # Durable source of truth: re-serialize the resolved library so the  
+        # persisted records carry post-download status + fingerprint.  
+        self._write_media_json(self._serialize_media(library))  
+  
+    # ------------------------------------------------------------------  
+    # Credit upsert (cast / crew / studios -> people.json / studios.json)  
+    # ------------------------------------------------------------------  
+  
+    def _upsert_credits(self, records):  
+        """  
+        Consume the transient TMDB credit payload (`cast`/`crew`/`studios`)  
+        each enriched record may carry, upsert unique Person and Studio  
+        entries into people.json / studios.json (dedupe by id), and replace  
+        those keys with a normalized `appearances` array (person ids) plus a  
+        `studios` id-list on the record.  
+        """  
+  
+        people = self._read_bucket("people.json")  
+        studios = self._read_bucket("studios.json")  
+  
+        people_by_id = {p.get("id"): p for p in people if p.get("id")}  
+        studios_by_id = {s.get("id"): s for s in studios if s.get("id")}  
+  
+        changed_people = False  
+        changed_studios = False  
+  
+        for record in records:  
+            media_id = record.get("id")  
+            if not media_id:  
+                continue  
+  
+            cast = record.pop("cast", []) or []  
+            crew = record.pop("crew", []) or []  
+            studio_entries = record.pop("studios", []) or []  
+  
+            appearances = []  
+            studio_ids = []  
+  
+            # --- Cast (performers) -----------------------------------  
+            for entry in cast:  
+                person_id, name = self._person_identity(entry)  
+                if not person_id:  
+                    continue  
+                if person_id not in people_by_id:  
+                    people_by_id[person_id] = self._new_person(person_id, name)  
+                    changed_people = True  
+                appearances.append({  
+                    "id": f"{media_id}-{person_id}-actor",  
+                    "person": person_id,  
+                    "role": "ACTOR",  
+                    "role_name": self._get(entry, "character"),  
+                    "billing_order": self._get(entry, "order", 0) or 0,  
+                    "credited": True,  
+                })  
+  
+            # --- Crew (production) -----------------------------------  
+            for entry in crew:  
+                role = self._crew_role(entry)  
+                if role is None:  
+                    continue  # job not in our controlled RoleType map  
+                person_id, name = self._person_identity(entry)  
+                if not person_id:  
+                    continue  
+                if person_id not in people_by_id:  
+                    people_by_id[person_id] = self._new_person(person_id, name)  
+                    changed_people = True  
+                appearances.append({  
+                    "id": f"{media_id}-{person_id}-{role.lower()}",  
+                    "person": person_id,  
+                    "role": role,  
+                    "role_name": self._get(entry, "job"),  
+                    "billing_order": 0,  
+                    "credited": True,  
+                })  
+  
+            # --- Studios ---------------------------------------------  
+            for studio in studio_entries:  
+                studio_id, studio_name = self._studio_identity(studio)  
+                if not studio_id:  
+                    continue  
+                if studio_id not in studios_by_id:  
+                    studios_by_id[studio_id] = {  
+                        "id": studio_id,  
+                        "name": studio_name,  
+                        "country": "",  
+                        "founded_year": 0,  
+                        "description": "",  
+                    }  
+                    changed_studios = True  
+                if studio_id not in studio_ids:  
+                    studio_ids.append(studio_id)  
+  
+            if appearances:  
+                record["appearances"] = appearances  
+            if studio_ids:  
+                record["studios"] = studio_ids  
+  
+        if changed_people:  
+            self._write_bucket("people.json", list(people_by_id.values()))  
+        if changed_studios:  
+            self._write_bucket("studios.json", list(studios_by_id.values()))  
+  
+    def _crew_role(self, entry):  
+        job = self._get(entry, "job")  
+        return self._CREW_ROLE_MAP.get(job)  
+  
+    def _person_identity(self, entry):  
+        """Return (stable_person_id, display_name) for a cast/crew entry."""  
+  
+        if isinstance(entry, dict):  
+            name = entry.get("name") or entry.get("credit_name") or ""  
+            raw_id = entry.get("id") or entry.get("tmdb_id")  
+            pid = f"tmdb-person-{raw_id}" if raw_id else self._slug(name)  
+            return (pid if name else None), name  
+        if isinstance(entry, str):  
+            return (self._slug(entry) if entry else None), entry  
+        return None, ""  
+  
+    def _studio_identity(self, studio):  
+        """Return (stable_studio_id, name). Handles str or dict shapes."""  
+  
+        if isinstance(studio, dict):  
+            name = studio.get("name") or ""  
+            raw_id = studio.get("id")  
+            sid = f"tmdb-studio-{raw_id}" if raw_id else self._slug(name)  
+            return (sid if name else None), name  
+        if isinstance(studio, str):  
+            return (self._slug(studio) if studio else None), studio  
+        return None, ""  
+  
+    @staticmethod  
+    def _new_person(person_id, name):  
+        """A people.json record matching MetadataLoader._load_people()."""  
+  
+        return {  
+            "id": person_id,  
+            "name": name,  
+            "stage_name": "",  
+            "aliases": [],  
+            "birth_date": "",  
+            "death_date": "",  
+            "nationality": "",  
+            "biography": "",  
+        }  
+  
+    @staticmethod  
+    def _get(entry, key, default=""):  
+        return entry.get(key, default) if isinstance(entry, dict) else default  
+  
+    @staticmethod  
+    def _slug(text):  
+        slug = "".join(c if c.isalnum() else "_" for c in (text or "").lower())  
+        return slug.strip("_")  
+  
+    # ------------------------------------------------------------------  
+    # Helpers  
+    # ------------------------------------------------------------------  
+  
+    def _record_needs_download(self, record):  
+        """  
+        A merged record is retry-eligible if any of its assets is missing  
+        or not in a satisfied download state, judged from the JSON alone.  
+        """  
+  
+        assets = record.get("assets", [])  
+  
+        if not assets:  
+            return False  
+  
+        for asset in assets:  
+            status = asset.get("download_status", "NOT_DOWNLOADED")  
+            if status != "DOWNLOADED":  
+                return True  
+            if not Path(asset.get("path", "")).exists():  
                 return True  
   
         return False  
   
-    # ------------------------------------------------------------------  
-    # Download / Resolution  
-    # ------------------------------------------------------------------  
+    def _serialize_media(self, library):  
+        """  
+        Flatten every MediaItem in `library` to its media.json shape, then  
+        re-attach the `appearances` and `studios` arrays the serializer does  
+        not emit (read back from the just-merged media.json) so credits  
+        survive the write-back round-trip.  
+        """  
   
-    def _resolve_new_assets(self, report):  
-        """Reload the library and resolve every asset not present on disk."""  
+        serializer = MetadataSerializer(library)  
   
-        # Lazy import so importing MediaIngestor never requires network deps.  
-        from metadata.services.source_resolver import SourceResolver  
-        from metadata.services.fetchers.real_fetcher import RealFetcher  
+        prior_by_id = {  
+            r.get("id"): r  
+            for r in self._read_media_json()  
+            if r.get("id")  
+        }  
   
-        library = MetadataLoader().load(self.metadata_path)  
-  
-        real = RealFetcher()  
-        resolver = SourceResolver(real)  
-  
-        targets = set(report["added"]) | set(report["retried"])  
-  
+        serialized = []  
         for item in library.get_media():  
+            record = serializer._media_to_dictionary(item)  
+            prior = prior_by_id.get(record.get("id"))  
+            if prior and prior.get("appearances"):  
+                record["appearances"] = prior["appearances"]  
+            if prior and prior.get("studios"):  
+                record["studios"] = prior["studios"]  
+            serialized.append(record)  
   
-            if item.get_id() not in targets:  
-                continue  
+        return serialized  
   
-            item_resolved = False  
+    def _read_records(self, path):  
+        """Read a drop-in file into a list of record dicts."""  
   
-            for asset in item.get_media_assets():  
-  
-                # Skip only if the file is genuinely present on disk.  
-                path = asset.get_path()  
-  
-                if asset.is_available() and path and Path(path).exists():  
-                    continue  
-  
-                if not asset.get_sources():  
-                    Logger.warning(  
-                        f"Asset '{asset.get_asset_id()}' has no sources; "  
-                        f"cannot auto-download."  
-                    )  
-                    continue  
-  
-                # Force a re-fetch: an asset loaded as DOWNLOADED but whose  
-                # file has vanished must be treated as needing download.  
-                if asset.is_available():  
-                    asset.set_download_status(DownloadStatus.MISSING)  
-  
-                real.bind(asset)  
-                result = resolver.resolve(asset)  
-  
-                if result.get("resolved"):  
-                    item_resolved = True  
-  
-            if item_resolved:  
-                report["resolved"].append(item.get_id())  
-            else:  
-                report["unresolved"].append(item.get_id())  
-  
-    # ------------------------------------------------------------------  
-    # File Helpers  
-    # ------------------------------------------------------------------  
-  
-    def _read_records(self, drop_in_path):  
-        """Read a drop-in file into a list of records."""  
-  
-        path = Path(drop_in_path)  
+        path = Path(path)  
   
         if not path.exists():  
-            Logger.error(f"Drop-in file not found: {path}")  
+            Logger.error(f"Drop-in file not found: {path}.")  
             return []  
   
         try:  
             with open(path, "r", encoding="utf-8") as file:  
                 data = json.load(file)  
         except (json.JSONDecodeError, OSError) as error:  
-            Logger.error(f"Could not read drop-in file {path}: {error}")  
+            Logger.error(f"Could not read {path}: {error}")  
             return []  
   
         if isinstance(data, dict):  
             return [data]  
   
-        if isinstance(data, list):  
-            return data  
-  
-        Logger.error(  
-            f"Drop-in file {path} must be a JSON object or array."  
-        )  
-        return []  
+        return data if isinstance(data, list) else []  
   
     def _read_media_json(self):  
-        """Read the current media.json as a list (empty if missing/bad)."""  
+        """Read the current media.json into a list (empty if absent)."""  
   
         if not self.media_json.exists():  
             return []  
@@ -284,6 +427,31 @@ class MediaIngestor:
             return []  
   
         return data if isinstance(data, list) else []  
+  
+    def _read_bucket(self, filename):  
+        """Read an arbitrary metadata bucket (people.json, studios.json)."""  
+  
+        path = self.metadata_path / filename  
+  
+        if not path.exists():  
+            return []  
+  
+        try:  
+            with open(path, "r", encoding="utf-8") as file:  
+                data = json.load(file)  
+        except (json.JSONDecodeError, OSError) as error:  
+            Logger.error(f"Could not read {path}: {error}")  
+            return []  
+  
+        return data if isinstance(data, list) else []  
+  
+    def _write_bucket(self, filename, records):  
+        """Write an arbitrary metadata bucket back to disk."""  
+  
+        self.metadata_path.mkdir(parents=True, exist_ok=True)  
+  
+        with open(self.metadata_path / filename, "w", encoding="utf-8") as file:  
+            json.dump(records, file, indent=4)  
   
     def _write_media_json(self, records):  
         """Write the merged media list back to media.json."""  

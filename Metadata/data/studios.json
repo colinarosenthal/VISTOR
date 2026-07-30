@@ -1,1 +1,16 @@
-[]
+[
+    {
+        "id": "tfc",
+        "name": "TFC",
+        "country": "",
+        "founded_year": 0,
+        "description": ""
+    },
+    {
+        "id": "madhouse",
+        "name": "Madhouse",
+        "country": "",
+        "founded_year": 0,
+        "description": ""
+    }
+]

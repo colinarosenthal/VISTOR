@@ -606,7 +606,9 @@ class MetadataLoader:
         products = {p.get_id(): p for p in library.get_products()}  
         campaigns = {c.get_id(): c for c in library.get_campaigns()}  
         franchises = {f.get_id(): f for f in library.get_franchises()}  
-        music_genres = {g.get_name(): g for g in library.get_music_genres()}  
+        music_genres = {g.get_name(): g for g in library.get_music_genres()}
+        people = {p.get_id(): p for p in library.get_people()}
+        studios = {s.get_id(): s for s in library.get_studios()}
   
         for item in library.get_media():  
   
@@ -657,6 +659,36 @@ class MetadataLoader:
   
             network = pending.get("original_network")  
             if network in networks:  
-                item.set_original_network(networks[network])  
+                item.set_original_network(networks[network])
+
+            for sid in pending.get("studios", []):  
+                if sid in studios:  
+                    item.add_studio(studios[sid])
+
+            from metadata.relationships.appearance import Appearance  
+            from metadata.enums.role_type import RoleType  
+  
+            for app in pending.get("appearances", []):  
+                person = people.get(app.get("person"))  
+                if person is None:  
+                    continue  
+                try:  
+                    role = RoleType[app.get("role", "ACTOR")]  
+                except KeyError:  
+                    role = RoleType.ACTOR  
+  
+                app_id = app.get("id") or (  
+                    f"{item.get_id()}-{app.get('person')}-{role.name.lower()}"  
+                )  
+  
+                item.add_appearance(Appearance(  
+                    id=app_id,  
+                    person=person,  
+                    media_item=item,  
+                    role=role,  
+                    role_name=app.get("role_name", ""),  
+                    billing_order=app.get("billing_order", 0),  
+                    credited=app.get("credited", True),  
+                ))
   
             del item._pending

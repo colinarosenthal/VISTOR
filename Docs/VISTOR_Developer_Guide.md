@@ -53,6 +53,7 @@
     7.9 Serialization and Loading    
     7.10 Metadata Population    
     7.11 Media Acquisition and Source Resolution
+    7.12 Media Ingestion (Drop-In and Link)
   
 8. Subsystems (Not Yet Implemented)  
     8.1 Player  
@@ -595,6 +596,65 @@ SourceResolver.resolve(asset)
 Dependencies point downward: acquisition lives in the metadata `services`    
 layer and depends only on `core` (Logger) and the metadata models, never on    
 the scheduler or engine.
+
+---  
+  
+## 7.12 Media Ingestion (Drop-In and Link)  
+  
+Section 7.11 covers how a catalogued MediaAsset becomes a local file. This  
+section covers the layer above it: turning a JSON record — or a single pasted  
+link — into a catalogued, downloaded, fingerprinted media item without editing  
+Python.  
+  
+### Drop-In Ingestion  
+  
+`MediaIngestor` (services/media_ingestor.py) is the single entry point. It:  
+  
+    1. Reads one or more drop-in records (media.json shape).  
+    2. Merges them into Metadata/data/media.json, deduping by id.  
+    3. Reloads the library via MetadataLoader so each record becomes a fully  
+       wired MediaItem + MediaAsset.  
+    4. Auto-resolves any asset still NOT_DOWNLOADED via RealFetcher +  
+       SourceResolver (download, probe, fingerprint).  
+    5. Writes the resolved library back to media.json so download_status and  
+       fingerprint persist (JSON is the durable source of truth).  
+  
+Retry-lock healing: records whose assets are MISSING/FAILED/NOT_DOWNLOADED are  
+retry-eligible on re-run rather than being permanently skipped by id, so a  
+failed download self-heals on the next run.  
+  
+### Link Ingestion  
+  
+`add_media.py` accepts a pasted URL and builds the record automatically:  
+  
+    python add_media.py "<url>" --type Movie --title "..."  
+  
+The pipeline is:  
+  
+    LinkResolver     URL -> (provider, reference)  
+    MediaDescriber   yt-dlp info-dict -> title / year / description  
+    MediaClassifier  best-guess media type + controlled-vocabulary genres  
+    MetadataEnricher authoritative fill via TMDBSource (offline-safe)  
+    RecordBuilder    assembles an ingest-ready record  
+    MediaIngestor    merge -> reload -> resolve -> write-back  
+  
+### Authoritative Enrichment  
+  
+`MetadataEnricher(source)` fills empty descriptive fields from a pluggable  
+authoritative source. `TMDBSource` looks up title/year against TMDB and maps  
+external genres onto the controlled Genre vocabulary. Precedence is:  
+overrides > authoritative > classified > scraped > default — enrichment only  
+writes into still-empty fields, so nothing already set is clobbered. With no  
+TMDB_API_KEY the lookup returns None and the enricher is a no-op, keeping the  
+smoke test offline. IMDb/Wikidata and an LLM classifier are deferred.  
+  
+### Testing  
+  
+Verified offline by `=== Testing MediaIngestor (offline) ===`,  
+`=== Testing MediaIngestor Write-Back (offline) ===`, and  
+`=== Testing MetadataEnricher (offline) ===`, and end-to-end by a live YouTube  
+run. All network/yt-dlp/TMDB imports are lazy so the suite runs with no  
+network.
 
 ---
 

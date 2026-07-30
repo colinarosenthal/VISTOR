@@ -436,10 +436,6 @@ VISTOR provides a cable television user interface.
 ---  
   
 ## Media Acquisition  
-
-### Infrastructure    
-  
-## Media Acquisition    
     
 ### Infrastructure    
     
@@ -453,23 +449,26 @@ VISTOR provides a cable television user interface.
 - [ ] Descriptive Metadata Scraping (title/year/genre from provider)    
 - [ ] Batch Folder Ingestion
 
-### Ingestion Front-End    
+### Link-Driven Ingestion  
   
-- [x] URL -> (provider, reference) Link Resolver    
-- [x] Descriptive Metadata Scraper (yt-dlp info-dict)    
-- [x] Deterministic Type/Genre Classifier (best-guess + override)    
-- [x] Link-Driven `add_media` CLI    
-    
----
-
+- [x] Link Resolver (URL -> provider + reference)  
+- [x] Media Describer (yt-dlp scrape: title / year / description / runtime)  
+- [x] Media Classifier (type + controlled-vocabulary genre guess)  
+- [x] Record Builder (override > TMDB > classified > scraped > default)  
+- [x] Media Ingestor (dedupe-by-id, self-healing retry, write-back)  
+- [x] add_media CLI (link or JSON drop-in)  
+  
 ### Authoritative Enrichment  
   
-- [x] Authoritative Source Interface (pluggable lookup provider)  
-- [x] TMDB Lookup Backend (title/year search)  
-- [x] Genre Mapping (external genres -> controlled Genre vocabulary)  
-- [x] Metadata Enricher (overrides > authoritative > classified > default)  
-- [x] Graceful Offline Degradation (no API key / no network -> fall back)  
-- [ ] IMDb / Wikidata Backends — deferred  
+- [x] Authoritative Source Interface (pluggable lookup provider)    
+- [x] TMDB Lookup Backend (title/year search)    
+- [x] Genre Mapping (external genres -> controlled Genre vocabulary)    
+- [x] Metadata Enricher (overrides > authoritative > classified > default)    
+- [x] Authoritative Year Precedence (TMDB year overrides provisional scraped year)    
+- [x] Cast / Crew Credits Enrichment (TMDB credits -> people.json upsert + appearances)    
+- [x] Studio Enrichment (TMDB production companies -> studios.json upsert)    
+- [x] Graceful Offline Degradation (no API key / no network -> fall back)    
+- [ ] IMDb / Wikidata Backends — deferred    
 - [ ] LLM Classifier Backend — deferred
   
 ### Programming  
@@ -804,3 +803,27 @@ the `(provider, reference)` pair the fetchers expect (youtu.be & `watch?v=` -> y
 - Wired MetadataEnricher into RecordBuilder.build() so a pasted link now flows: LinkResolver -> MediaDescriber -> MediaClassifier -> MetadataEnricher -> ingest-ready record.  
 - Kept the layer offline-safe: with no TMDB_API_KEY the lookup returns None and the enricher is a no-op, so test_metadata.py still runs with no network or API key.  
 - Verified fill, override-preservation, and no-op behavior via test_metadata.py (=== Testing MetadataEnricher (offline) ===).
+- Added the JSON-drop-in / link ingestion front-end: `add_media.py` -> `LinkResolver` (URL -> provider+reference) -> `MediaDescriber` (yt-dlp info-dict -> title/year/description) -> `MediaClassifier` (deterministic media-type + controlled-vocabulary genre guess) -> `MetadataEnricher` + `TMDBSource` (authoritative fill) -> `RecordBuilder` -> ingest-ready record.  
+- `MediaIngestor` merges records into `media.json` (dedupe by id), reloads via `MetadataLoader`, and auto-resolves NOT_DOWNLOADED assets through `RealFetcher` + `SourceResolver`, so adding media also downloads, probes, and fingerprints it.  
+- Made a failed download self-heal: records whose assets are MISSING/FAILED/NOT_DOWNLOADED are retry-eligible on the next run instead of being permanently skipped by id.  
+- Added write-back: after resolution the reloaded library is re-serialized to `media.json`, so the persisted record carries the resolved `download_status` and `fingerprint` (JSON is the durable source of truth).  
+- Fixed the yt-dlp merged-container path mismatch in `YouTubeFetcher._download` so the produced file is handed to `BaseFetcher` for probe/fingerprint/move.  
+- Kept the whole layer offline-safe (lazy yt-dlp/network imports; no TMDB_API_KEY -> enricher no-op); verified via `test_metadata.py` (`=== Testing MediaIngestor Write-Back (offline) ===`) and a live YouTube run.
+
+---  
+  
+## 2026-07-29
+  
+- Fixed authoritative year precedence: the enricher/record-builder now treat a scraped provider year (e.g. YouTube upload year 2019) as provisional so a confident TMDB year (2009) overwrites it, while explicit `--year` overrides still win. Redline now stores release_year 2009 / runtime_minutes 102 and a real description.  
+- Added TMDB year+match scoring so lookup no longer blindly takes results[0], reducing wrong-title matches on ambiguous names.  
+- Extended TMDBSource._normalize to return cast / crew / studios from the TMDB credits + production_companies payloads.  
+- Added cast/crew/studio upsert to MediaIngestor (_upsert_credits): people are upserted into people.json by TMDB id (no duplicates across titles), studios into studios.json, and the media record gains an appearances[] array with a stable id + person id per credit.  
+- Taught the loader to reconstruct Appearance objects from the record's appearances[] by re-linking to the shared Person by id.  
+- Hardened media.json handling so a momentarily empty/corrupt file no longer silently wipes or re-triggers a full re-download.  
+- Verified end-to-end: re-running the Redline youtu.be link with --reenrich now writes appearances into media.json and upserts 28 people + 2 studios (TFC, Madhouse), with the asset unchanged (not re-downloaded).
+- Linked studios directly to each media item, closing the gap where the TMDB credit upsert wrote studios.json but nothing on the media record referenced the studios (the people side was already wired via appearances).  
+- MediaIngestor now rewrites each record's normalized `studios` array (studio ids, deduped against studios.json by id) alongside the existing `appearances` array, so the record carries both its people and its studios.  
+- MetadataSerializer._media_to_dictionary now emits `studios` (studio ids) so the linkage survives a save/reload round-trip.  
+- MetadataLoader._resolve_relationships now resolves each record's `studios` ids back to shared Studio objects, mirroring the appearances resolution path (id-keyed lookup, missing ids skipped rather than crashing).  
+- Added `studios: list[Studio]` + add_studio/get_studios to MediaItem so studios are first-class on the item, matching its existing appearances handling.  
+- Verified via test.py: after re-ingesting Redline, the record links to the Madhouse/TFC Studio objects and they resolve on reload; offline suite passes.

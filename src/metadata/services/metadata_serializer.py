@@ -208,7 +208,19 @@ class MetadataSerializer:
             "genres": [g.get_name() for g in item.get_genres()],  
             "tags": [t.get_name() for t in item.get_tags()],  
             "themes": [t.get_name() for t in item.get_themes()],
+            "appearances": [  
+                {  
+                    "id": a.get_id(),  
+                    "person": a.get_person().get_id() if a.get_person() else None,  
+                    "role": a.get_role().name,  
+                    "role_name": a.get_role_name(),  
+                    "billing_order": a.get_billing_order(),  
+                    "credited": a.is_credited(),  
+                }  
+                for a in item.get_appearances()  
+            ],
             "assets": [a.to_dictionary() for a in item.get_media_assets()],
+            "studios": [s.get_id() for s in item.get_studios()],
         }  
   
         if isinstance(item, Episode):  

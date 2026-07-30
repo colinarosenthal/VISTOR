@@ -3,18 +3,259 @@
         "type": "Movie",
         "id": "redline",
         "title": "Redline",
-        "description": "Word",
-        "release_year": 2019,
-        "runtime_minutes": 103,
+        "description": "A daredevil driver is determined to compete in Redline, the most popular race in the galaxy. The race only occurs every five years, but in order to participate he must overcome the mafia, the government and even love.",
+        "release_year": 2009,
+        "runtime_minutes": 102,
         "scheduling_priority": 0,
+        "content_rating": null,
+        "original_network": null,
+        "production_country": null,
+        "languages": [],
         "genres": [],
         "tags": [],
         "themes": [],
-        "languages": [],
+        "appearances": [
+            {
+                "id": "redline-tmdb-person-12670-actor",
+                "person": "tmdb-person-12670",
+                "role": "ACTOR",
+                "role_name": "JP (voice)",
+                "billing_order": 0,
+                "credited": true
+            },
+            {
+                "id": "redline-tmdb-person-84028-actor",
+                "person": "tmdb-person-84028",
+                "role": "ACTOR",
+                "role_name": "Sonoshee McLaren (voice)",
+                "billing_order": 1,
+                "credited": true
+            },
+            {
+                "id": "redline-tmdb-person-13275-actor",
+                "person": "tmdb-person-13275",
+                "role": "ACTOR",
+                "role_name": "Frisbee (voice)",
+                "billing_order": 2,
+                "credited": true
+            },
+            {
+                "id": "redline-tmdb-person-81852-actor",
+                "person": "tmdb-person-81852",
+                "role": "ACTOR",
+                "role_name": "Old Man Mole (voice)",
+                "billing_order": 3,
+                "credited": true
+            },
+            {
+                "id": "redline-tmdb-person-19592-actor",
+                "person": "tmdb-person-19592",
+                "role": "ACTOR",
+                "role_name": "Lynchman (voice)",
+                "billing_order": 4,
+                "credited": true
+            },
+            {
+                "id": "redline-tmdb-person-68916-actor",
+                "person": "tmdb-person-68916",
+                "role": "ACTOR",
+                "role_name": "Colonel Volton (voice)",
+                "billing_order": 5,
+                "credited": true
+            },
+            {
+                "id": "redline-tmdb-person-225603-actor",
+                "person": "tmdb-person-225603",
+                "role": "ACTOR",
+                "role_name": "Little Deyzuna (voice)",
+                "billing_order": 6,
+                "credited": true
+            },
+            {
+                "id": "redline-tmdb-person-79458-actor",
+                "person": "tmdb-person-79458",
+                "role": "ACTOR",
+                "role_name": "Shinkai (voice)",
+                "billing_order": 7,
+                "credited": true
+            },
+            {
+                "id": "redline-tmdb-person-560354-actor",
+                "person": "tmdb-person-560354",
+                "role": "ACTOR",
+                "role_name": "Inuki Boss (voice)",
+                "billing_order": 8,
+                "credited": true
+            },
+            {
+                "id": "redline-tmdb-person-96563-actor",
+                "person": "tmdb-person-96563",
+                "role": "ACTOR",
+                "role_name": "Johnny Boy (voice)",
+                "billing_order": 9,
+                "credited": true
+            },
+            {
+                "id": "redline-tmdb-person-13256-actor",
+                "person": "tmdb-person-13256",
+                "role": "ACTOR",
+                "role_name": "Trava (voice)",
+                "billing_order": 10,
+                "credited": true
+            },
+            {
+                "id": "redline-tmdb-person-1222060-actor",
+                "person": "tmdb-person-1222060",
+                "role": "ACTOR",
+                "role_name": "Titan (voice)",
+                "billing_order": 11,
+                "credited": true
+            },
+            {
+                "id": "redline-tmdb-person-122191-actor",
+                "person": "tmdb-person-122191",
+                "role": "ACTOR",
+                "role_name": "Gori-Rider (voice)",
+                "billing_order": 12,
+                "credited": true
+            },
+            {
+                "id": "redline-tmdb-person-1043317-actor",
+                "person": "tmdb-person-1043317",
+                "role": "ACTOR",
+                "role_name": "Todoroki (voice)",
+                "billing_order": 13,
+                "credited": true
+            },
+            {
+                "id": "redline-tmdb-person-550663-actor",
+                "person": "tmdb-person-550663",
+                "role": "ACTOR",
+                "role_name": "Machine Head (voice)",
+                "billing_order": 14,
+                "credited": true
+            },
+            {
+                "id": "redline-tmdb-person-12195-actor",
+                "person": "tmdb-person-12195",
+                "role": "ACTOR",
+                "role_name": "Roboworld President (voice)",
+                "billing_order": 15,
+                "credited": true
+            },
+            {
+                "id": "redline-tmdb-person-1042716-actor",
+                "person": "tmdb-person-1042716",
+                "role": "ACTOR",
+                "role_name": "Miki (voice)",
+                "billing_order": 16,
+                "credited": true
+            },
+            {
+                "id": "redline-tmdb-person-3327626-actor",
+                "person": "tmdb-person-3327626",
+                "role": "ACTOR",
+                "role_name": "Boiboi (voice)",
+                "billing_order": 17,
+                "credited": true
+            },
+            {
+                "id": "redline-tmdb-person-148467-actor",
+                "person": "tmdb-person-148467",
+                "role": "ACTOR",
+                "role_name": "Bosbos (voice)",
+                "billing_order": 18,
+                "credited": true
+            },
+            {
+                "id": "redline-tmdb-person-1272005-executive_producer",
+                "person": "tmdb-person-1272005",
+                "role": "EXECUTIVE_PRODUCER",
+                "role_name": "Executive Producer",
+                "billing_order": 0,
+                "credited": true
+            },
+            {
+                "id": "redline-tmdb-person-192638-producer",
+                "person": "tmdb-person-192638",
+                "role": "PRODUCER",
+                "role_name": "Producer",
+                "billing_order": 0,
+                "credited": true
+            },
+            {
+                "id": "redline-tmdb-person-1272003-composer",
+                "person": "tmdb-person-1272003",
+                "role": "COMPOSER",
+                "role_name": "Original Music Composer",
+                "billing_order": 0,
+                "credited": true
+            },
+            {
+                "id": "redline-tmdb-person-56340-director",
+                "person": "tmdb-person-56340",
+                "role": "DIRECTOR",
+                "role_name": "Director",
+                "billing_order": 0,
+                "credited": true
+            },
+            {
+                "id": "redline-tmdb-person-1272004-producer",
+                "person": "tmdb-person-1272004",
+                "role": "PRODUCER",
+                "role_name": "Producer",
+                "billing_order": 0,
+                "credited": true
+            },
+            {
+                "id": "redline-tmdb-person-3130282-cinematographer",
+                "person": "tmdb-person-3130282",
+                "role": "CINEMATOGRAPHER",
+                "role_name": "Director of Photography",
+                "billing_order": 0,
+                "credited": true
+            },
+            {
+                "id": "redline-tmdb-person-1210677-screenwriter",
+                "person": "tmdb-person-1210677",
+                "role": "SCREENWRITER",
+                "role_name": "Screenplay",
+                "billing_order": 0,
+                "credited": true
+            },
+            {
+                "id": "redline-tmdb-person-235480-screenwriter",
+                "person": "tmdb-person-235480",
+                "role": "SCREENWRITER",
+                "role_name": "Screenplay",
+                "billing_order": 0,
+                "credited": true
+            },
+            {
+                "id": "redline-tmdb-person-107668-screenwriter",
+                "person": "tmdb-person-107668",
+                "role": "SCREENWRITER",
+                "role_name": "Screenplay",
+                "billing_order": 0,
+                "credited": true
+            }
+        ],
         "assets": [
             {
                 "asset_id": "redline-asset-1",
-                "path": "Media/Movies/redline.mkv",
+                "path": "Media\\Movies\\redline.mkv",
+                "checksum": "",
+                "runtime_seconds": 6168,
+                "file_size": 772466990,
+                "video_codec": "av1",
+                "audio_codec": "opus",
+                "container": "",
+                "width": 1280,
+                "height": 718,
+                "frame_rate": 23.976,
+                "verified": true,
+                "download_status": "DOWNLOADED",
+                "last_played": "",
                 "sources": [
                     {
                         "provider": "youtube",
@@ -22,8 +263,17 @@
                         "quality": "",
                         "date_posted": ""
                     }
-                ]
+                ],
+                "pinned": false,
+                "broadcast_score": 0.0,
+                "retention_score": 0.0,
+                "fingerprint": "cf55a168e32a8be64fef43e7f850cffd"
             }
-        ]
+        ],
+        "studios": [
+            "tfc",
+            "madhouse"
+        ],
+        "franchise": null
     }
 ]

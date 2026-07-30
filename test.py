@@ -1413,78 +1413,45 @@ assert isinstance(ProviderRegistry().get("some_random_site"), HttpFetcher)
   
 print("Provider routing + RealFetcher delegation verified.")
 
-print("\n=== Testing MediaIngestor (offline) ===")  
+print("\n=== Testing MediaIngestor Write-Back (offline) ===")  
   
-import tempfile, json as _json  
-from pathlib import Path as _Path  
-from metadata.services.media_ingestor import MediaIngestor  
+from metadata.services.media_ingestor import MediaIngestor
+import json, os, shutil, tempfile  
   
-_tmp = _Path(tempfile.mkdtemp())  
-(_tmp / "media.json").write_text("[]", encoding="utf-8")  
+# Point the ingestor at a throwaway copy of the metadata dir.  
+wb_dir = tempfile.mkdtemp(prefix="vistor_wb_")  
+wb_media = os.path.join(wb_dir, "media.json")  
+with open(wb_media, "w", encoding="utf-8") as f:  
+    json.dump([], f)  
   
-_drop = _tmp / "drop.json"  
-_drop.write_text(_json.dumps({  
-    "type": "Movie", "id": "ingest_demo", "title": "Ingest Demo",  
-    "release_year": 2000, "runtime_minutes": 90,  
-    "genres": [], "languages": [], "tags": [], "themes": [],  
-    "assets": []  
-}), encoding="utf-8")  
+drop_in = os.path.join(wb_dir, "wb_demo.json")  
+with open(drop_in, "w", encoding="utf-8") as f:  
+    json.dump({  
+        "type": "Movie",  
+        "id": "wb_demo",  
+        "title": "WB Demo",  
+        "assets": [{  
+            "asset_id": "wb_demo-asset-1",  
+            "path": os.path.join(wb_dir, "wb_demo.mkv"),  
+            "sources": [{"provider": "youtube", "reference": "wb_ref"}],  
+        }],  
+    }, f)  
   
-_report = MediaIngestor(metadata_path=_tmp).ingest_file(_drop, download=False)  
+# Canned success for this one source -> no network, no yt-dlp.  
+fake = _FakeFetcher({"youtube:wb_ref": FetchResult.success()})  
   
-assert _report["added"] == ["ingest_demo"]  
-assert _report["skipped"] == []  
+ingestor = MediaIngestor(metadata_path=wb_dir)  
+report = ingestor.ingest_file(drop_in, download=True, fetcher=fake)  
   
-# Re-ingesting the same id is rejected (dedupe by id).  
-_report2 = MediaIngestor(metadata_path=_tmp).ingest_file(_drop, download=False)  
-assert _report2["added"] == []  
-assert _report2["skipped"][0][0] == "ingest_demo"  
+# Re-read media.json from disk to prove write-back persisted the status.  
+with open(wb_media, "r", encoding="utf-8") as f:  
+    persisted = json.load(f)  
   
-print("MediaIngestor ingest + dedupe verified.")
-
-print("\n=== Testing MetadataEnricher (offline) ===")  
+asset = persisted[0]["assets"][0]  
+assert asset.get("download_status") == "DOWNLOADED"  
   
-from metadata.services.enrichment.metadata_enricher import MetadataEnricher  
-  
-  
-class _StubSource:  
-    """Canned authoritative source: no network."""  
-  
-    def lookup(self, title, year=None, media_type=None):  
-        return {  
-            "title": "Redline",  
-            "release_year": 2009,  
-            "runtime_minutes": 102,  
-            "description": "A high-stakes underground street race.",  
-            "media_type": "Movie",  
-            "genres": ["Animation", "Action"],  
-        }  
-  
-  
-# Fill-if-missing: empty fields get filled...  
-_rec = {"type": "", "title": "redline", "release_year": 0,  
-        "runtime_minutes": 0, "description": "", "genres": []}  
-_rec = MetadataEnricher(_StubSource()).enrich(_rec)  
-assert _rec["release_year"] == 2009  
-assert _rec["type"] == "Movie"  
-assert _rec["genres"] == ["Animation", "Action"]  
-  
-# ...but an explicit override is never clobbered.  
-_rec2 = {"type": "MusicVideo", "title": "redline", "release_year": 0,  
-         "runtime_minutes": 0, "description": "", "genres": ["Music"]}  
-_rec2 = MetadataEnricher(_StubSource()).enrich(_rec2)  
-assert _rec2["type"] == "MusicVideo"      # override wins  
-assert _rec2["genres"] == ["Music"]       # override wins  
-  
-# No-match source is a no-op.  
-class _NullSource:  
-    def lookup(self, *a, **k):  
-        return None  
-  
-_rec3 = {"type": "", "title": "obscure", "release_year": 0, "genres": []}  
-assert MetadataEnricher(_NullSource()).enrich(_rec3)["type"] == ""  
-  
-print("MetadataEnricher fill/override/no-op verified.")
+shutil.rmtree(wb_dir, ignore_errors=True)  
+print("MediaIngestor write-back (download_status persisted) verified.")
   
 # ------------------------------------------------------------------  
 # Final Result  

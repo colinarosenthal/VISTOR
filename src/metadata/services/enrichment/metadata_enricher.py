@@ -2,21 +2,21 @@
 VISTOR Metadata Enricher  
   
 Refines a record dict (as produced by RecordBuilder) against an authoritative  
-source. Fill-if-missing semantics preserve the ingestion precedence:  
+source. Fill semantics preserve the ingestion precedence:  
   
     overrides > authoritative > classified/scraped > default  
   
-A field is only overwritten when the current value is empty/zero/absent, so an  
-explicit --type/--genres flag or a confident scrape is never clobbered. The  
-enricher is a no-op when the source returns None (offline / no API key / no  
-match), so the pipeline degrades gracefully.  
+A field is overwritten when the current value is empty/zero/absent OR when it  
+is flagged `provisional` (a scrape/classifier best-guess). An explicit caller  
+override is NEVER overwritten. The enricher is a no-op when the source returns  
+None (offline / no API key / no match), so the pipeline degrades gracefully.  
 """  
   
 from core.logger import Logger  
   
   
 class MetadataEnricher:  
-    """Fill gaps in a media record from an AuthoritativeSource."""  
+    """Fill/correct gaps in a media record from an AuthoritativeSource."""  
   
     def __init__(self, source=None):  
         if source is None:  
@@ -24,41 +24,57 @@ class MetadataEnricher:
             # TMDB_API_KEY, its lookup() returns None and enrich() is a no-op.  
             from metadata.services.enrichment.tmdb_source import TMDBSource  
             source = TMDBSource()  
-        self.source = source
+        self.source = source  
   
-    def enrich(self, record):  
-        """Return `record` with missing descriptive fields filled from the source."""  
+    def enrich(self, record, provisional=None):  
+        """Return `record` with missing/provisional fields filled from the source."""  
+  
+        provisional = provisional or set()  
   
         title = record.get("title", "")  
         if not title:  
             return record  
   
+        # Only constrain the TMDB search by year when the year is an explicit  
+        # override. A provisional (scraped) year - e.g. a YouTube upload date -  
+        # would wrongly filter out the true release, so drop it from the query.  
+        search_year = record.get("release_year") or None  
+        if "release_year" in provisional:  
+            search_year = None  
+  
         result = self.source.lookup(  
             title,  
-            year=record.get("release_year") or None,  
+            year=search_year,  
             media_type=record.get("type"),  
         )  
         if not result:  
             return record  
   
-        self._fill(record, "title", result.get("title"))  
-        self._fill(record, "release_year", result.get("release_year"))  
-        self._fill(record, "runtime_minutes", result.get("runtime_minutes"))  
-        self._fill(record, "description", result.get("description"))  
-        self._fill(record, "type", result.get("media_type"))  
+        self._fill(record, "title", result.get("title"), provisional)  
+        self._fill(record, "release_year", result.get("release_year"), provisional)  
+        self._fill(record, "runtime_minutes", result.get("runtime_minutes"), provisional)  
+        self._fill(record, "description", result.get("description"), provisional)  
+        self._fill(record, "type", result.get("media_type"), provisional)  
   
-        # Genres: only add authoritative names that aren't already present.  
-        if not record.get("genres") and result.get("genres"):  
-            record["genres"] = list(result["genres"])  
+        # Genres: replace when empty OR still a provisional classifier guess.  
+        if result.get("genres") and (  
+            not record.get("genres") or "genres" in provisional  
+        ):  
+            record["genres"] = list(result["genres"])
+
+        # Carry authoritative credits/studios straight through (raw lists).  
+        for key in ("cast", "crew", "studios"):  
+            if result.get(key) and not record.get(key):  
+                record[key] = list(result[key])
   
         Logger.info(f"Enriched '{title}' from authoritative source.")  
         return record  
   
     @staticmethod  
-    def _fill(record, key, value):  
-        """Set record[key] only if the current value is empty/zero/absent."""  
+    def _fill(record, key, value, provisional):  
+        """Set record[key] if the current value is empty/zero OR provisional."""  
   
         if value in (None, "", 0):  
             return  
-        if not record.get(key):  
+        if not record.get(key) or key in provisional:  
             record[key] = value

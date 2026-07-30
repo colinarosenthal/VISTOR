@@ -36,7 +36,16 @@ _TMDB_GENRE_MAP = {
     "History": "Documentary",  
     "Family": "Adventure",  
 }  
-  
+
+# TMDB crew "department" -> VISTOR RoleType name. Unmapped crew is dropped.  
+_TMDB_DEPARTMENT_ROLE = {  
+    "Directing": "DIRECTOR",  
+    "Writing": "WRITER",  
+    "Production": "PRODUCER",  
+    "Sound": "COMPOSER",  
+    "Camera": "CINEMATOGRAPHER",  
+    "Editing": "EDITOR",  
+}
   
 class TMDBSource:  
     """Authoritative lookup backed by TMDB's /search + /details endpoints."""  
@@ -48,7 +57,7 @@ class TMDBSource:
     def lookup(self, title, year=None, media_type=None):  
         if not self.api_key:  
             Logger.info("TMDB_API_KEY not set; skipping authoritative lookup.")  
-            return None  
+            return None 
   
         import requests  # lazy: keeps smoke test offline  
   
@@ -73,17 +82,19 @@ class TMDBSource:
                 return None  
   
             best = results[0]  
+            detail_params = {"api_key": self.api_key, "append_to_response": "credits"}  
             details = requests.get(  
                 f"{_BASE}/{endpoint}/{best['id']}",  
-                params={"api_key": self.api_key},  
+                params=detail_params,  
                 timeout=self.timeout,  
             )  
             details.raise_for_status()  
-            return self._normalize(details.json(), endpoint)  
+            return self._normalize(details.json(), endpoint)
   
         except Exception as exc:  # noqa: BLE001 - lookup is best-effort  
             Logger.warning(f"TMDB lookup for '{title}' failed: {exc!r}.")  
             return None  
+
   
     # ------------------------------------------------------------------  
     # Normalization  
@@ -112,6 +123,36 @@ class TMDBSource:
             if mapped and mapped not in genres:  
                 genres.append(mapped)  
   
+        credits = data.get("credits", {}) or {}  
+  
+        cast = [  
+            {  
+                "tmdb_id": c.get("id"),  
+                "name": c.get("name", ""),  
+                "character": c.get("character", ""),  
+                "order": c.get("order", 0),  
+            }  
+            for c in (credits.get("cast") or [])  
+            if c.get("name")  
+        ]  
+  
+        crew = [  
+            {  
+                "tmdb_id": c.get("id"),  
+                "name": c.get("name", ""),  
+                "department": c.get("department", ""),  
+                "job": c.get("job", ""),  
+            }  
+            for c in (credits.get("crew") or [])  
+            if c.get("name") and c.get("department") in _TMDB_DEPARTMENT_ROLE  
+        ]  
+  
+        studios = [  
+            {"tmdb_id": s.get("id"), "name": s.get("name", "")}  
+            for s in (data.get("production_companies") or [])  
+            if s.get("name")  
+        ]  
+  
         return {  
             "title": title,  
             "release_year": year,  
@@ -119,4 +160,7 @@ class TMDBSource:
             "description": data.get("overview", "") or "",  
             "media_type": media_type,  
             "genres": genres,  
+            "cast": cast,  
+            "crew": crew,  
+            "studios": studios,  
         }

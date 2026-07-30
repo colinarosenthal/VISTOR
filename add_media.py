@@ -12,15 +12,16 @@ Add media to VISTOR two ways:
   
 2. From a raw link (YouTube / Internet Archive / direct URL). The link is  
    parsed into a (provider, reference) source and, where possible, the  
-   descriptive metadata (title, year, description, runtime) is scraped so the  
-   record is built for you:  
+   descriptive metadata (title, year, description, runtime) is scraped and  
+   then corrected against TMDB so the record is built for you:  
   
        python add_media.py "https://youtu.be/fzHD04_OwyQ"  
        python add_media.py "https://youtu.be/fzHD04_OwyQ" --type Movie --title "Redline"  
-       python add_media.py "https://youtu.be/fzHD04_OwyQ" --genres "Animation,Action" --no-download  
+       python add_media.py "https://youtu.be/fzHD04_OwyQ" --year 2009 --no-download  
   
 Anything that starts with "http" is treated as a link; otherwise the argument  
-is treated as a path to a JSON drop-in file.  
+is treated as a path to a JSON drop-in file. Flags you pass (--type/--title/  
+--year/--genres) are pinned and never overwritten by the authoritative source.  
 """  
   
 import json  
@@ -35,18 +36,18 @@ from metadata.services.media_ingestor import MediaIngestor
   
   
 def _parse_flags(argv):  
-    """Split argv into (positional, options-dict).  
+    """Split argv into (positional, download, overrides).  
   
     Supports:  
         --no-download            -> download = False  
         --type <MediaType>       -> overrides["type"]  (e.g. Movie, MusicVideo)  
         --title <title>          -> overrides["title"]  
+        --year <YYYY>            -> overrides["release_year"]  
         --genres "A,B,C"         -> overrides["genres"] as a list  
     """  
   
     positional = []  
     download = True  
-    media_type = "Movie"  
     overrides = {}  
   
     i = 0  
@@ -56,10 +57,16 @@ def _parse_flags(argv):
         if arg == "--no-download":  
             download = False  
         elif arg == "--type" and i + 1 < len(argv):  
-            media_type = argv[i + 1]  
+            overrides["type"] = argv[i + 1]  
             i += 1  
         elif arg == "--title" and i + 1 < len(argv):  
             overrides["title"] = argv[i + 1]  
+            i += 1  
+        elif arg == "--year" and i + 1 < len(argv):  
+            try:  
+                overrides["release_year"] = int(argv[i + 1])  
+            except ValueError:  
+                print(f"Ignoring non-numeric --year '{argv[i + 1]}'.")  
             i += 1  
         elif arg == "--genres" and i + 1 < len(argv):  
             overrides["genres"] = [  
@@ -71,21 +78,17 @@ def _parse_flags(argv):
   
         i += 1  
   
-    return positional, download, media_type, overrides  
+    return positional, download, overrides  
   
   
-def _ingest_link(url, download, media_type, overrides):  
+def _ingest_link(url, download, overrides):  
     """Build a record from a raw URL, then ingest it via a temp JSON file."""  
   
     # Imported lazily so the JSON-file path keeps working even if the  
     # link-building dependencies (yt-dlp, etc.) are not installed.  
     from metadata.services.record_builder import RecordBuilder  
   
-    record = RecordBuilder().build(  
-        url,  
-        media_type=media_type,  
-        overrides=overrides,  
-    )  
+    record = RecordBuilder().build(url, overrides=overrides)  
   
     # Drop the built record to a temp JSON file and reuse the file path so  
     # there is exactly one ingestion path (the same one the UI will emit).  
@@ -99,25 +102,26 @@ def _ingest_link(url, download, media_type, overrides):
   
   
 def main(argv):  
-    positional, download, media_type, overrides = _parse_flags(argv)  
+    positional, download, overrides = _parse_flags(argv)  
   
     if not positional:  
         print(  
             "Usage:\n"  
             "  python add_media.py <drop_in.json> [--no-download]\n"  
             "  python add_media.py <url> [--type Movie] [--title \"...\"] "  
-            "[--genres \"A,B\"] [--no-download]"  
+            "[--year 2009] [--genres \"A,B\"] [--no-download]"  
         )  
         return 1  
   
     target = positional[0]  
   
     if target.lower().startswith("http"):  
-        report = _ingest_link(target, download, media_type, overrides)  
+        report = _ingest_link(target, download, overrides)  
     else:  
         report = MediaIngestor().ingest_file(target, download=download)  
   
     print("Added:      ", report["added"])  
+    print("Retried:    ", report.get("retried", []))  
     print("Skipped:    ", report["skipped"])  
     print("Downloaded: ", report["resolved"])  
     print("Unresolved: ", report["unresolved"])  
