@@ -4,7 +4,7 @@
 
 **Current Version:** 0.6.0
 
-**Last Updated:** July 29, 2026
+**Last Updated:** July 31, 2026
 
 ---
 
@@ -485,7 +485,9 @@ VISTOR provides a cable television user interface.
 - [x] Poster / Cover Art (poster_url on normalized results)      
 - [ ] TMDB Year+Match Scoring (smarter default pick, not just results[0])      
 - [ ] IMDb / Wikidata Backends — deferred      
-- [ ] LLM Classifier Backend — deferred
+- [ ] LLM Classifier Backend — deferred  
+- [ ] Recommended Media (TMDB /recommendations -> suggest-only ingest)
+- [ ] Config Persistence (JSON load/save; recommended_media toggle)
   
 ### Programming  
   
@@ -854,3 +856,18 @@ the `(provider, reference)` pair the fetchers expect (youtu.be & `watch?v=` -> y
 - Fixed empty-genre round-trip: populated `Metadata/data/genres.json` from `MetadataPopulation.create_genres()` so the loader's exact-name relinking has a vocabulary to match against; genres (e.g. Animation / Action / Science Fiction) now survive ingest instead of dropping to `[]`.  
 - Promoted `Flask`, `Pillow`, and `tkinterdnd2` to active dependencies in `requirements.txt`.  
 - Verified end-to-end via the web UI: dropped the Redline youtu.be link, picked the 2009 anime candidate, confirmed with overwrite, and got `1 added / 1 downloaded` with a fingerprinted `.mkv` and full cast/crew/studios/genres in `media.json`.
+- Added RecommendationSource (TMDB /{movie|tv}/{id}/recommendations) that suggests similar titles for a known TMDB id; offline-safe, returns [] with no key/network.  
+- Replaced Config.load() placeholder with real JSON load/save to Metadata/data/config.json, plus a `recommended_media` toggle and  `recommendation_mode` field (default "suggest_only"; no auto-commit yet).
+
+---  
+  
+## 2026-07-30 
+  
+- Added a Recommended Media feature slice: `RecommendationSource` calls TMDB's `/recommendations` endpoint and normalizes results into the same candidate shape the UI already renders. Surfaced through a new `IngestSession.recommendations(tmdb_id, media_type)` method, a `/recommendations` route, and a "You might also add..." panel in `web_app.py`.  
+- Replaced the placeholder `Config.load()` (which just `pass`ed) with real JSON load/save and a `recommended_media` toggle plus a `recommendation_mode` field defaulting to `suggest_only`; recommendations are gated on this toggle. No auto URL-discovery or auto-commit yet — suggestions are human-confirmed.  
+- Fixed the recommendation sidebar being cleared when switching between "did you mean?" candidates (`choose()` no longer wipes the candidate/rec panel).  
+- Added a multi-backend `EnrichmentRouter` that dispatches `lookup()` by `media_type`: TMDB for Movie/Episode, `SportsSource` (TheSportsDB, chosen for its 1980s-onward historical backlog on a permanent free tier) for sports, MusicBrainz for music, and a Wikipedia fallback for everything else. All network imports stay lazy so the headless test suite runs offline.  
+- Wired `EnrichmentRouter` into `RecordBuilder` via `MetadataEnricher`, replacing the hardcoded `TMDBSource`. Empty/unknown media_type routes to TMDB so plain movie drops still resolve correctly.  
+- Fixed a year-precedence regression introduced by the router swap: dropping the Redline link again correctly returns `release_year` 2009 instead of the scraped 2019.  
+- Recorded the Recommended Media feature (auto-suggest / future auto-acquire toggle) in `Docs/Ideas.md`.  
+- Verified: `EnrichmentRouter().lookup('Redline', media_type='Movie')` returns 2009 with full genres, `RecordBuilder().build(...)` returns 2009, and `IngestSession.recommendations(11970, 'Movie')` returns 8 candidates with the config toggle on.

@@ -32,7 +32,8 @@ from metadata.services.media_describer import MediaDescriber
 from metadata.services.media_classifier import MediaClassifier  
   
 from metadata.services.enrichment.metadata_enricher import MetadataEnricher  
-from metadata.services.enrichment.tmdb_source import TMDBSource  
+from metadata.services.enrichment.enrichment_router import EnrichmentRouter
+from metadata.services.enrichment.composite_source import CompositeSource  
   
   
 def _slugify(text):  
@@ -59,7 +60,7 @@ class RecordBuilder:
         self.resolver = resolver or LinkResolver()  
         self.describer = describer or MediaDescriber()  
         self.classifier = classifier or MediaClassifier()  
-        self.enricher = enricher or MetadataEnricher(TMDBSource())  
+        self.enricher = enricher or MetadataEnricher(EnrichmentRouter())  
   
     def build(self, url, media_type=None, overrides=None):  
         overrides = overrides or {}  

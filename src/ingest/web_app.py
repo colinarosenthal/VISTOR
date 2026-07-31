@@ -4,10 +4,11 @@ VISTOR Ingest Web App
 A local, single-page drag-and-drop UI over IngestSession. Runs on  
 127.0.0.1 only. Routes:  
   
-    GET  /          -> the drop page  
-    POST /preview   -> {url} -> {record, candidates}  
-    POST /choose    -> {url, tmdb_id, media_type} -> {record}  
-    POST /commit    -> {record, download, overwrite} -> ingest report  
+    GET  /                -> the drop page  
+    POST /preview         -> {url} -> {record, candidates}  
+    POST /choose          -> {url, tmdb_id, media_type} -> {record}  
+    POST /commit          -> {record, download, overwrite} -> ingest report  
+    POST /recommendations -> {tmdb_id, media_type} -> {recommendations}  
 """  
   
 from flask import Flask, request, jsonify  
@@ -31,11 +32,13 @@ _PAGE = """<!doctype html>
  .cover{width:100%;border-radius:6px;background:#000}  
  .chip{display:flex;gap:10px;align-items:center;padding:8px;border:1px solid #333;border-radius:8px;margin-bottom:8px;cursor:pointer}  
  .chip:hover{border-color:#4ea1ff}  
+ .chip.sel{border-color:#4ea1ff;background:#12233b}  
  .chip img{width:46px;border-radius:4px}  
  button{padding:10px 16px;border:0;border-radius:6px;cursor:pointer;font-weight:600}  
  .ok{background:#2e7d32;color:#fff}.no{background:#7d2e2e;color:#fff}  
  label{font-size:13px;color:#aaa}  
  pre{white-space:pre-wrap;background:#000;padding:10px;border-radius:6px;max-height:220px;overflow:auto}  
+ #recs{margin-top:20px;background:#1a1a1a;border:1px solid #333;border-radius:10px;padding:16px}  
 </style></head><body><div class="wrap">  
  <h2>VISTOR - Add Media</h2>  
  <div id="drop">Drag a link here, or paste it below</div>  
@@ -64,9 +67,13 @@ _PAGE = """<!doctype html>
   </div>  
  </div>  
  <pre id="log"></pre>  
+ <div id="recs" style="display:none">  
+   <h4>You might also add...</h4>  
+   <div id="recbox"></div>  
+ </div>  
 </div>  
 <script>  
-let RECORD=null, URL_="";  
+let RECORD=null, URL_="", TMDB_ID=null, MEDIA_TYPE="Movie", CANDS=[];  
 const drop=document.getElementById('drop');  
 ['dragover'].forEach(e=>drop.addEventListener(e,ev=>{ev.preventDefault();drop.classList.add('hover')}));  
 ['dragleave','drop'].forEach(e=>drop.addEventListener(e,ev=>{ev.preventDefault();drop.classList.remove('hover')}));  
@@ -76,7 +83,17 @@ drop.addEventListener('drop',ev=>{
 });  
 function log(m){document.getElementById('log').textContent=(typeof m==='string')?m:JSON.stringify(m,null,2);}  
 async function post(u,b){const r=await fetch(u,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)});return r.json();}  
-function show(rec,cands){  
+function renderCands(){  
+  const side=document.getElementById('side'),box=document.getElementById('cands');  
+  box.innerHTML='';  
+  if(CANDS&&CANDS.length){side.style.display='block';  
+    CANDS.forEach(c=>{const d=document.createElement('div');  
+      d.className='chip'+(c.tmdb_id===TMDB_ID?' sel':'');  
+      d.innerHTML=(c.poster_url?'<img src="'+c.poster_url+'">':'')+'<span>'+c.title+' ('+(c.release_year||'?')+')</span>';  
+      d.onclick=()=>choose(c.tmdb_id,c.media_type);box.appendChild(d);});  
+  } else {side.style.display='none';}  
+}  
+function show(rec){  
   RECORD=rec;  
   document.getElementById('card').style.display='block';  
   document.getElementById('cover').src=rec.poster_url||'';  
@@ -84,24 +101,40 @@ function show(rec,cands){
   document.getElementById('meta').textContent=(rec.type||'')+' - '+(rec.release_year||'?')+' - '+((rec.genres||[]).join(', ')||'no genres');  
   document.getElementById('desc').textContent=rec.description||'';  
   document.getElementById('rid').value=rec.id||'';  
-  const side=document.getElementById('side'),box=document.getElementById('cands');  
-  box.innerHTML='';  
-  if(cands&&cands.length){side.style.display='block';  
-    cands.forEach(c=>{const d=document.createElement('div');d.className='chip';  
-      d.innerHTML=(c.poster_url?'<img src="'+c.poster_url+'">':'')+'<span>'+c.title+' ('+(c.release_year||'?')+')</span>';  
-      d.onclick=()=>choose(c.tmdb_id,c.media_type);box.appendChild(d);});  
-  } else {side.style.display='none';}  
+  renderCands();  
 }  
 async function preview(){URL_=document.getElementById('url').value.trim();if(!URL_)return;  
+  TMDB_ID=null;CANDS=[];document.getElementById('recs').style.display='none';  
   log('Building preview...');const r=await post('/preview',{url:URL_});  
-  if(r.error){log(r.error);return;}show(r.record,r.candidates);log('Preview ready. Pick a "did you mean" match if the cover/year is wrong.');}  
-async function choose(id,mt){log('Fetching chosen match...');const r=await post('/choose',{url:URL_,tmdb_id:id,media_type:mt});  
-  if(r.error){log(r.error);return;}RECORD=r.record;show(r.record,null);document.getElementById('side').style.display='block';}  
+  if(r.error){log(r.error);return;}  
+  CANDS=r.candidates||[];show(r.record);  
+  log('Preview ready. Pick a "did you mean" match if the cover/year is wrong.');}  
+async function choose(id,mt){TMDB_ID=id;MEDIA_TYPE=mt||'Movie';log('Fetching chosen match...');  
+  const r=await post('/choose',{url:URL_,tmdb_id:id,media_type:mt});  
+  if(r.error){log(r.error);return;}  
+  show(r.record);  // CANDS is preserved, so the sidebar stays populated  
+  log('Match updated. You can switch again or Confirm & add.');}  
 async function commit(){if(!RECORD)return;RECORD.id=document.getElementById('rid').value.trim();  
   log('Committing...');const r=await post('/commit',{record:RECORD,download:document.getElementById('dl').checked,overwrite:document.getElementById('ow').checked});  
-  log(r);}  
-function cancel(){RECORD=null;document.getElementById('card').style.display='none';  
-  document.getElementById('side').style.display='none';log('Cancelled. Nothing was written.');}  
+  log(r);  
+  if(!r.error && TMDB_ID){loadRecs();}}  
+async function loadRecs(){  
+  const r=await post('/recommendations',{tmdb_id:TMDB_ID,media_type:MEDIA_TYPE});  
+  const wrap=document.getElementById('recs'),box=document.getElementById('recbox');  
+  box.innerHTML='';  
+  if(r.error){return;}  
+  const recs=r.recommendations||[];  
+  if(!recs.length){wrap.style.display='none';return;}  
+  wrap.style.display='block';  
+  recs.forEach(c=>{const d=document.createElement('div');d.className='chip';  
+    d.innerHTML=(c.poster_url?'<img src="'+c.poster_url+'">':'')+'<span>'+c.title+' ('+(c.release_year||'?')+')</span>';  
+    d.title='Click to search for a source link for this title';  
+    d.onclick=()=>{document.getElementById('url').value=c.title;  
+      log('Paste a source URL for "'+c.title+'" then press Preview.');};  
+    box.appendChild(d);});  
+}  
+function cancel(){RECORD=null;CANDS=[];TMDB_ID=null;document.getElementById('card').style.display='none';  
+  document.getElementById('side').style.display='none';document.getElementById('recs').style.display='none';log('Cancelled. Nothing was written.');}  
 </script></body></html>"""  
   
   
@@ -152,6 +185,20 @@ def commit():
         return jsonify(report)  
     except Exception as exc:  # noqa: BLE001  
         return jsonify({"error": f"Commit failed: {exc!r}"})  
+  
+  
+@app.route("/recommendations", methods=["POST"])  
+def recommendations():  
+    data = request.get_json(force=True) or {}  
+    tmdb_id = data.get("tmdb_id")  
+    media_type = data.get("media_type", "Movie")  
+    if not tmdb_id:  
+        return jsonify({"recommendations": []})  
+    try:  
+        recs = _session.recommendations(tmdb_id, media_type)  
+        return jsonify({"recommendations": recs})  
+    except Exception as exc:  # noqa: BLE001  
+        return jsonify({"error": f"Recommendations failed: {exc!r}"})  
   
   
 def run():  

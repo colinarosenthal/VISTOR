@@ -447,3 +447,77 @@ can pull from any backend (Internet Archive, YouTube, Smithsonian, etc.),
 (2) a rolling acquisition loop that keeps the window filled and evicts  
 aired content, and (3) channel-spec discovery over the existing catalog.  
 Catalogue expansion layers on top of these once metadata ingest exists.
+
+## Recommended Media (Automatic Catalogue Expansion)  
+  
+VISTOR should eventually be able to grow its own catalogue rather than  
+relying entirely on manual ingest through the drag-and-drop web UI. When  
+enabled, VISTOR would use an existing catalogued item as a seed, ask an  
+authoritative source (TMDB "recommendations"/"similar", IMDb) for related  
+titles, and surface them as suggestions for new programming.  
+  
+This builds directly on the existing RecordBuilder -> TMDBSource ->  
+MediaIngestor seam and is the concrete first slice of the "Catalogue  
+Expansion (Future)" item already noted at the end of this document.  
+  
+### Pipeline  
+  
+1. Seed selection - pick a catalogued MediaItem (or a whole channel spec)  
+   to base recommendations on.  
+2. Suggestion - query TMDB/IMDb for similar/recommended titles and build  
+   provisional metadata records (no asset yet).  
+3. Source discovery - for each accepted suggestion, search public archives  
+   (YouTube, Internet Archive, etc.) for a suitable URL, reusing the ranked  
+   multi-archive source model.  
+4. Acquisition - download, probe, and fingerprint via the normal ingest  
+   pipeline, then commit into media.json.  
+  
+### Autonomy Levels  
+  
+Because fully-automatic URL discovery is risky, the feature should ship in  
+graduated modes:  
+  
+- Suggest Only - recommendations appear in a queue; nothing is downloaded  
+  until a human confirms (same confirm step as the web UI today).  
+- Assisted - VISTOR finds candidate URLs automatically but still waits for  
+  confirmation before committing.  
+- Automatic - VISTOR discovers a URL, ingests, and commits with no  
+  interaction, feeding new similar shows straight into broadcasts.  
+  
+### Possible Settings  
+  
+Recommended Media:  
+On / Off  
+  
+Recommendation Mode:  
+Suggest Only / Assisted / Automatic  
+  
+Seed Source:  
+Whole Library / Per Channel / Specific Titles  
+  
+Max Auto-Additions Per Week:  
+(numeric limit)  
+  
+### Relationship to the Management Website and TV Settings Menu  
+  
+These toggles are part of a larger planned management surface. Two distinct  
+front-ends are envisioned:  
+  
+- Management Website - a full system console (separate from add_media_web)  
+  for editing every setting, including commercial-playback rules from the  
+  Design Bible and the Recommended Media toggles above.  
+- TV Settings Menu - the same settings viewable/toggleable on the  
+  television itself, mapped to a dedicated remote button, so the operator  
+  never needs a keyboard. A future USB mode could let the TV ingest media  
+  directly from a plugged-in drive of supported file types.  
+  
+The ingest/authoring surfaces remain separate from the TV-viewing runtime,  
+consistent with how src/ingest is already documented as "NOT part of the  
+TV-viewing runtime."  
+  
+### Deferral Note  
+  
+Full automation depends on reliable source discovery and a real settings/  
+config persistence layer (the current Config.load() is a placeholder). The  
+first buildable slice is Suggest Only over the known TMDB "recommendations"  
+endpoint, with a persisted `recommended_media` toggle.
