@@ -48,7 +48,8 @@ class RecordBuilder:
         "Episode": "Episodes",  
         "MusicVideo": "MusicVideos",  
         "Commercial": "Commercials",  
-    }  
+        "Ambient": "Ambient",  
+    } 
   
     def __init__(  
         self,  

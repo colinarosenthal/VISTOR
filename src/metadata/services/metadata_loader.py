@@ -11,12 +11,12 @@ a fully populated MetadataLibrary instance.
   
 import json  
   
-from pathlib import Path    
+from pathlib import Path  
   
 from core.logger import Logger  
-
-from metadata.services.metadata_library import MetadataLibrary
-
+  
+from metadata.services.metadata_library import MetadataLibrary  
+  
 # Vocabulary  
 from metadata.vocabulary.genre import Genre  
 from metadata.vocabulary.country import Country  
@@ -41,9 +41,10 @@ from metadata.media.film.movie import Movie
 from metadata.media.television.episode import Episode  
 from metadata.media.advertising.commercial import Commercial  
 from metadata.media.music.music_video import MusicVideo  
-
+from metadata.media.miscellaneous.ambient import Ambient  
+  
 from metadata.relationships.media_asset import MediaAsset  
-from metadata.enums.download_status import DownloadStatus
+from metadata.enums.download_status import DownloadStatus  
   
   
 class MetadataLoader:  
@@ -277,7 +278,7 @@ class MetadataLoader:
             parent = theme_lookup.get(parent_name)  
   
             if child is not None and parent is not None:  
-                child.parent_theme = parent 
+                child.parent_theme = parent  
   
     def _load_tags(  
         self,  
@@ -557,6 +558,13 @@ class MetadataLoader:
                     release_year=item.get("release_year", 0),  
                     runtime_minutes=item.get("runtime_minutes", 0),  
                 )  
+            elif media_type == "Ambient":  
+                obj = Ambient(  
+                    id=item["id"],  
+                    title=item["title"],  
+                    release_year=item.get("release_year", 0),  
+                    runtime_minutes=item.get("runtime_minutes", 30),  
+                )  
             elif media_type == "Episode":  
                 season = seasons.get(item.get("season"))  
   
@@ -576,10 +584,10 @@ class MetadataLoader:
                 continue  
   
             obj.description = item.get("description", "")  
-            obj.scheduling_priority = item.get("scheduling_priority", 0)
-
+            obj.scheduling_priority = item.get("scheduling_priority", 0)  
+  
             for asset_data in item.get("assets", []):  
-                obj.add_media_asset(MediaAsset.from_dictionary(asset_data)) 
+                obj.add_media_asset(MediaAsset.from_dictionary(asset_data))  
   
             # Stash flattened refs for _resolve_relationships.  
             obj._pending = item  
@@ -589,7 +597,7 @@ class MetadataLoader:
     # ------------------------------------------------------------------  
     # Relationship Resolution  
     # ------------------------------------------------------------------  
-
+  
     def _resolve_relationships(  
         self,  
         library: MetadataLibrary,  
@@ -606,9 +614,9 @@ class MetadataLoader:
         products = {p.get_id(): p for p in library.get_products()}  
         campaigns = {c.get_id(): c for c in library.get_campaigns()}  
         franchises = {f.get_id(): f for f in library.get_franchises()}  
-        music_genres = {g.get_name(): g for g in library.get_music_genres()}
-        people = {p.get_id(): p for p in library.get_people()}
-        studios = {s.get_id(): s for s in library.get_studios()}
+        music_genres = {g.get_name(): g for g in library.get_music_genres()}  
+        people = {p.get_id(): p for p in library.get_people()}  
+        studios = {s.get_id(): s for s in library.get_studios()}  
   
         for item in library.get_media():  
   
@@ -659,12 +667,12 @@ class MetadataLoader:
   
             network = pending.get("original_network")  
             if network in networks:  
-                item.set_original_network(networks[network])
-
+                item.set_original_network(networks[network])  
+  
             for sid in pending.get("studios", []):  
                 if sid in studios:  
-                    item.add_studio(studios[sid])
-
+                    item.add_studio(studios[sid])  
+  
             from metadata.relationships.appearance import Appearance  
             from metadata.enums.role_type import RoleType  
   
@@ -689,6 +697,6 @@ class MetadataLoader:
                     role_name=app.get("role_name", ""),  
                     billing_order=app.get("billing_order", 0),  
                     credited=app.get("credited", True),  
-                ))
+                ))  
   
             del item._pending
