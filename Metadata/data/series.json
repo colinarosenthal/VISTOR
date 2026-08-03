@@ -6,13 +6,5 @@
         "description": "Example series for default metadata.",
         "premiere_year": 1990,
         "finale_year": 0
-    },
-    {
-        "id": "tmdb-tv-890",
-        "title": "Neon Genesis Evangelion",
-        "franchise": "tmdb-tv-890-franchise",
-        "description": "At the turn of the century, the Angels returned to Earth, seeking to wipe out humanity in an apocalyptic fury. Devastated, mankind's last remnants moved underground to wait for the day when the Angels would come back to finish the job. Fifteen years later, that day has come... but this time, humanity is ready to fight back with terrifying bio-mechanical weapons known as the Evangelions. Watch as Shinji, Rei, Asuka and the rest of the mysterious shadow agency Nerv battle to save earth from total annihilation.",
-        "premiere_year": 1995,
-        "finale_year": 0
     }
 ]

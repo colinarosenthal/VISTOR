@@ -2,7 +2,7 @@
 
 **Project Status:** Pre-Alpha
 
-**Current Version:** 0.6.0
+**Current Version:** 0.7.0
 
 **Last Updated:** July 31, 2026
 
@@ -482,7 +482,12 @@ VISTOR provides a cable television user interface.
 - [x] Graceful Offline Degradation (no API key / no network -> fall back)      
 - [x] TMDB Candidate List (search_candidates -> "did you mean ...?" picker)      
 - [x] TMDB Lookup-by-ID (user-chosen candidate -> full credits + poster)      
-- [x] Poster / Cover Art (poster_url on normalized results)      
+- [x] Poster / Cover Art (poster_url on normalized results)
+- [x] MusicBrainz Lookup Backend (keyless music recording lookup for MusicVideo)        
+- [x] CompositeSource (ranked chain: TMDB for film/TV, MusicBrainz for music)        
+- [x] Type-Routed Enrichment (media type selects the authoritative backend)        
+- [x] MusicBrainz Original-Year Precedence (release-group earliest date over re-issues)        
+- [x] MusicBrainz Genre Mapping (artist genres/tags -> controlled MusicGenre)
 - [ ] TMDB Year+Match Scoring (smarter default pick, not just results[0])      
 - [ ] IMDb / Wikidata Backends — deferred      
 - [ ] LLM Classifier Backend — deferred  
@@ -871,3 +876,19 @@ the `(provider, reference)` pair the fetchers expect (youtu.be & `watch?v=` -> y
 - Fixed a year-precedence regression introduced by the router swap: dropping the Redline link again correctly returns `release_year` 2009 instead of the scraped 2019.  
 - Recorded the Recommended Media feature (auto-suggest / future auto-acquire toggle) in `Docs/Ideas.md`.  
 - Verified: `EnrichmentRouter().lookup('Redline', media_type='Movie')` returns 2009 with full genres, `RecordBuilder().build(...)` returns 2009, and `IngestSession.recommendations(11970, 'Movie')` returns 8 candidates with the config toggle on.
+- Added enrichment backends sports_source.py / musicbrainz_source.py / wikipedia_source.py, each returning the same normalized dict shape as TMDBSource.lookup() and degrading to None offline; enrichment/__init__.py exports them plus EnrichmentRouter, and record_builder.py builds MetadataEnricher(EnrichmentRouter()).  
+- Replaced the placeholder Config.load() (was `pass`) with JSON load/save and a recommended_media toggle (recommendation_mode default "suggest_only"); added RecommendationSource (TMDB /recommendations) wired into IngestSession so the web UI can surface a config-gated "You might also add..." list.  
+- Added Ambient as the first persistable non-TMDB type: metadata_loader.py reconstructs Ambient records, MetadataSerializer already emits the correct type via type(item).__name__ (no change needed), and RecordBuilder.LOCAL_DIRS gained an Ambient folder mapping — verified the serializer round-trips type "Ambient".
+
+---    
+    
+## 2026-08-03    
+    
+- Added `MusicBrainzSource`, a free/keyless authoritative backend that enriches `MusicVideo` records TMDB structurally cannot match, returning the true original release year and a controlled `MusicGenre`.    
+- Added `CompositeSource` and `default_source()` presenting a ranked chain (TMDB for film/TV, MusicBrainz for music) to `MetadataEnricher` as a single source.    
+- Routed enrichment by media type in `RecordBuilder`: the classifier's type is resolved first, then the authoritative backend appropriate for that type runs.    
+- Pinned the true original release year (1996 for Jamiroquai "Virtual Insanity" instead of the 2009 upload year) by adding a release-group search and taking the earliest first-release-date across recording/releases/release-groups.    
+- Carried the specific `music_genre` style through `MetadataEnricher.enrich()` and displayed it on the web preview card, and prioritized artist-level genres/tags so styles resolve correctly.    
+- Cleaned scraped YouTube descriptions: stripped subscribe/WATCH/social URL lines and trailing hashtag blocks while preserving lyrics with real line breaks (`white-space:pre-wrap`).    
+- Captured the YouTube thumbnail as `poster_url` (display-only; popped before `media.json` write) so music-video previews show a cover.    
+- Verified end-to-end via the web UI: dropped the Jamiroquai link and got `MusicVideo - 1996 - Jazz`, a cleaned lyrics description, a thumbnail, and `1 added / 1 downloaded` on commit.

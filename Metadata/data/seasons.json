@@ -6,13 +6,5 @@
         "title": "Season 1",
         "description": "",
         "premiere_year": 1990
-    },
-    {
-        "id": "tmdb-tv-890-s1",
-        "series": "tmdb-tv-890",
-        "season_number": 1,
-        "title": "Season 1",
-        "description": "",
-        "premiere_year": 1995
     }
 ]

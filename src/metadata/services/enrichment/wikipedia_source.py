@@ -11,12 +11,13 @@ Docs: https://en.wikipedia.org/api/rest_v1/
   
 from urllib.parse import quote  
   
-from core.logger import Logger  
+from core.logger import Logger
+from metadata.services.enrichment.authoritative_source import AuthoritativeSource 
   
 _BASE = "https://en.wikipedia.org/api/rest_v1/page/summary"  
   
   
-class WikipediaSource:  
+class WikipediaSource(AuthoritativeSource):  
     """Best-effort description lookup. Never raises to the caller."""  
   
     def __init__(self, timeout=10):  

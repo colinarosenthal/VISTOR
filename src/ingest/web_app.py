@@ -38,6 +38,7 @@ _PAGE = """<!doctype html>
  .ok{background:#2e7d32;color:#fff}.no{background:#7d2e2e;color:#fff}  
  label{font-size:13px;color:#aaa}  
  pre{white-space:pre-wrap;background:#000;padding:10px;border-radius:6px;max-height:220px;overflow:auto}  
+ #desc{white-space:pre-wrap;max-height:220px;overflow:auto}
  #recs{margin-top:20px;background:#1a1a1a;border:1px solid #333;border-radius:10px;padding:16px}  
 </style></head><body><div class="wrap">  
  <h2>VISTOR - Add Media</h2>  
@@ -98,7 +99,7 @@ function show(rec){
   document.getElementById('card').style.display='block';  
   document.getElementById('cover').src=rec.poster_url||'';  
   document.getElementById('t').textContent=rec.title||'';  
-  document.getElementById('meta').textContent=(rec.type||'')+' - '+(rec.release_year||'?')+' - '+((rec.genres||[]).join(', ')||'no genres');  
+  document.getElementById('meta').textContent=(rec.type||'')+' - '+(rec.release_year||'?')+' - '+(rec.music_genre||((rec.genres||[]).join(', '))||'no genres');
   document.getElementById('desc').textContent=rec.description||'';  
   document.getElementById('rid').value=rec.id||'';  
   renderCands();  

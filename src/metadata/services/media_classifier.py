@@ -98,13 +98,23 @@ class MediaClassifier:
         duration = scraped.get("duration") or 0  
         text = self._searchable_text(scraped)  
   
-        # Music category: short -> music video, long -> still a Movie-length  
-        # concert film, which the loader can hold as a Movie.  
-        if "music" in categories:  
-            if duration and duration <= _MUSIC_VIDEO_MAX_SECONDS:  
-                return self._log_guess("MusicVideo", "YouTube category=Music, short")  
-            if any(k in text for k in ("music video", "official video")):  
-                return self._log_guess("MusicVideo", "music-video title keyword")  
+        is_music_category = "music" in categories  
+        has_music_title = any(  
+            k in text  
+            for k in ("official video", "official music video", "music video")  
+        )  
+  
+        # Music video: YouTube category=Music OR a music-video title keyword.  
+        # Short -> MusicVideo; feature-length -> concert film held as a Movie.  
+        if is_music_category or has_music_title:  
+            if not duration or duration <= _MUSIC_VIDEO_MAX_SECONDS:  
+                reason = (  
+                    "YouTube category=Music"  
+                    if is_music_category  
+                    else "music-video title keyword"  
+                )  
+                return self._log_guess("MusicVideo", reason)  
+            return self._log_guess("Movie", "long-form music content")  
   
         # Long-form film & animation -> Movie.  
         if "film & animation" in categories:  
@@ -116,7 +126,7 @@ class MediaClassifier:
             return self._log_guess("Movie", "duration >= 70min")  
   
         # Undecidable: let RecordBuilder fall back to its default/override.  
-        return None  
+        return None 
   
     def classify_genres(self, scraped):  
         """  

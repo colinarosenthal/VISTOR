@@ -204,12 +204,20 @@ src/
     engine/  
     scheduler/  
     metadata/  
+    channel/  
+    player/  
+    osd/  
+    remote/  
+    guide/  
+    ingest/  
     main.py  
 ```  
   
-The `core/`, `engine/`, `scheduler/`, and `metadata/` packages are implemented. Additional subsystems (Player, Channel Manager, OSD, Weather, Remote, Guide) are planned but not yet present in the source tree; they are documented in Section 8.  
-  
----  
+The `core/`, `engine/`, `scheduler/`, and `metadata/` packages are implemented,  
+along with the broadcast-runtime subsystems `channel/`, `player/`, `osd/`,  
+`remote/`, and `guide/`, and the `ingest/` package that drives metadata  
+acquisition (web UI + ingest session). Each subsystem's current responsibility  
+is described in Section 8. The Weather subsystem remains planned.
   
 ## 3.2 Dependency Direction  
   
@@ -365,6 +373,8 @@ classifications, not per-item descriptions:
 - audience.py           Audience  
 - commercial_type.py    CommercialType  
 - role_type.py          RoleType  
+- download_status.py    DownloadStatus — asset availability state               (NOT_DOWNLOADED, 
+                    DOWNLOADING, DOWNLOADED, FAILED) 
   
 ## 7.4 Vocabulary  
   
@@ -432,6 +442,8 @@ the franchise → series → season chain being present to reconstruct.
   
 ## 7.8 Services  
   
+Core metadata services:  
+  
 - metadata_library.py    MetadataLibrary — central in-memory container for all  
                          loaded objects (media, people, networks, studios,  
                          vocabulary buckets, relationships) with add_/get_  
@@ -442,6 +454,36 @@ the franchise → series → season chain being present to reconstruct.
 - metadata_validator.py  MetadataValidator — integrity checks over loaded data  
 - metadata_serializer.py MetadataSerializer — flattens objects to JSON  
 - metadata_loader.py     MetadataLoader — reconstructs the library from disk  
+  
+Acquisition and content-management services:  
+  
+- source_resolver.py     SourceResolver — walks an asset's ranked sources and  
+                         downloads from the first that responds  
+- media_ingestor.py      MediaIngestor — merges dropped records into media.json  
+                         and resolves their assets (download-on-confirm)  
+- media_fetcher.py       MediaFetcher — high-level fetch coordinator  
+- media_scanner.py       MediaScanner — scans the Media/ tree for files  
+- media_associator.py    MediaAssociator — links scanned files to media by  
+                         manifest  
+- media_verifier.py      MediaVerifier — confirms declared assets exist on disk  
+                         (includes normalize_filename)  
+- media_validator.py     MediaValidator — validates media/asset integrity and  
+                         resolves dangling assets (drop/flag)  
+- media_classifier.py    MediaClassifier — infers media type/fields  
+- media_describer.py     MediaDescriber — generates descriptive text  
+- record_builder.py      RecordBuilder — assembles ingest records  
+- link_resolver.py       LinkResolver — resolves candidate source links  
+- asset_scorer.py        AssetScorer — computes Broadcast and Retention scores  
+- rolling_cache.py       RollingCache — plans the in-window download backlog  
+- channel_discovery.py   ChannelDiscovery — determines channel membership  
+- keyframe_fingerprint.py KeyframeFingerprintService — generates/compares  
+                         permanent keyframe fingerprints  
+- acquisition_loop.py    AcquisitionLoop — background acquisition driver  
+  
+Sub-packages:  
+  
+- fetchers/     Provider-specific download implementations (Section 7.11)  
+- enrichment/   MetadataEnricher + authoritative sources (TMDBSource)
   
 ## 7.9 Serialization and Loading Round-Trip  
   
@@ -532,7 +574,7 @@ services/fetchers/
     metadata_probe.py              MetadataProbe — ffprobe/mutagen extraction    
     internet_archive_fetcher.py    InternetArchiveFetcher (rank 1)    
     youtube_fetcher.py             YouTubeFetcher (rank 2, yt-dlp)    
-    generic_http_fetcher.py        GenericHttpFetcher (catch-all)    
+    http_fetcher.py        HttpFetcher (catch-all)    
     provider_registry.py           ProviderRegistry — provider -> fetcher    
     real_fetcher.py                RealFetcher — SourceResolver entry point    
 ```  
@@ -542,8 +584,8 @@ services/fetchers/
   fetcher and forwards the target MediaAsset so technical fields are populated    
   on success.    
 - ProviderRegistry maps a source's `provider` string to a concrete fetcher.    
-  Known providers are `internet_archive`, `youtube`, and `generic_http` /    
-  `direct_url`; unknown providers fall back to GenericHttpFetcher, which treats    
+  Known providers are `internet_archive`, `youtube`, and `http` /    
+  `direct_url`; unknown providers fall back to HttpFetcher, which treats    
   the reference as a direct URL so effectively any website is downloadable.    
 - Providers are ranked by reliability. Internet Archive is preferred first    
   because its references are stable and dated; YouTube is second via yt-dlp;    
@@ -581,9 +623,9 @@ SourceResolver.resolve(asset)
         ProviderRegistry.get(provider)    
             internet_archive -> InternetArchiveFetcher    
             youtube          -> YouTubeFetcher (yt-dlp)    
-            generic_http     -> GenericHttpFetcher    
-            direct_url       -> GenericHttpFetcher    
-            <unknown>        -> GenericHttpFetcher (fallback)    
+            http     -> HttpFetcher    
+            direct_url       -> HttpFetcher    
+            <unknown>        -> HttpFetcher (fallback)    
                 BaseFetcher.fetch()    
                     1. temp-download to Media/tmp/    
                     2. verify (status 200, non-empty)    
@@ -660,31 +702,34 @@ network.
 
 # 8. Subsystems  
   
-The following subsystems are defined in VISTOR's architecture but are not  
-yet implemented. Each has a reserved location in the source tree and a  
-single, well-defined responsibility it will assume once built.  
+The following subsystems have reserved locations in the source tree. All but  
+Weather are now implemented and exercised by the root smoke test.  
   
 ## 8.1 Player  
   
-**Status:** Not yet implemented.  
+**Status:** Implemented (`src/player/`).  
   
-Will handle media playback, decoding, and transport control (play, pause,  
-seek). Consumes the ProgrammingBlock selected by the Scheduler and reports  
-playback position back to the runtime loop.  
+`player.py` (Player) handles transport control — load_next, play, tick,  
+position/duration tracking, volume, and mute — over a PlaybackState machine.  
+`playback_queue.py` (PlaybackQueue) manages the ordered sequence of media the  
+Player consumes. The Player never makes scheduling decisions.  
   
 ## 8.2 Channel Manager  
   
-**Status:** Not yet implemented.  
+**Status:** Implemented (`src/channel/`).  
   
-Will manage the set of available channels, channel selection, and the  
-mapping between a channel and its active Schedule.  
+`channel.py` (Channel) pairs a Scheduler, PlaybackQueue, and Player so each  
+channel progresses in real time. `channel_manager.py` (ChannelManager) owns the  
+set of channels and handles channel_up/down, numeric jump, and previous-channel.  
+`channel_loader.py` builds channels from ChannelConfigs/channels.json.  
   
 ## 8.3 OSD (On-Screen Display)  
   
-**Status:** Not yet implemented.  
+**Status:** Implemented (`src/osd/`).  
   
-Will render on-screen overlays such as the channel bumper, clock, and  
-now-playing information over the active video output.  
+`osd_manager.py` (OSDManager) renders overlays — channel banner, volume, mute,  
+program info, and clock — with fade-in/hold/fade-out phases (OSDPhase) and  
+smoothstep opacity easing.  
   
 ## 8.4 Weather  
   
@@ -695,55 +740,44 @@ integrating with the metadata WeatherSegment media type.
   
 ## 8.5 Remote  
   
-**Status:** Not yet implemented.  
+**Status:** Implemented (`src/remote/`).  
   
-Will translate physical or virtual remote input into commands (channel up  
-or down, power, menu) dispatched to the runtime.  
+`remote_controller.py` (RemoteController) translates key presses (channel_up/  
+down, digit entry + enter, prev, clock, volume, mute) into commands dispatched  
+to the ChannelManager and Engine. Unknown keys warn rather than crash.  
   
 ## 8.6 Guide  
   
-**Status:** Not yet implemented.  
+**Status:** Implemented (`src/guide/`).  
   
-Will present an electronic program guide built from the Scheduler's  
-ProgrammingBlocks across channels.  
-  
----  
+`guide.py` (Guide) builds one row per channel from the ChannelManager + Clock,  
+exposing current/upcoming program labels, a 12-hour time string, and clamped  
+up/down cursor navigation.
   
 # 9. Testing  
   
 VISTOR currently uses a smoke-test script rather than a formal test  
 framework.  
   
-## 9.1 test_metadata.py  
+## 9.1 test.py  
   
-Located at the repository root, test_metadata.py exercises the metadata  
-layer end to end. It runs from the repo root with:  
+Located at the repository root, test.py exercises the metadata layer and the  
+broadcast-runtime subsystems end to end. It runs from the repo root with:  
   
-    python test_metadata.py  
+    python test.py  
   
 The script verifies, in order:  
   
-- Metadata imports resolve across enums, vocabulary, library, media,  
-  relationships, and services.  
-- Core models construct correctly (Person, MediaItem, Appearance).  
-- Collections and MediaLibrary catalog behavior.  
-- MetadataLibrary bucket storage and retrieval.  
-- MetadataSearch lookups.  
-- MetadataSerializer.to_dictionary output shape.  
-- MetadataValidator passes on populated data.  
-- MetadataPopulation.build_library assembles movies, episodes, music  
-  videos, and commercials with shared references intact.  
-- A full serialization round-trip: a populated library is written to disk  
-  with save_to_directory and reloaded with MetadataLoader, confirming the  
-  reconstructed objects and their references match.  
+- Metadata imports, model construction (Person, MediaItem, Appearance), collections, MediaLibrary, MetadataLibrary, MetadataSearch, MetadataSerializer, MetadataValidator, and MetadataLoader.  
+- MetadataPopulation.build_library assembles movies, episodes, music videos, and commercials with shared references intact.  
+- A full serialization round-trip (save_to_directory -> MetadataLoader).  
+- Content services: MediaVerifier (+ filename normalization), MediaScanner, MediaAssociator, and MediaValidator.  
+- Broadcast runtime: Player + PlaybackQueue, the Engine broadcast pipeline, ChannelManager time-sync, RemoteController, OSDManager (overlays + fade  
+  animations), and the TV Guide.  
+- Intelligent content management: asset persistence (download status, pinning, Broadcast/Retention scores, sources) and keyframe fingerprinting.  
+- Source resolution + RealFetcher provider routing (offline via _FakeFetcher) and MediaIngestor write-back (download_status persisted to media.json).  
   
-A successful run ends with "All tests passed successfully."  
-  
-## 9.2 Testing Conventions  
-  
-- Tests should run without external services or network access.  
-- Each new subsystem should add its own smoke test at the repository root  
-  until a formal test framework is adopted.  
+A successful run ends with "All tests passed successfully."
   
 ---  
   
@@ -757,15 +791,12 @@ A successful run ends with "All tests passed successfully."
 ## 10.2 Code Style  
   
 - Follow the formatting rules in Section 2 (Coding Standards).  
-- Dependencies point downward through the architecture; higher-level  
-  subsystems depend on lower-level ones, never the reverse.  
+- Dependencies point downward through the architecture; higher-level subsystems depend on lower-level ones, never the reverse.  
   
 ## 10.3 Documentation  
   
-- Update this Developer Guide when a subsystem's implementation status  
-  changes (for example, moving a component out of Section 8 once built).  
-- Keep the Design Bible focused on vision and philosophy; implementation  
-  detail belongs here.  
+- Update this Developer Guide when a subsystem's implementation status changes (for example, moving a component out of Section 8 once built).  
+- Keep the Design Bible focused on vision and philosophy; implementation detail belongs here.  
   
 ---  
   

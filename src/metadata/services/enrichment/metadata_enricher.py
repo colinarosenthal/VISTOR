@@ -35,7 +35,7 @@ class MetadataEnricher:
         if not title:  
             return record  
   
-        # Only constrain the TMDB search by year when the year is an explicit  
+        # Only constrain the search by year when the year is an explicit  
         # override. A provisional (scraped) year - e.g. a YouTube upload date -  
         # would wrongly filter out the true release, so drop it from the query.  
         search_year = record.get("release_year") or None  
@@ -55,17 +55,18 @@ class MetadataEnricher:
         self._fill(record, "runtime_minutes", result.get("runtime_minutes"), provisional)  
         self._fill(record, "description", result.get("description"), provisional)  
         self._fill(record, "type", result.get("media_type"), provisional)  
+        self._fill(record, "music_genre", result.get("music_genre"), provisional)  
   
         # Genres: replace when empty OR still a provisional classifier guess.  
         if result.get("genres") and (  
             not record.get("genres") or "genres" in provisional  
         ):  
-            record["genres"] = list(result["genres"])
-
+            record["genres"] = list(result["genres"])  
+  
         # Carry authoritative credits/studios straight through (raw lists).  
         for key in ("cast", "crew", "studios"):  
             if result.get(key) and not record.get(key):  
-                record[key] = list(result[key])
+                record[key] = list(result[key])  
   
         Logger.info(f"Enriched '{title}' from authoritative source.")  
         return record  

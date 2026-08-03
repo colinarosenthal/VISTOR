@@ -58,54 +58,66 @@ class IngestSession:
             return []  
         return self.recommender.recommend(tmdb_id, media_type=media_type)  
   
-    def build_from_tmdb(self, url, tmdb_id, media_type="Movie"):    
-        """    
-        Assemble a record from a specific TMDB candidate the user clicked,    
-        keeping the original link as the download source. Falls back to the    
-        normal builder if the authoritative lookup returns nothing.    
-        """    
+    def build_from_tmdb(self, url, tmdb_id, media_type="Movie"):  
+        """  
+        Assemble a record from a specific TMDB candidate the user clicked,  
+        keeping the original link as the download source. Falls back to the  
+        normal builder if the authoritative lookup returns nothing.  
+        """  
   
-        provider, reference = self.resolver.resolve(url)    
-        info = self.tmdb.lookup_by_id(tmdb_id, media_type=media_type)    
+        provider, reference = self.resolver.resolve(url)  
+        info = self.tmdb.lookup_by_id(tmdb_id, media_type=media_type)  
   
-        if not info:    
-            return self.builder.build(url)    
+        if not info:  
+            return self.builder.build(url)  
   
-        title = info.get("title", "") or "Untitled"    
-        media_id = _slugify(title)    
-        rtype = info.get("media_type") or media_type or "Movie"    
+        title = info.get("title", "") or "Untitled"  
+        media_id = _slugify(title)  
+        rtype = info.get("media_type") or media_type or "Movie"  
   
-        record = {    
-            "type": rtype,    
-            "id": media_id,    
-            "title": title,    
-            "description": info.get("description", ""),    
-            "release_year": info.get("release_year", 0),    
-            "runtime_minutes": info.get("runtime_minutes", 0),    
-            "scheduling_priority": 0,    
-            "genres": list(info.get("genres", [])),    
-            "tags": [],    
-            "themes": [],    
-            "languages": [],    
-            "cast": info.get("cast", []),    
-            "crew": info.get("crew", []),    
-            "studios": info.get("studios", []),    
-            "poster_url": info.get("poster_url", ""),    
-            "assets": [    
-                {    
-                    "asset_id": f"{media_id}-asset-1",    
-                    "path": self.builder._path_for(rtype, media_id),    
-                    "sources": [    
-                        {    
-                            "provider": provider,    
-                            "reference": reference,    
-                            "quality": "",    
-                            "date_posted": "",    
-                        }    
-                    ],    
-                }    
-            ],    
-        }    
+        # If TMDB gave no overview, let the enrichment chain (Wikipedia) fill  
+        # the description so the preview card is never blank.  
+        description = info.get("description", "")  
+        if not description:  
+            enriched = self.builder.enricher.enrich({  
+                "title": title,  
+                "type": rtype,  
+                "release_year": info.get("release_year", 0),  
+                "description": "",  
+            })  
+            description = enriched.get("description", "")  
+  
+        record = {  
+            "type": rtype,  
+            "id": media_id,  
+            "title": title,  
+            "description": description,  
+            "release_year": info.get("release_year", 0),  
+            "runtime_minutes": info.get("runtime_minutes", 0),  
+            "scheduling_priority": 0,  
+            "genres": list(info.get("genres", [])),  
+            "tags": [],  
+            "themes": [],  
+            "languages": [],  
+            "cast": info.get("cast", []),  
+            "crew": info.get("crew", []),  
+            "studios": info.get("studios", []),  
+            "poster_url": info.get("poster_url", ""),  
+            "assets": [  
+                {  
+                    "asset_id": f"{media_id}-asset-1",  
+                    "path": self.builder._path_for(rtype, media_id),  
+                    "sources": [  
+                        {  
+                            "provider": provider,  
+                            "reference": reference,  
+                            "quality": "",  
+                            "date_posted": "",  
+                        }  
+                    ],  
+                }  
+            ],  
+        }  
         return record    
   
     # ------------------------------------------------------------------    
