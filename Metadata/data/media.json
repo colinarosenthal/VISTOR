@@ -7,12 +7,22 @@
         "release_year": 1960,
         "runtime_minutes": 103,
         "scheduling_priority": 0,
-        "content_rating": null,
+        "content_rating": {
+            "system": "MPAA",
+            "name": "G"
+        },
         "original_network": null,
-        "production_country": null,
-        "languages": [],
-        "genres": [],
-        "tags": [],
+        "production_country": "United States",
+        "languages": [
+            "English"
+        ],
+        "genres": [
+            "Science Fiction",
+            "Adventure"
+        ],
+        "tags": [
+            "Widescreen"
+        ],
         "themes": [],
         "appearances": [],
         "assets": [],
@@ -27,11 +37,18 @@
         "release_year": 1990,
         "runtime_minutes": 22,
         "scheduling_priority": 0,
-        "content_rating": null,
-        "original_network": null,
-        "production_country": null,
-        "languages": [],
-        "genres": [],
+        "content_rating": {
+            "system": "TV Parental Guidelines",
+            "name": "TV-PG"
+        },
+        "original_network": "abc",
+        "production_country": "United States",
+        "languages": [
+            "English"
+        ],
+        "genres": [
+            "Comedy"
+        ],
         "tags": [],
         "themes": [],
         "appearances": [],
@@ -58,7 +75,7 @@
         "appearances": [],
         "assets": [],
         "studios": [],
-        "music_genre": null
+        "music_genre": "Jazz"
     },
     {
         "type": "Commercial",
@@ -78,7 +95,7 @@
         "appearances": [],
         "assets": [],
         "studios": [],
-        "advertiser": null,
+        "advertiser": "coca_cola",
         "product": null,
         "campaign": null
     },
@@ -90,11 +107,18 @@
         "release_year": 1990,
         "runtime_minutes": 22,
         "scheduling_priority": 0,
-        "content_rating": null,
-        "original_network": null,
-        "production_country": null,
-        "languages": [],
-        "genres": [],
+        "content_rating": {
+            "system": "TV Parental Guidelines",
+            "name": "TV-PG"
+        },
+        "original_network": "abc",
+        "production_country": "United States",
+        "languages": [
+            "English"
+        ],
+        "genres": [
+            "Comedy"
+        ],
         "tags": [],
         "themes": [],
         "appearances": [],
@@ -102,54 +126,5 @@
         "studios": [],
         "episode_number": 1,
         "season": "example_series_s1"
-    },
-    {
-        "type": "MusicVideo",
-        "id": "jamiroquai_virtual_insanity_official_video",
-        "title": "Jamiroquai - Virtual Insanity (Official Video)",
-        "description": "What we're living in?\nLemme tell ya\nYeah, it's a wonder man can eat at all\nWhen things are big that should be small\nWho can tell what magic spells we'll be doing for us\nAnd I'm giving all my love to this world\nOnly to be told\nI can't see, I can't breathe\nNo more will we be\nAnd nothing's gonna change the way we live\n'Cause we can always take, but never give\nAnd now that things are changing for the worse, see\nWhoa, it's a crazy world we're living in\nAnd I just can't see that half of us immersed in sin\nIs all we have to give these\nFutures made of virtual insanity, now\nAlways seem to be governed by this love we have\nFor these useless, twisting, of our new technology\nOh, now there is no sound, for we all live underground\nAnd I'm thinking what a mess we're in\nHard to know where to begin\nIf I could slip the sickly ties that earthly man has made\nAnd now every mother can choose the color\nOf her child, that's not nature's way\nWell, that's what they said yesterday\nThere's nothing left to do, but pray\nI think it's time to find a new religion\nWhoa, it's so insane\nTo synthesize another strain\nThere's something in these futures\nThat we have to be told\nFutures made of virtual insanity, now\nAlways seem to be governed by this love we have\nFor these useless, twisting, of our new technology\nOh, now there is no sound, for we all live underground, wow\nNow there is no sound\nIf we all live underground\nAnd now it's virtual insanity\nForget your virtual reality\nOh, there's nothing so bad\nAs a man-made man\nOh, yeah, I know, yeah (take it to the dance floor)\nI know I can't go on\nOf this virtual insanity we're living in\nHas got to change, yeah\nThings will never be the same\nAnd I can't go on\nWhere we're living in\nOh, oh, virtual insanity\nOh, this world\nHe's got to change\n'Cause I just\nI just can't keep going on in this virtual, virtual insanity\nThat we're living in, that we're living in\nAnd that virtual insanity is what is, yeah\nFutures made of virtual insanity, now\nAlways seem to be governed by this love we have\nFor these useless, twisting, of our new technology\nOh, now there is no sound, for we all live underground, oh\nFutures made of, now, virtual insanity\nNow we all, we seem to be governed by a love\nFor these useless, twisting, of our new technology\nAnd now there is no sound, for we all live underground\nYes, we do, oh\nnow this life that we live in\n(Virtual insanity) it's all going wrong\nOut of the window (living in)\nDo you know there is nothing worse than (virtual insanity)\na man-made man\n(Virtual insanity) there's nothing worse than\n(Living in) a foolish man\n(Virtual insanity) hey!\nVirtual insanity is what we're living in, yeah\nWell... It's alright",
-        "release_year": 1996,
-        "runtime_minutes": 4,
-        "scheduling_priority": 0,
-        "content_rating": null,
-        "original_network": null,
-        "production_country": null,
-        "languages": [],
-        "genres": [],
-        "tags": [],
-        "themes": [],
-        "appearances": [],
-        "assets": [
-            {
-                "asset_id": "jamiroquai_virtual_insanity_official_video-asset-1",
-                "path": "Media\\MusicVideos\\jamiroquai_virtual_insanity_official_video.mkv",
-                "checksum": "",
-                "runtime_seconds": 234,
-                "file_size": 153949955,
-                "video_codec": "av1",
-                "audio_codec": "opus",
-                "container": "",
-                "width": 2880,
-                "height": 2160,
-                "frame_rate": 25.0,
-                "verified": true,
-                "download_status": "DOWNLOADED",
-                "last_played": "",
-                "sources": [
-                    {
-                        "date_posted": "",
-                        "provider": "youtube",
-                        "quality": "",
-                        "reference": "4JkIs37a2JE"
-                    }
-                ],
-                "pinned": false,
-                "broadcast_score": 0.0,
-                "retention_score": 0.0,
-                "fingerprint": "57c106cec0cabf4aea62378aaee91fc6"
-            }
-        ],
-        "studios": [],
-        "music_genre": null
     }
 ]

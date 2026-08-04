@@ -15,6 +15,11 @@ The media TYPE is resolved BEFORE enrichment (explicit override, else the
 classifier's guess from the scrape) so the authoritative backend is chosen for  
 that type: movies/TV go to TMDB, music videos go to MusicBrainz. Both live in  
 the CompositeSource returned by default_source(), which is offline-safe.  
+  
+For MusicVideo records the caption (description) is lyrics-only: MusicBrainz  
+fills it from lyrics.ovh, and if that misses we leave it EMPTY rather than  
+falling back to the scraped blurb (e.g. an Internet Archive item description),  
+which would otherwise show unrelated text under a song.  
 """  
   
 import re  
@@ -129,10 +134,16 @@ class RecordBuilder:
             record["genres"] = self.classifier.classify_genres(scraped)  
   
         # --- Layer 4: SCRAPED INFO-DICT (LAST, above defaults) -----------  
-        self._fill(record, "description", scraped.get("description"))  
+        # For MusicVideo the caption/description must be LYRICS ONLY: if the  
+        # lyrics provider (lyrics.ovh, via MusicBrainzSource in Layer 2) found  
+        # nothing, leave description empty rather than backfilling the scraped  
+        # blurb (e.g. the Internet Archive item summary). All other types keep  
+        # the scraped description as a last-resort fill.  
+        if record["type"] != "MusicVideo":  
+            self._fill(record, "description", scraped.get("description"))  
         self._fill(record, "release_year", scraped.get("release_year"))  
         self._fill(record, "runtime_minutes", scraped.get("runtime_minutes"))  
-        self._fill(record, "poster_url", scraped.get("poster_url"))  
+        self._fill(record, "poster_url", scraped.get("poster_url"))
   
         # --- Layer 5: SAFE DEFAULTS (lowest) -----------------------------  
         if not record["type"]:  

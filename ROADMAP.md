@@ -458,6 +458,10 @@ VISTOR provides a cable television user interface.
 - [x] Record Builder (override > TMDB > classified > scraped > default)  
 - [x] Media Ingestor (dedupe-by-id, self-healing retry, write-back)  
 - [x] add_media CLI (link or JSON drop-in)  
+- [x] Archive-aware type heuristic (Internet Archive mediatype=movies is a weak Movie vote; an "Artist - Track" title shape plus a music subject/collection tag out-votes it)  
+- [x] Query title normalization (strip trailing MTV / (Official Video) / lyric-video noise before the MusicBrainz lookup)
+- [x] Archive-Aware Classifier (Archive mediatype=movies weak; Artist-Track + music collection/subject out-vote)  
+- [x] Internet Archive Signal Scrape (mediatype/collection/subject + thumbnail poster_url)
 
 ### Web Ingest UI  
   
@@ -468,7 +472,18 @@ VISTOR provides a cable television user interface.
 - [x] Overwrite-on-commit (replace existing id instead of dedupe-skip)  
 - [x] Launcher env bootstrap (winget ffmpeg PATH injection + TMDB_API_KEY + browser auto-open)  
 - [x] Genre vocabulary bootstrap fix (populate genres.json so relinking survives round-trip)  
+- [x] Media-type override dropdown (Auto / Movie / MusicVideo / Episode / Commercial) -> overrides["type"] (sticky Layer-1, forces the correct enricher regardless of source noise)
 - [ ] Persist vocabulary buckets automatically on setup (genres/tags/themes/countries/languages)
+
+### Content-Based Type Detection  
+  
+- [x] Provider Signal Surfacing (describer emits categories/duration/tags/channel + Archive mediatype/collection/subject)  
+- [x] ContentProfile (provider-agnostic normalized signal bag)  
+- [x] TypeScorer (weighted multi-signal voting -> highest-confidence type)  
+- [x] Confidence Floor + Tie Handling (undecidable -> defer to default/override)  
+- [x] Internet Archive MusicVideo Detection (music bucket + 'artist - track' shape)  
+- [x] AcoustID / Chromaprint Audio Refiner (download-stage, definitive music match) — deferred  
+- [x] Per-signal Weight Tuning from a labeled sample set — deferred
   
 ### Authoritative Enrichment    
     
@@ -488,6 +503,9 @@ VISTOR provides a cable television user interface.
 - [x] Type-Routed Enrichment (media type selects the authoritative backend)        
 - [x] MusicBrainz Original-Year Precedence (release-group earliest date over re-issues)        
 - [x] MusicBrainz Genre Mapping (artist genres/tags -> controlled MusicGenre)
+- [x] MusicBrainz Original-Type Preference (Single/Album/EP over compilation re-issues)  
+- [x] Title Noise Stripping (bare trailing MTV/VEVO/HD/HQ/4K before MusicBrainz + lyrics queries)  
+- [x] Lyrics Enrichment (keyless lyrics.ovh -> MusicVideo caption via canonical artist/track)
 - [ ] TMDB Year+Match Scoring (smarter default pick, not just results[0])      
 - [ ] IMDb / Wikidata Backends — deferred      
 - [ ] LLM Classifier Backend — deferred  
@@ -892,3 +910,40 @@ the `(provider, reference)` pair the fetchers expect (youtu.be & `watch?v=` -> y
 - Cleaned scraped YouTube descriptions: stripped subscribe/WATCH/social URL lines and trailing hashtag blocks while preserving lyrics with real line breaks (`white-space:pre-wrap`).    
 - Captured the YouTube thumbnail as `poster_url` (display-only; popped before `media.json` write) so music-video previews show a cover.    
 - Verified end-to-end via the web UI: dropped the Jamiroquai link and got `MusicVideo - 1996 - Jazz`, a cleaned lyrics description, a thumbnail, and `1 added / 1 downloaded` on commit.
+- Added a download-stage `AudioRefiner` (`src/metadata/services/audio_refiner.py`): once a MusicVideo file is downloaded, Chromaprint fingerprints the audio and AcoustID resolves it to a MusicBrainz recording MBID, which `MusicBrainzSource.lookup_by_mbid()` turns into a definitive first-release year + controlled MusicGenre — overriding the noisier title-search guess.  
+- Kept it fully optional/offline-safe: `pyacoustid` and the `fpcalc` binary are imported lazily and `ACOUSTID_API_KEY` is read from the environment; any of them missing makes `refine()` a no-op, so `test.py` still runs offline.  
+- Wired the refiner into `MediaIngestor` asset resolution so the corrected year/genre is persisted by the existing media.json write-back.  
+- Made `MediaClassifier` weights data-driven: it now loads `Metadata/data/classifier_weights.json` over its in-code defaults, so tuned weights ship as data, not a code change.  
+- Added `tools/tune_classifier_weights.py`, a deterministic coordinate-ascent tuner that maximizes `classify_type` accuracy over a labeled sample set (`Metadata/data/classifier_samples.json`) and writes the best weights.  
+- Promoted `pyacoustid` to requirements (native Chromaprint `fpcalc` still required on PATH for a real match).
+
+## [0.6.1] — Music Enrichment Hardening  
+  
+### Added  
+  
+- Keyless lyrics.ovh integration in `MusicBrainzSource`: fetches song lyrics as  
+  the `MusicVideo` description, keyed on the recording's canonical artist/track  
+  (falls back to the parsed title pair).  
+- Bare-trailing-noise stripping in `MusicBrainzSource._split` (`MTV`, `VEVO`,  
+  `HD`, `HQ`, `4K`) so the recording, release-group, and lyrics queries all run  
+  on a clean `artist`/`track`.  
+- Original-release preference in `_release_group_year`: prefers the earliest  
+  Single/Album/EP release group over later compilation/live/soundtrack  
+  re-issues, pinning the true first-release year.  
+- Archive-aware voting in `MediaClassifier`: Internet Archive `mediatype=movies`  
+  is a weak Movie signal, out-voted by an "Artist - Track" title shape plus a  
+  music collection/subject tag.  
+- `MediaDescriber` now surfaces Internet Archive `mediatype`, `collection`,  
+  `subject`, and the item thumbnail (`poster_url`).  
+  
+### Changed  
+  
+- `RecordBuilder` Layer 4 no longer fills a `MusicVideo` description from the  
+  scraped archive blurb — music captions are lyrics-or-empty, never source noise.  
+- Recording selection prefers a high-score match that already carries a  
+  first-release-date instead of blindly taking `recordings[0]`.  
+  
+### Milestone  
+  
+MusicVideo enrichment resolves the correct original year, a controlled  
+MusicGenre, and lyrics-only captions for noisy archive-sourced titles.

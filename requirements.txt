@@ -22,6 +22,21 @@ mutagen            # Read audio/video metadata
 Flask              # Local drag-and-drop web ingest UI (add_media_web.py)  
   
 # ------------------------------------------------------------------  
+# Optional Dependencies (feature-gated, imported lazily)  
+# ------------------------------------------------------------------  
+  
+# Download-stage AcoustID audio refiner (definitive music match). The Python  
+# binding is optional and imported lazily inside the classifier's refine hook,  
+# so the offline smoke test never needs it. It ALSO requires the Chromaprint  
+# `fpcalc` binary on PATH (a SYSTEM package, NOT pip-installable) and a free  
+# ACOUSTID_API_KEY env var; without any of these the refiner no-ops and the  
+# title-search MusicBrainz result stands.  
+#   - fpcalc: Windows -> download Chromaprint and add fpcalc.exe to PATH  
+#             macOS   -> brew install chromaprint  
+#             Linux   -> apt install libchromaprint-tools  
+pyacoustid         # AcoustID/Chromaprint fingerprint -> MusicBrainz recording  
+  
+# ------------------------------------------------------------------  
 # Planned Dependencies (Subject to Change)  
 # ------------------------------------------------------------------  
   

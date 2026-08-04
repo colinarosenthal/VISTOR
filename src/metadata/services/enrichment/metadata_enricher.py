@@ -32,7 +32,9 @@ class MetadataEnricher:
         provisional = provisional or set()  
   
         title = record.get("title", "")  
-        if not title:  
+        if not title or title.strip().lower() == "untitled":  
+            # No real title to search on. TMDB's blind results[0] would match a  
+            # wrong movie for the "Untitled" placeholder, so skip enrichment.  
             return record  
   
         # Only constrain the search by year when the year is an explicit  

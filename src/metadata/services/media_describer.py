@@ -3,48 +3,36 @@ VISTOR Media Describer
   
 Best-effort descriptive-metadata scraper. Given a (provider, reference),  
 returns a dict of descriptive fields (title, release_year, description,  
-runtime_minutes, poster_url) harvested WITHOUT downloading the file.  
+runtime_minutes, poster_url) PLUS raw detection signals (categories, duration,  
+tags, channel, mediatype, collection, subject) that MediaClassifier scores on.  
+Harvested WITHOUT downloading the file.  
   
-Only YouTube is supported for now (via yt-dlp's info-dict). Other providers  
-return an empty dict, so the caller falls back to whatever the user typed.  
-Everything is best-effort: a missing tool or network error never raises.  
+YouTube (via yt-dlp) and Internet Archive (via the archive.org metadata JSON  
+API) are supported. Other providers return {}. Everything is best-effort: a  
+missing tool or network error never raises.  
 """  
   
 import re  
   
 from core.logger import Logger  
   
-# A line is promo boilerplate if it contains a URL (subscribe / "WATCH ... ►"  
-# / social links all do). Hashtag runs are stripped wherever they appear.  
 _URL_RE = re.compile(r"https?://\S+|\bwww\.\S+", re.IGNORECASE)  
 _HASHTAG_RE = re.compile(r"(?:^|\s)#\w+")  
-  
-# Orphan promo headers whose URL sat on a following line (so the URL filter  
-# alone would leave the header behind).  
 _PROMO_PREFIXES = (  
-    "watch ",  
-    "subscribe",  
-    "stream and download",  
-    "follow ",  
-    "official website",  
-    "listen ",  
-    "download ",  
+    "watch ", "subscribe", "stream and download", "follow ",  
+    "official website", "listen ", "download ",  
 )  
-  
-# If the description has an explicit lyrics marker, keep only what follows it.  
 _LYRICS_MARKER_RE = re.compile(r"^\s*lyrics\s*:?\s*$", re.IGNORECASE)  
+_HTML_TAG_RE = re.compile(r"<[^>]+>")  
   
   
 def _clean_youtube_description(text):  
-    """Strip promo boilerplate (URLs, WATCH/Subscribe/Follow lines, hashtags)  
-    and, when present, keep only the text after a 'Lyrics:' marker. Newlines  
-    in the original are preserved so lyrics stay line-broken."""  
+    """Strip promo boilerplate and, when present, keep only text after a  
+    'Lyrics:' marker. Newlines preserved so lyrics stay line-broken."""  
     if not text:  
         return ""  
   
     lines = text.splitlines()  
-  
-    # If there's a "Lyrics:" line, everything above it is promo/credits noise.  
     for i, raw in enumerate(lines):  
         if _LYRICS_MARKER_RE.match(raw):  
             lines = lines[i + 1:]  
@@ -54,31 +42,41 @@ def _clean_youtube_description(text):
     for raw in lines:  
         line = _HASHTAG_RE.sub("", raw).rstrip()  
         stripped = line.strip()  
-  
-        # Drop any line carrying a URL (subscribe / WATCH ► / social / promo).  
         if _URL_RE.search(stripped):  
             continue  
-  
         low = stripped.lower()  
-  
-        # Drop orphaned promo headers (their URL was on a now-removed line).  
         if low.endswith("here:") or low.startswith(_PROMO_PREFIXES):  
             continue  
-  
         kept.append(line)  
   
-    # Collapse 3+ blank lines to a single blank line and trim the edges.  
     cleaned = "\n".join(kept)  
     cleaned = re.sub(r"\n{3,}", "\n\n", cleaned).strip()  
     return cleaned  
   
   
+def _first(value):  
+    if isinstance(value, list):  
+        return value[0] if value else ""  
+    return value  
+  
+  
+def _as_list(value):  
+    """Archive fields may be scalar or list; always return a list of strings."""  
+    if value is None:  
+        return []  
+    if isinstance(value, list):  
+        return [str(v) for v in value]  
+    return [str(value)]  
+  
+  
 class MediaDescriber:  
-    """Scrape descriptive metadata for a source, download-free."""  
+    """Scrape descriptive metadata + detection signals, download-free."""  
   
     def describe(self, provider, reference):  
         if provider == "youtube":  
             return self._describe_youtube(reference)  
+        if provider == "internet_archive":  
+            return self._describe_internet_archive(reference)  
   
         Logger.info(  
             f"No describer for provider '{provider}'; "  
@@ -103,7 +101,7 @@ class MediaDescriber:
         try:  
             with yt_dlp.YoutubeDL(options) as ydl:  
                 info = ydl.extract_info(url, download=False)  
-        except Exception as exc:  # noqa: BLE001 - never fail the caller  
+        except Exception as exc:  # noqa: BLE001  
             Logger.warning(f"Could not scrape YouTube metadata: {exc!r}.")  
             return {}  
   
@@ -112,24 +110,18 @@ class MediaDescriber:
         if info.get("title"):  
             data["title"] = info["title"]  
   
-        # upload_date is "YYYYMMDD"; release_year is the first 4 digits.  
         upload_date = info.get("upload_date") or ""  
         if len(upload_date) >= 4 and upload_date[:4].isdigit():  
             data["release_year"] = int(upload_date[:4])  
   
-        # Clean promo boilerplate out of the scraped description; keep lyrics.  
         if info.get("description"):  
             cleaned = _clean_youtube_description(info["description"])  
             if cleaned:  
                 data["description"] = cleaned  
   
-        # duration is in seconds; MediaItem stores runtime in minutes.  
         if info.get("duration"):  
             data["runtime_minutes"] = max(1, round(info["duration"] / 60))  
   
-        # Thumbnail -> poster_url for the preview cover. yt-dlp exposes a single  
-        # best "thumbnail" plus a "thumbnails" list; prefer the explicit one and  
-        # fall back to the highest-preference entry in the list.  
         poster = info.get("thumbnail") or ""  
         if not poster:  
             thumbs = info.get("thumbnails") or []  
@@ -141,8 +133,92 @@ class MediaDescriber:
         if poster:  
             data["poster_url"] = poster  
   
+        # --- Detection signals for MediaClassifier --------------------  
+        data["categories"] = info.get("categories") or []  
+        data["tags"] = info.get("tags") or []  
+        data["duration"] = info.get("duration") or 0  
+        data["channel"] = info.get("channel") or info.get("uploader") or ""  
+  
         Logger.info(  
             f"Scraped YouTube metadata for '{reference}': "  
             f"{data.get('title', '?')} ({data.get('release_year', '?')})."  
         )  
-        return data
+        return data  
+  
+    # ------------------------------------------------------------------  
+    # Internet Archive  
+    # ------------------------------------------------------------------  
+  
+    def _describe_internet_archive(self, reference):  
+        """Pull descriptive fields + detection signals from the archive.org  
+        metadata JSON API."""  
+        import requests  # optional dep, imported lazily  
+  
+        identifier = reference.split("/", 1)[0]  
+        url = f"https://archive.org/metadata/{identifier}"  
+  
+        try:  
+            resp = requests.get(url, timeout=10)  
+            resp.raise_for_status()  
+            meta = (resp.json() or {}).get("metadata", {}) or {}  
+        except Exception as exc:  # noqa: BLE001  
+            Logger.warning(f"Could not scrape Internet Archive metadata: {exc!r}.")  
+            return {}  
+  
+        data = {}  
+  
+        title = _first(meta.get("title"))  
+        if title:  
+            data["title"] = str(title).strip()  
+  
+        date = str(_first(meta.get("year")) or _first(meta.get("date")) or "")  
+        if len(date) >= 4 and date[:4].isdigit():  
+            data["release_year"] = int(date[:4])  
+  
+        desc = meta.get("description")  
+        if isinstance(desc, list):  
+            desc = " ".join(str(d) for d in desc)  
+        if desc:  
+            desc = _HTML_TAG_RE.sub("", str(desc)).strip()  
+            if desc:  
+                data["description"] = desc  
+  
+        # Every archive.org item has a derived thumbnail at this stable URL.  
+        # No extra request needed; it 302s to the item's poster/first frame.  
+        data["poster_url"] = f"https://archive.org/services/img/{identifier}"  
+  
+        # --- Detection signals for MediaClassifier --------------------  
+        data["mediatype"] = str(_first(meta.get("mediatype")) or "")  
+        data["collection"] = _as_list(meta.get("collection"))  
+        data["subject"] = _as_list(meta.get("subject"))  
+        # Some archive items carry runtime as "HH:MM:SS" or seconds.  
+        runtime = _first(meta.get("runtime")) or _first(meta.get("length"))  
+        data["duration"] = self._archive_seconds(runtime)  
+  
+        Logger.info(  
+            f"Scraped Internet Archive metadata for '{identifier}': "  
+            f"{data.get('title', '?')} ({data.get('release_year', '?')}) "  
+            f"[mediatype={data['mediatype']}]."  
+        )  
+        return data  
+  
+    @staticmethod  
+    def _archive_seconds(value):  
+        """Parse 'HH:MM:SS' / 'MM:SS' / '123.4' into integer seconds; 0 if none."""  
+        if not value:  
+            return 0  
+        text = str(value).strip()  
+        if ":" in text:  
+            parts = text.split(":")  
+            try:  
+                nums = [float(p) for p in parts]  
+            except ValueError:  
+                return 0  
+            seconds = 0.0  
+            for n in nums:  
+                seconds = seconds * 60 + n  
+            return int(seconds)  
+        try:  
+            return int(float(text))  
+        except ValueError:  
+            return 0
