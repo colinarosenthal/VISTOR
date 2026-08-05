@@ -97,7 +97,7 @@ function show(rec,cands){
   document.getElementById('card').style.display='block';  
   document.getElementById('cover').src=rec.poster_url||'';  
   document.getElementById('t').textContent=rec.title||'';  
-  document.getElementById('meta').textContent=(rec.type||'')+' - '+(rec.release_year||'?')+' - '+((rec.genres||[]).join(', ')||'no genres');  
+  document.getElementById('meta').textContent=(rec.type||'')+' - '+(rec.release_year||'?')+' - '+((rec.music_genre? [rec.music_genre] : (rec.genres||[])).join(', ')||'no genres');
   document.getElementById('desc').textContent=rec.description||'';  
   document.getElementById('rid').value=rec.id||'';  
   const side=document.getElementById('side'),box=document.getElementById('cands');  

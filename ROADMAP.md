@@ -963,6 +963,9 @@ the `(provider, reference)` pair the fetchers expect (youtu.be & `watch?v=` -> y
 - `default_source()` now returns `EnrichmentRouter()`; `RecordBuilder` is unchanged (it constructs `MetadataEnricher(default_source())`), only its stale CompositeSource comment was updated.  
 - Deleted `src/metadata/services/enrichment/composite_source.py` and removed it from the enrichment package `__all__`.  
 - Repaired `test.py`: the earlier service cleanup deleted `MediaVerifier`, `MediaScanner`, `MediaAssociator`, and `MediaValidator` but left their import blocks in the smoke test, which crashed with `ModuleNotFoundError`. Replaced all four with a single `LibraryReconciler` block (scan / verify / validate / resolve + `normalize_filename` assertions).  
-  
+- Fixed InternetArchiveFetcher for /details/ drops: a bare identifier now resolves the item's primary playable file (largest media file) from the archive metadata API before downloading, and any text/html response is rejected (routed through the takedown path) so a directory-listing page can no longer be saved, probed, and fingerprinted as fake .mkv media. Verified with the Buggles link: 134 MB .mkv, probed 199s 720x480 mpeg2video/mp3.  
+- Improved MusicVideo enrichment accuracy: the MusicBrainz release-group search now queries on the track title only and relies on the in-loop artist-credit filter, so the original 1979 Buggles year wins over the 1998 reissue; the music genre now displays; lyrics fall back to alternate artist spellings and degrade to empty on a 404.  
+- KNOWN ISSUE (next up): genres and music_genre are dropped on commit write-back. MetadataLoader never loads music_genres.json (no _load_music_genres in _load_vocabulary), and genres.json / music_genres.json are empty on disk, so name-based relinking has nothing to match. Fix: add _load_music_genres and repopulate both vocabulary files from MetadataPopulation.  
+
 ---
   

@@ -225,6 +225,10 @@ class MusicBrainzSource:
         # (cleaner than the noisy parsed title), fall back to the parsed pair.  
         canon_artist, canon_track = self._recording_artist_track(recording)  
         lyrics = self.fetch_lyrics(canon_artist or artist, canon_track or track)  
+        # lyrics.ovh is spelling-sensitive; if the canonical pair 404s, retry  
+        # with the parsed (artist, track) from the title before giving up.  
+        if not lyrics and (canon_artist, canon_track) != (artist, track):  
+            lyrics = self.fetch_lyrics(artist, track) 
   
         Logger.info(  
             f"MusicBrainz matched '{title}' -> "  
@@ -368,10 +372,10 @@ class MusicBrainzSource:
         if not track:  
             return 0  
   
-        if artist:  
-            query = f'artist:"{artist}" AND releasegroup:"{track}"'  
-        else:  
-            query = f'releasegroup:"{track}"'  
+        # Query on the release-group TITLE only; the artist-credit filter in  
+        # the loop below (which is more forgiving of MB's artist indexing than  
+        # a Lucene artist: clause) keeps only groups credited to the artist.  
+        query = f'releasegroup:"{track}"' 
   
         data = self._get(  
             requests,  
