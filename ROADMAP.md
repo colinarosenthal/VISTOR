@@ -958,5 +958,11 @@ the `(provider, reference)` pair the fetchers expect (youtu.be & `watch?v=` -> y
 - Added `Config` fields `seed_source` and `max_auto_additions_per_week` (load/save) to bound the discovery loop.  
 - Split the old Phase 6 "Broadcast Experience" block into Phase 6 (Intelligent Content Management), Phase 7 (Media Acquisition Pipeline, with new Library Maintenance + Autonomous Catalogue Expansion sub-sections), and Phase 8 (Broadcast Programming); shortened long step descriptions.  
 - Updated `Docs/VISTOR_Developer_Guide.md` Section 7.8 service inventory to  drop the deleted services and add `LibraryReconciler` and `DiscoveryLoop`.  
+- Consolidated authoritative enrichment onto `EnrichmentRouter` and retired `CompositeSource`. Enrichment now dispatches to exactly ONE backend per media type (TMDB for film/TV, MusicBrainz for music, SportsSource for sports, Wikipedia as generic fallback) instead of running every backend and merging per-field. This fixes both the long load times (one network call, not all of them) and the overwrite bug where `TMDBSource` — which lacked a `handles()` hook — ran on `MusicVideo` lookups and won the year/genre/description fields before MusicBrainz could fill them.  
+- Added `search_candidates`, `lookup_by_id`, and `lookup_tv_chain` pass-throughs (to the TMDB backend) on `EnrichmentRouter` so the web "did you mean...?" picker and the TV-episode chain keep working. Note: `IngestSession` already calls these on its own `TMDBSource` instance, so the picker was never at risk; the pass-throughs cover callers that read them off `MetadataEnricher.source`.  
+- `default_source()` now returns `EnrichmentRouter()`; `RecordBuilder` is unchanged (it constructs `MetadataEnricher(default_source())`), only its stale CompositeSource comment was updated.  
+- Deleted `src/metadata/services/enrichment/composite_source.py` and removed it from the enrichment package `__all__`.  
+- Repaired `test.py`: the earlier service cleanup deleted `MediaVerifier`, `MediaScanner`, `MediaAssociator`, and `MediaValidator` but left their import blocks in the smoke test, which crashed with `ModuleNotFoundError`. Replaced all four with a single `LibraryReconciler` block (scan / verify / validate / resolve + `normalize_filename` assertions).  
   
 ---
+  

@@ -429,125 +429,64 @@ assert len(reloaded.get_people()) >= 1
 print("Serialization round-trip verified (media exercised).")  
 
 # ----------------------------------------------------------------------  
-# Media Verifier  
+# Library Reconciler (merged scanner + verifier + validator)  
 # ----------------------------------------------------------------------  
   
-print("\n=== Testing MediaVerifier ===")  
+print("\n=== Testing LibraryReconciler ===")  
   
-from metadata.services.media_verifier import (  
-    MediaVerifier,  
+from metadata.services.library_reconciler import (  
+    LibraryReconciler,  
     normalize_filename,  
 )  
 from metadata.services.metadata_population import MetadataPopulation  
   
-verifier_library = MetadataPopulation().build_library()  
+# --- scan: walk the Media/ tree (empty/missing dir is valid) ----------  
+reconciler = LibraryReconciler(MetadataPopulation().build_library())  
   
-verifier = MediaVerifier(verifier_library)  
-report = verifier.verify()  
-  
-assert "total_media" in report  
-assert "total_assets" in report  
-assert isinstance(report["verified"], list)  
-assert isinstance(report["missing"], list)  
-  
-print("Media items checked:", report["total_media"])  
-print("Assets checked:", report["total_assets"])  
-print("Verified:", len(report["verified"]))  
-print("Missing:", len(report["missing"]))  
-  
-# Filename normalization checks  
-assert normalize_filename("Friends S01E01 (Pilot).MKV") == "friends_s01e01_pilot.mkv"  
-assert normalize_filename("  Weird##Name!!.MP4 ") == "weird_name.mp4"  
-  
-print("Filename normalization verified.")
-
-# ----------------------------------------------------------------------  
-# Media Scanner  
-# ---------------------------------------------------------------------- 
-
-from metadata.services.media_scanner import MediaScanner  
-  
-print("=== Testing MediaScanner ===")  
-  
-scan_report = MediaScanner().scan()  
-  
-print("Media files found:", scan_report["total_files"])  
-  
-# Scanning an empty/missing Media dir is valid; just assert shape.  
+scan_report = reconciler.scan()  
 assert "files" in scan_report  
 assert "total_files" in scan_report  
+print("Media files found:", scan_report["total_files"])  
   
-print("Media scan verified.")
-
-# ----------------------------------------------------------------------  
-# Media Associator
-# ---------------------------------------------------------------------- 
-
-print("\n=== Testing MediaAssociator ===")  
+# --- verify: check catalogued assets against disk ---------------------  
+verify_report = reconciler.verify()  
+assert "total_media" in verify_report  
+assert "total_assets" in verify_report  
+assert isinstance(verify_report["verified"], list)  
+assert isinstance(verify_report["missing"], list)  
+print("Media items checked:", verify_report["total_media"])  
+print("Assets checked:", verify_report["total_assets"])  
+print("Verified:", len(verify_report["verified"]))  
+print("Missing:", len(verify_report["missing"]))  
   
-from metadata.services.media_associator import MediaAssociator  
+# --- validate + resolve dangling assets on the reloaded library -------  
+disk_reconciler = LibraryReconciler(reloaded)  
   
-# Reuse the populated library from the round-trip section.  
-associator_library = built  
-  
-# Pick a real id from the library so the manifest matches something.  
-first_media = associator_library.get_media()[0]  
-sample_id = first_media.get_id()  
-  
-manifest_data = {  
-    sample_id: "Movies/sample_placeholder.mkv"  
-}  
-  
-manifest_path = Path("Metadata/data/asset_manifest.json")  
-  
-with open(manifest_path, "w", encoding="utf-8") as manifest_file:  
-    json.dump(manifest_data, manifest_file, indent=4)  
-  
-associator = MediaAssociator(  
-    associator_library,  
-    Path("Media"),  
-)  
-  
-assoc_report = associator.associate_from_manifest(manifest_path)  
-  
-print("Associated:", len(assoc_report["associated"]))  
-print("Unmatched ids:", len(assoc_report["unmatched_ids"]))  
-print("Missing files:", len(assoc_report["missing_files"]))  
-  
-assert len(assoc_report["associated"]) >= 1  
-assert len(first_media.get_media_assets()) >= 1  
-  
-print("Media association verified.")
-
-# ----------------------------------------------------------------------  
-# Media Validator  
-# ----------------------------------------------------------------------  
-  
-print("\n=== Testing MediaValidator ===")  
-  
-from metadata.services.media_validator import MediaValidator  
-  
-validator = MediaValidator(loaded_library)  
-  
-validation_report = validator.validate()  
-  
+validation_report = disk_reconciler.validate()  
+assert "total_media" in validation_report  
+assert isinstance(validation_report["valid"], list)  
+assert isinstance(validation_report["media_without_assets"], list)  
+assert isinstance(validation_report["missing_assets"], list)  
 print("Media checked:", validation_report["total_media"])  
 print("Valid:", len(validation_report["valid"]))  
 print("Without assets:", len(validation_report["media_without_assets"]))  
 print("Missing asset files:", len(validation_report["missing_assets"]))  
   
-# Resolve any dangling assets by dropping them.  
-resolution_report = validator.resolve_missing_assets(strategy="drop")  
-  
+# Drop dangling assets, then re-validate: no missing files should remain.  
+resolution_report = disk_reconciler.resolve_missing_assets(strategy="drop")  
+assert isinstance(resolution_report["dropped"], list)  
+assert isinstance(resolution_report["flagged"], list)  
 print("Dropped:", len(resolution_report["dropped"]))  
 print("Flagged:", len(resolution_report["flagged"]))  
   
-# After a "drop" pass, re-validation should report no missing asset files.  
-post_report = validator.validate()  
-  
+post_report = disk_reconciler.validate()  
 assert len(post_report["missing_assets"]) == 0  
   
-print("Media validation verified.")
+# --- filename normalization (unchanged from the old verifier block) ---  
+assert normalize_filename("Friends S01E01 (Pilot).MKV") == "friends_s01e01_pilot.mkv"  
+assert normalize_filename("  Weird##Name!!.MP4 ") == "weird_name.mp4"  
+  
+print("Library reconciliation verified.")
 
 print("=== Testing Player + PlaybackQueue ===")  
   

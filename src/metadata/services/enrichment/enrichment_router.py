@@ -1,13 +1,19 @@
 """  
 VISTOR Enrichment Router  
   
-Dispatches lookup(title, year, media_type) to the right free backend based on  
-media_type, then normalizes to the shared dict shape every source returns.  
+Dispatches lookup(title, year, media_type) to the ONE free backend that owns  
+that media type, then returns the shared dict shape every source emits. This  
+replaces CompositeSource: instead of running every backend and merging  
+(which let TMDB overwrite MusicBrainz for music), exactly one backend runs.  
   
     Film / TV        -> TMDBSource  
     Music            -> MusicBrainzSource  
     Sports           -> SportsSource   (TheSportsDB, module: sports_source)  
     Everything else  -> WikipediaSource (generic fallback)  
+  
+The candidate helpers (search_candidates / lookup_by_id / lookup_tv_chain)  
+are forwarded to TMDBSource so the web ingest "did you mean...?" picker and  
+the TV-episode chain keep working unchanged.  
   
 All backend imports are lazy so the headless smoke test keeps running offline  
 with no keys, and a missing/failing backend degrades to None rather than  
@@ -61,7 +67,7 @@ class EnrichmentRouter:
             return self.music  
         if media_type in _SPORTS:  
             return self.sports  
-        return self.fallback
+        return self.fallback  
   
     def lookup(self, title, year=None, media_type=None):  
         backend = self._backend_for(media_type)  
@@ -72,4 +78,20 @@ class EnrichmentRouter:
                 f"Enrichment backend {type(backend).__name__} failed for "  
                 f"'{title}': {exc!r}."  
             )  
-            return None
+            return None  
+  
+    # --- candidate helpers (always TMDB; powers the web picker / TV chain) --  
+    def search_candidates(self, title, media_type=None, limit=8):  
+        if not hasattr(self.tmdb, "search_candidates"):  
+            return []  
+        return self.tmdb.search_candidates(title, media_type=media_type, limit=limit)  
+  
+    def lookup_by_id(self, external_id, media_type=None):  
+        if not hasattr(self.tmdb, "lookup_by_id"):  
+            return None  
+        return self.tmdb.lookup_by_id(external_id, media_type=media_type)  
+  
+    def lookup_tv_chain(self, title, year=None):  
+        if not hasattr(self.tmdb, "lookup_tv_chain"):  
+            return None  
+        return self.tmdb.lookup_tv_chain(title, year=year)

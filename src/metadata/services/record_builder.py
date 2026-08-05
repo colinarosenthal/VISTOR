@@ -58,9 +58,10 @@ class RecordBuilder:
         self.resolver = resolver or LinkResolver()  
         self.describer = describer or MediaDescriber()  
         self.classifier = classifier or MediaClassifier()  
-        # CompositeSource(TMDB + MusicBrainz). Each backend's handles() hook  
-        # decides which media types it answers, so routing is per-type.  
-        self.enricher = enricher or MetadataEnricher(default_source())  
+        # EnrichmentRouter: exactly one backend per media type (TMDB film/TV,  
+        # MusicBrainz music, SportsSource sports, Wikipedia fallback). No  
+        # cross-API overwrite; one network call instead of every backend.  
+        self.enricher = enricher or MetadataEnricher(default_source())
   
     def build(self, url, media_type=None, overrides=None):  
         overrides = overrides or {}  
