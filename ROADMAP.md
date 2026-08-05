@@ -389,7 +389,10 @@ VISTOR provides a cable television user interface.
 
 ---
 
-# Phase 6 — Broadcast Experience  
+# Phase 6 — Intelligent Content Management  
+  
+_Milestone: availability becomes a runtime state; files can be evicted and  
+re-fetched without losing metadata or fingerprints._  
   
 ## Intelligent Content Management  
   
@@ -435,82 +438,108 @@ VISTOR provides a cable television user interface.
   
 ---  
   
+# Phase 7 — Media Acquisition Pipeline  
+  
+_Milestone: any dropped URL becomes a fully enriched, downloaded,  
+fingerprinted media.json record; VISTOR can also grow its own catalogue._  
+  
 ## Media Acquisition  
-    
-### Infrastructure    
-    
-- [x] Multi-Provider Download Layer (Internet Archive, YouTube, Direct URL)    
-- [x] Provider Registry + Fetcher Routing    
-- [x] Automatic Technical Metadata Extraction (ffprobe/mutagen)    
-- [x] Fingerprint-on-Download    
-- [x] JSON Media Ingestion Service    
-- [x] Auto-Resolve Undownloaded Assets on Ingest    
-- [x] `add_media` CLI Entry Point    
-- [x] Descriptive Metadata Scraping (title/year/genre from provider)    
-- [ ] Batch Folder Ingestion
-- [x] Rolling Episode Window (window-gated per-series acquisition)
-
+  
+### Infrastructure  
+  
+- [x] Multi-Provider Download Layer (Internet Archive, YouTube, Direct URL)  
+- [x] Provider Registry + Fetcher Routing  
+- [x] Technical Metadata Extraction (ffprobe/mutagen)  
+- [x] Fingerprint-on-Download  
+- [x] JSON Media Ingestion Service  
+- [x] Auto-Resolve Undownloaded Assets on Ingest  
+- [x] `add_media` CLI Entry Point  
+- [x] Descriptive Metadata Scraping (title/year/genre)  
+- [ ] Batch Folder Ingestion  
+- [x] Rolling Episode Window (per-series, window-gated)  
+  
+### Library Maintenance  
+  
+- [ ] LibraryReconciler (merge scanner/verifier/validator into one janitor)  
+- [ ] Remove dead MediaFetcher / MediaAssociator  
+- [ ] Flag-by-default dangling-asset resolution (metadata survives)  
+  
 ### Link-Driven Ingestion  
   
 - [x] Link Resolver (URL -> provider + reference)  
-- [x] Media Describer (yt-dlp scrape: title / year / description / runtime)  
-- [x] Media Classifier (type + controlled-vocabulary genre guess)  
+- [x] Media Describer (scrape title / year / description / runtime)  
+- [x] Media Classifier (type + vocabulary genre guess)  
 - [x] Record Builder (override > TMDB > classified > scraped > default)  
 - [x] Media Ingestor (dedupe-by-id, self-healing retry, write-back)  
 - [x] add_media CLI (link or JSON drop-in)  
-- [x] Archive-aware type heuristic (Internet Archive mediatype=movies is a weak Movie vote; an "Artist - Track" title shape plus a music subject/collection tag out-votes it)  
-- [x] Query title normalization (strip trailing MTV / (Official Video) / lyric-video noise before the MusicBrainz lookup)
-- [x] Archive-Aware Classifier (Archive mediatype=movies weak; Artist-Track + music collection/subject out-vote)  
-- [x] Internet Archive Signal Scrape (mediatype/collection/subject + thumbnail poster_url)
-
+- [x] Archive-Aware Classifier (weak Movie vote; Artist-Track + music tag out-votes)  
+- [x] Query Title Normalization (strip MTV / (Official Video) / lyric-video noise)  
+- [x] Internet Archive Signal Scrape (mediatype/collection/subject + poster_url)  
+  
 ### Web Ingest UI  
   
-- [x] Flask drag-and-drop ingest front-end (`add_media_web.py` launcher + `src/ingest/web_app.py`)  
+- [x] Flask drag-and-drop front-end (`add_media_web.py` + `src/ingest/web_app.py`)  
 - [x] IngestSession backend seam (build / candidates / build-from-tmdb / commit)  
 - [x] Live preview card (poster, title, year, runtime, genres, description)  
-- [x] TMDB "did you mean?" candidate picker (multi-result search instead of results[0])  
-- [x] Overwrite-on-commit (replace existing id instead of dedupe-skip)  
-- [x] Launcher env bootstrap (winget ffmpeg PATH injection + TMDB_API_KEY + browser auto-open)  
-- [x] Genre vocabulary bootstrap fix (populate genres.json so relinking survives round-trip)  
-- [x] Media-type override dropdown (Auto / Movie / MusicVideo / Episode / Commercial) -> overrides["type"] (sticky Layer-1, forces the correct enricher regardless of source noise)
-- [ ] Persist vocabulary buckets automatically on setup (genres/tags/themes/countries/languages)
-
+- [x] TMDB "did you mean?" candidate picker  
+- [x] Overwrite-on-commit (replace existing id)  
+- [x] Launcher env bootstrap (ffmpeg PATH + TMDB_API_KEY + browser auto-open)  
+- [x] Genre vocabulary bootstrap fix (populate genres.json for round-trip)  
+- [x] Media-type override dropdown (Auto / Movie / MusicVideo / Episode / Commercial)  
+- [ ] Persist vocabulary buckets on setup (genres/tags/themes/countries/languages)  
+  
 ### Content-Based Type Detection  
   
-- [x] Provider Signal Surfacing (describer emits categories/duration/tags/channel + Archive mediatype/collection/subject)  
+- [x] Provider Signal Surfacing (categories/duration/tags/channel + Archive signals)  
 - [x] ContentProfile (provider-agnostic normalized signal bag)  
-- [x] TypeScorer (weighted multi-signal voting -> highest-confidence type)  
-- [x] Confidence Floor + Tie Handling (undecidable -> defer to default/override)  
-- [x] Internet Archive MusicVideo Detection (music bucket + 'artist - track' shape)  
-- [x] AcoustID / Chromaprint Audio Refiner (download-stage, definitive music match) — deferred  
-- [x] Per-signal Weight Tuning from a labeled sample set — deferred
+- [x] TypeScorer (weighted multi-signal voting)  
+- [x] Confidence Floor + Tie Handling (undecidable -> default/override)  
+- [x] Internet Archive MusicVideo Detection (music bucket + Artist-Track shape)  
+- [x] AcoustID / Chromaprint Audio Refiner — deferred  
+- [x] Per-signal Weight Tuning from labeled sample — deferred  
   
-### Authoritative Enrichment    
-    
-- [x] Authoritative Source Interface (pluggable lookup provider)      
-- [x] TMDB Lookup Backend (title/year search)      
-- [x] Genre Mapping (external genres -> controlled Genre vocabulary)      
-- [x] Metadata Enricher (overrides > authoritative > classified > default)      
-- [x] Authoritative Year Precedence (TMDB year overrides provisional scraped year)      
-- [x] Cast / Crew Credits Enrichment (TMDB credits -> people.json upsert + appearances)      
-- [x] Studio Enrichment (TMDB production companies -> studios.json upsert)      
-- [x] Graceful Offline Degradation (no API key / no network -> fall back)      
-- [x] TMDB Candidate List (search_candidates -> "did you mean ...?" picker)      
-- [x] TMDB Lookup-by-ID (user-chosen candidate -> full credits + poster)      
-- [x] Poster / Cover Art (poster_url on normalized results)
-- [x] MusicBrainz Lookup Backend (keyless music recording lookup for MusicVideo)        
-- [x] CompositeSource (ranked chain: TMDB for film/TV, MusicBrainz for music)        
-- [x] Type-Routed Enrichment (media type selects the authoritative backend)        
-- [x] MusicBrainz Original-Year Precedence (release-group earliest date over re-issues)        
-- [x] MusicBrainz Genre Mapping (artist genres/tags -> controlled MusicGenre)
-- [x] MusicBrainz Original-Type Preference (Single/Album/EP over compilation re-issues)  
-- [x] Title Noise Stripping (bare trailing MTV/VEVO/HD/HQ/4K before MusicBrainz + lyrics queries)  
-- [x] Lyrics Enrichment (keyless lyrics.ovh -> MusicVideo caption via canonical artist/track)
-- [ ] TMDB Year+Match Scoring (smarter default pick, not just results[0])      
-- [ ] IMDb / Wikidata Backends — deferred      
+### Authoritative Enrichment  
+  
+- [x] Authoritative Source Interface (pluggable lookup provider)  
+- [x] TMDB Lookup Backend (title/year search)  
+- [x] Genre Mapping (external -> controlled Genre vocabulary)  
+- [x] Metadata Enricher (overrides > authoritative > classified > default)  
+- [x] Authoritative Year Precedence (TMDB year over scraped year)  
+- [x] Cast / Crew Credits Enrichment (TMDB -> people.json + appearances)  
+- [x] Studio Enrichment (TMDB production companies -> studios.json)  
+- [x] Graceful Offline Degradation (no key / no network -> fall back)  
+- [x] TMDB Candidate List (search_candidates -> picker)  
+- [x] TMDB Lookup-by-ID (chosen candidate -> full credits + poster)  
+- [x] Poster / Cover Art (poster_url on results)  
+- [x] MusicBrainz Lookup Backend (keyless recording lookup)  
+- [x] CompositeSource (TMDB for film/TV, MusicBrainz for music)  
+- [x] Type-Routed Enrichment (media type selects backend)  
+- [x] MusicBrainz Original-Year Precedence (earliest release-group date)  
+- [x] MusicBrainz Genre Mapping (artist genres/tags -> MusicGenre)  
+- [x] MusicBrainz Original-Type Preference (Single/Album/EP over compilation)  
+- [x] Title Noise Stripping (trailing MTV/VEVO/HD/HQ/4K)  
+- [x] Lyrics Enrichment (keyless lyrics.ovh -> MusicVideo caption)  
+- [ ] TMDB Year+Match Scoring (smarter default pick)  
+- [ ] IMDb / Wikidata Backends — deferred  
 - [ ] LLM Classifier Backend — deferred  
-- [ ] Recommended Media (TMDB /recommendations -> suggest-only ingest)
-- [ ] Config Persistence (JSON load/save; recommended_media toggle)
+  
+### Autonomous Catalogue Expansion  
+  
+- [x] RecommendationSource (TMDB /recommendations -> similar titles)  
+- [x] Config recommended_media toggle + recommendation_mode  
+- [ ] DiscoveryLoop (seed -> suggest -> source-discover -> acquire)  
+- [ ] Suggest-Only mode (queue suggestions; no download)  
+- [ ] Assisted mode (auto-find candidate URL; human confirms)  
+- [ ] Automatic mode (auto URL-discovery + ingest, week-capped)  
+- [ ] Source URL Discovery backend (archive search for a suggested title)  
+- [ ] Config Persistence (JSON load/save; recommended_media toggle)  
+- [ ] seed_source + max_auto_additions_per_week config fields  
+  
+---  
+  
+# Phase 8 — Broadcast Programming  
+  
+_Milestone: each content category and channel is populated and schedulable._  
   
 ### Programming  
   
@@ -916,34 +945,18 @@ the `(provider, reference)` pair the fetchers expect (youtu.be & `watch?v=` -> y
 - Made `MediaClassifier` weights data-driven: it now loads `Metadata/data/classifier_weights.json` over its in-code defaults, so tuned weights ship as data, not a code change.  
 - Added `tools/tune_classifier_weights.py`, a deterministic coordinate-ascent tuner that maximizes `classify_type` accuracy over a labeled sample set (`Metadata/data/classifier_samples.json`) and writes the best weights.  
 - Promoted `pyacoustid` to requirements (native Chromaprint `fpcalc` still required on PATH for a real match).
-
-## [0.6.1] — Music Enrichment Hardening  
+- Keyless lyrics.ovh integration in `MusicBrainzSource`: fetches song lyrics as the `MusicVideo` description, keyed on the recording's canonical artist/track (falls back to the parsed title pair).  
+- Bare-trailing-noise stripping in `MusicBrainzSource._split` (`MTV`, `VEVO`, `HD`, `HQ`, `4K`) so the recording, release-group, and lyrics queries all run on a clean `artist`/`track`.  
+- Original-release preference in `_release_group_year`: prefers the earliest Single/Album/EP release group over later compilation/live/soundtrack re-issues, pinning the true first-release year.  
+- Archive-aware voting in `MediaClassifier`: Internet Archive `mediatype=movies` is a weak Movie signal, out-voted by an "Artist - Track" title shape plus a music collection/subject tag.  
+- `MediaDescriber` now surfaces Internet Archive `mediatype`, `collection`, `subject`, and the item thumbnail (`poster_url`).  
+- `RecordBuilder` Layer 4 no longer fills a `MusicVideo` description from the scraped archive blurb — music captions are lyrics-or-empty, never source noise.  
+- Recording selection prefers a high-score match that already carries a first-release-date instead of blindly taking `recordings[0]`.  
+- Consolidated `MediaScanner`, `MediaVerifier`, and `MediaValidator` into one `LibraryReconciler` (`src/metadata/services/library_reconciler.py`) — a disk-vs-catalog janitor (scan / verify / validate / resolve) for the marathon / re-download use case, separate from the ingest path. Kept `normalize_filename`. Dangling-asset resolution now defaults to flag (not drop) so metadata survives for re-fetch.  
+- Deleted dead services with no production callers: `media_fetcher.py` (superseded by `RealFetcher`/`ProviderRegistry`/`fetchers/`) and `media_associator.py` (superseded by the media.json-embedded asset model), plus the now-merged scanner/verifier/validator modules.  
+- Added `DiscoveryLoop` (`src/metadata/services/discovery_loop.py`): autonomous catalogue expansion (seed -> suggest -> source-discover -> acquire) over the existing `RecommendationSource` + `RecordBuilder` -> `MediaIngestor` seam, with suggest_only / assisted / automatic modes. Gated on `recommended_media`; offline-safe no-op without a TMDB key.  
+- Added `Config` fields `seed_source` and `max_auto_additions_per_week` (load/save) to bound the discovery loop.  
+- Split the old Phase 6 "Broadcast Experience" block into Phase 6 (Intelligent Content Management), Phase 7 (Media Acquisition Pipeline, with new Library Maintenance + Autonomous Catalogue Expansion sub-sections), and Phase 8 (Broadcast Programming); shortened long step descriptions.  
+- Updated `Docs/VISTOR_Developer_Guide.md` Section 7.8 service inventory to  drop the deleted services and add `LibraryReconciler` and `DiscoveryLoop`.  
   
-### Added  
-  
-- Keyless lyrics.ovh integration in `MusicBrainzSource`: fetches song lyrics as  
-  the `MusicVideo` description, keyed on the recording's canonical artist/track  
-  (falls back to the parsed title pair).  
-- Bare-trailing-noise stripping in `MusicBrainzSource._split` (`MTV`, `VEVO`,  
-  `HD`, `HQ`, `4K`) so the recording, release-group, and lyrics queries all run  
-  on a clean `artist`/`track`.  
-- Original-release preference in `_release_group_year`: prefers the earliest  
-  Single/Album/EP release group over later compilation/live/soundtrack  
-  re-issues, pinning the true first-release year.  
-- Archive-aware voting in `MediaClassifier`: Internet Archive `mediatype=movies`  
-  is a weak Movie signal, out-voted by an "Artist - Track" title shape plus a  
-  music collection/subject tag.  
-- `MediaDescriber` now surfaces Internet Archive `mediatype`, `collection`,  
-  `subject`, and the item thumbnail (`poster_url`).  
-  
-### Changed  
-  
-- `RecordBuilder` Layer 4 no longer fills a `MusicVideo` description from the  
-  scraped archive blurb — music captions are lyrics-or-empty, never source noise.  
-- Recording selection prefers a high-score match that already carries a  
-  first-release-date instead of blindly taking `recordings[0]`.  
-  
-### Milestone  
-  
-MusicVideo enrichment resolves the correct original year, a controlled  
-MusicGenre, and lyrics-only captions for noisy archive-sourced titles.
+---

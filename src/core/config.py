@@ -30,6 +30,9 @@ class Config:
         # (reserved for a later slice - not yet wired to auto-download).  
         self.recommended_media = False  
         self.recommendation_mode = "suggest_only"  
+        # Discovery loop bounds (see Docs/Ideas.md -> Possible Settings).  
+        self.seed_source = "whole_library"      # whole_library | per_channel | specific  
+        self.max_auto_additions_per_week = 0    # hard cap for automatic mode
   
         # Where load()/save() persist overrides.  
         self.path = path  
