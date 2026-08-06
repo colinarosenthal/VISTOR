@@ -39,6 +39,8 @@ from metadata.services.fetchers.real_fetcher import RealFetcher
 
 from metadata.services.rolling_cache import RollingCache  
 from metadata.media.television.episode import Episode
+from metadata.services.asset_sidecar import AssetSidecar
+from metadata.enums.download_status import DownloadStatus
   
   
 class MediaIngestor:  
@@ -163,6 +165,22 @@ class MediaIngestor:
             f"{len(report['resolved'])} downloaded."  
         )  
         return report
+
+    def rebuild_from_sidecars(self, download=False, overwrite=True):  
+        """  
+        Rebuild media.json from on-disk sidecars (catalog loss recovery /  
+        marathon re-catalogue). download=False re-catalogs metadata only;  
+        download=True also re-fetches the files.  
+        """  
+        from core.paths import Paths  
+  
+        records = AssetSidecar.scan(Paths().get_media_directory())  
+        if not records:  
+            Logger.info("No sidecars found; nothing to rebuild.")  
+            return {}  
+        return self.ingest_records(  
+            records, download=download, overwrite=overwrite  
+        )
   
     # ------------------------------------------------------------------  
     # Resolution + write-back  
@@ -182,6 +200,13 @@ class MediaIngestor:
         resolver = SourceResolver(real)  
   
         target_ids = set(report["added"]) | set(report["retried"])  
+  
+        # Self-heal: reconcile catalog status against disk before resolving.  
+        # A record can read DOWNLOADED in media.json while its file was  
+        # deleted underneath us (exactly the sidecar-rebuild case). Downgrade  
+        # those to MISSING so needs_download() qualifies them for re-fetch --  
+        # no hand-editing media.json required.  
+        self._reconcile_status_against_disk(library, target_ids)
   
         episodes_by_series = {}  
         standalone = []  
@@ -214,7 +239,40 @@ class MediaIngestor:
                 self._resolve_item_assets(episode, real, resolver, report)  
   
         # Durable source of truth: re-serialize the resolved library.  
-        self._write_media_json(self._serialize_media(library))  
+        serialized = self._serialize_media(library)  
+        self._write_media_json(serialized)  
+  
+        # Write a metadata sidecar next to each downloaded file so an evicted  
+        # or externally-deleted file keeps its metadata/sources/fingerprint  
+        # on disk and can be re-fetched (or drive a marathon rebuild) later.  
+        target_ids = set(report["added"]) | set(report["retried"])  
+        for record in serialized:  
+            if record.get("id") in target_ids:  
+                AssetSidecar.write(record)
+
+    def _reconcile_status_against_disk(self, library, target_ids):  
+        """Downgrade any asset that is DOWNLOADED in the catalog but whose  
+        file is absent on disk to MISSING, so needs_download() returns True  
+        and SourceResolver re-fetches it.  
+  
+        This is the ingest-path version of the "reconcile disk against  
+        catalog" check that LibraryReconciler.verify() performs as a  
+        standalone maintenance pass. Downgrading only affects genuinely  
+        missing files, so it is safe on the normal ingest path too.  
+        """  
+        for item in library.get_media():  
+            if item.get_id() not in target_ids:  
+                continue  
+            for asset in item.get_media_assets():  
+                if (  
+                    asset.get_download_status() == DownloadStatus.DOWNLOADED  
+                    and not asset.exists()  
+                ):  
+                    asset.set_download_status(DownloadStatus.MISSING)  
+                    Logger.info(  
+                        f"Reconcile: asset '{asset.get_asset_id()}' file "  
+                        f"absent on disk; status -> MISSING (will re-fetch)."  
+                    )
   
     def _resolve_item_assets(self, item, real, resolver, report):  
         """Resolve every asset on `item` that still needs downloading."""  

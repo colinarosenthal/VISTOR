@@ -463,6 +463,13 @@ fingerprinted media.json record; VISTOR can also grow its own catalogue._
 - [ ] LibraryReconciler (merge scanner/verifier/validator into one janitor)  
 - [ ] Remove dead MediaFetcher / MediaAssociator  
 - [ ] Flag-by-default dangling-asset resolution (metadata survives)  
+
+### Asset Sidecar  
+  
+- [x] Sidecar Writer (`<file>.vistor.json` next to each download)  
+- [x] Sidecar Reader + Media-Tree Scan  
+- [x] Rebuild media.json from sidecars (catalog-loss / marathon recovery)  
+- [ ] Eviction preserves sidecar (metadata survives file deletion)
   
 ### Link-Driven Ingestion  
   
@@ -981,5 +988,11 @@ the `(provider, reference)` pair the fetchers expect (youtu.be & `watch?v=` -> y
 - Verified: re-dropping the Buggles archive.org link with Confirm & replace persists `genres: ["Music"]` and `music_genre: "Synth Pop"`; `test.py` round-trip loads all vocabulary offline.  
 - Completed controlled-vocabulary round-trip: added MetadataLoader._load_content_rating and wired it into _load_vocabulary, and MetadataSerializer now writes content_ratings.json, so all seven controlled types (genres, music_genres, tags, themes, languages, countries, content_ratings) reload instead of dropping.  
 - Seeded the remaining five vocabulary files (tags, themes, languages, countries, content_ratings) from MetadataPopulation; genres.json and music_genres.json were populated in the prior step.
-  
+- Added AssetSidecar (`src/metadata/services/asset_sidecar.py`): writes a `<file>.vistor.json` next to every downloaded media file carrying the exact media.json record for the owning item (schema_version + record), so an evicted or externally-deleted file keeps its metadata, ranked sources, and fingerprint on disk.  
+- Wired sidecar emission into MediaIngestor._resolve_new_assets after the media.json write-back, scoped to just-added/-retried ids; sidecar failures warn but never fail an ingest.  
+- Added MediaIngestor.rebuild_from_sidecars() and AssetSidecar.scan() to reconstruct media.json from the Media tree (catalog-loss recovery and the marathon re-catalogue use case), deduped by record id.
+- Made re-download self-healing: `_reconcile_status_against_disk` downgrades any restored asset whose file is absent (`asset.exists()` is False) from `DOWNLOADED` to `MISSING` before resolution, so `needs_download()` returns True and `SourceResolver` re-fetches automatically -- the "reconcile disk against catalog" job scoped for `LibraryReconciler`.  
+- Added `rebuild_media.py` CLI: `python rebuild_media.py` rebuilds and downloads; `--no-download` rebuilds catalog-only.  
+- Verified end-to-end: deleted `Media/MusicVideos/the_buggles_video_killed_the_radio_star_mtv.mkv`, ran the rebuild -> reconcile flipped the asset to MISSING, re-fetched the 134 MB `.mkv` (probed 199s 720x480 mpeg2video/mp3), and `media.json` returned to `download_status: DOWNLOADED`.  
+
 ---

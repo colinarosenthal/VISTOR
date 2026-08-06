@@ -7,10 +7,7 @@
         "release_year": 1960,
         "runtime_minutes": 103,
         "scheduling_priority": 0,
-        "content_rating": {
-            "system": "MPAA",
-            "name": "G"
-        },
+        "content_rating": null,
         "original_network": null,
         "production_country": "United States",
         "languages": [
@@ -37,11 +34,8 @@
         "release_year": 1990,
         "runtime_minutes": 22,
         "scheduling_priority": 0,
-        "content_rating": {
-            "system": "TV Parental Guidelines",
-            "name": "TV-PG"
-        },
-        "original_network": "abc",
+        "content_rating": null,
+        "original_network": null,
         "production_country": "United States",
         "languages": [
             "English"
@@ -95,7 +89,7 @@
         "appearances": [],
         "assets": [],
         "studios": [],
-        "advertiser": "coca_cola",
+        "advertiser": null,
         "product": null,
         "campaign": null
     },
@@ -107,11 +101,8 @@
         "release_year": 1990,
         "runtime_minutes": 22,
         "scheduling_priority": 0,
-        "content_rating": {
-            "system": "TV Parental Guidelines",
-            "name": "TV-PG"
-        },
-        "original_network": "abc",
+        "content_rating": null,
+        "original_network": null,
         "production_country": "United States",
         "languages": [
             "English"
@@ -126,5 +117,56 @@
         "studios": [],
         "episode_number": 1,
         "season": "example_series_s1"
+    },
+    {
+        "type": "MusicVideo",
+        "id": "the_buggles_video_killed_the_radio_star_mtv",
+        "title": "The Buggles - Video Killed The Radio Star MTV",
+        "description": "",
+        "release_year": 1979,
+        "runtime_minutes": 0,
+        "scheduling_priority": 0,
+        "content_rating": null,
+        "original_network": null,
+        "production_country": null,
+        "languages": [],
+        "genres": [
+            "Music"
+        ],
+        "tags": [],
+        "themes": [],
+        "appearances": [],
+        "assets": [
+            {
+                "asset_id": "the_buggles_video_killed_the_radio_star_mtv-asset-1",
+                "path": "Media\\MusicVideos\\the_buggles_video_killed_the_radio_star_mtv.mkv",
+                "checksum": "",
+                "runtime_seconds": 199,
+                "file_size": 140832704,
+                "video_codec": "mpeg2video",
+                "audio_codec": "mp3",
+                "container": "",
+                "width": 720,
+                "height": 480,
+                "frame_rate": 29.97,
+                "verified": true,
+                "download_status": "DOWNLOADED",
+                "last_played": "",
+                "sources": [
+                    {
+                        "date_posted": "",
+                        "provider": "internet_archive",
+                        "quality": "",
+                        "reference": "the-buggles-video-killed-the-radio-star"
+                    }
+                ],
+                "pinned": false,
+                "broadcast_score": 0.0,
+                "retention_score": 0.0,
+                "fingerprint": "eee1962461bd867cb89bb1ccd2d3f3a0"
+            }
+        ],
+        "studios": [],
+        "music_genre": "Synth Pop"
     }
 ]

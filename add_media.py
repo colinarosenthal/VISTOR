@@ -39,7 +39,7 @@ def _parse_flags(argv):
     """Split argv into (positional, download, overrides).  
   
     Supports:  
-        --no-download            -> download = False  
+        --no-download            -> download = false
         --type <MediaType>       -> overrides["type"]  (e.g. Movie, MusicVideo)  
         --title <title>          -> overrides["title"]  
         --year <YYYY>            -> overrides["release_year"]  
