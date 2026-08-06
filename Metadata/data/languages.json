@@ -1,1 +1,134 @@
-[]
+[
+    {
+        "name": "English",
+        "iso_639_1": "en",
+        "iso_639_2": "eng",
+        "native_name": "English"
+    },
+    {
+        "name": "Spanish",
+        "iso_639_1": "es",
+        "iso_639_2": "spa",
+        "native_name": "Espa\u00f1ol"
+    },
+    {
+        "name": "Mandarin Chinese",
+        "iso_639_1": "zh",
+        "iso_639_2": "zho",
+        "native_name": "\u4e2d\u6587"
+    },
+    {
+        "name": "Hindi",
+        "iso_639_1": "hi",
+        "iso_639_2": "hin",
+        "native_name": "\u0939\u093f\u0928\u094d\u0926\u0940"
+    },
+    {
+        "name": "Arabic",
+        "iso_639_1": "ar",
+        "iso_639_2": "ara",
+        "native_name": "\u0627\u0644\u0639\u0631\u0628\u064a\u0629"
+    },
+    {
+        "name": "Portuguese",
+        "iso_639_1": "pt",
+        "iso_639_2": "por",
+        "native_name": "Portugu\u00eas"
+    },
+    {
+        "name": "Russian",
+        "iso_639_1": "ru",
+        "iso_639_2": "rus",
+        "native_name": "\u0420\u0443\u0441\u0441\u043a\u0438\u0439"
+    },
+    {
+        "name": "French",
+        "iso_639_1": "fr",
+        "iso_639_2": "fra",
+        "native_name": "Fran\u00e7ais"
+    },
+    {
+        "name": "German",
+        "iso_639_1": "de",
+        "iso_639_2": "deu",
+        "native_name": "Deutsch"
+    },
+    {
+        "name": "Italian",
+        "iso_639_1": "it",
+        "iso_639_2": "ita",
+        "native_name": "Italiano"
+    },
+    {
+        "name": "Dutch",
+        "iso_639_1": "nl",
+        "iso_639_2": "nld",
+        "native_name": "Nederlands"
+    },
+    {
+        "name": "Swedish",
+        "iso_639_1": "sv",
+        "iso_639_2": "swe",
+        "native_name": "Svenska"
+    },
+    {
+        "name": "Polish",
+        "iso_639_1": "pl",
+        "iso_639_2": "pol",
+        "native_name": "Polski"
+    },
+    {
+        "name": "Greek",
+        "iso_639_1": "el",
+        "iso_639_2": "ell",
+        "native_name": "\u0395\u03bb\u03bb\u03b7\u03bd\u03b9\u03ba\u03ac"
+    },
+    {
+        "name": "Japanese",
+        "iso_639_1": "ja",
+        "iso_639_2": "jpn",
+        "native_name": "\u65e5\u672c\u8a9e"
+    },
+    {
+        "name": "Korean",
+        "iso_639_1": "ko",
+        "iso_639_2": "kor",
+        "native_name": "\ud55c\uad6d\uc5b4"
+    },
+    {
+        "name": "Thai",
+        "iso_639_1": "th",
+        "iso_639_2": "tha",
+        "native_name": "\u0e44\u0e17\u0e22"
+    },
+    {
+        "name": "Vietnamese",
+        "iso_639_1": "vi",
+        "iso_639_2": "vie",
+        "native_name": "Ti\u1ebfng Vi\u1ec7t"
+    },
+    {
+        "name": "Turkish",
+        "iso_639_1": "tr",
+        "iso_639_2": "tur",
+        "native_name": "T\u00fcrk\u00e7e"
+    },
+    {
+        "name": "Hebrew",
+        "iso_639_1": "he",
+        "iso_639_2": "heb",
+        "native_name": "\u05e2\u05d1\u05e8\u05d9\u05ea"
+    },
+    {
+        "name": "Latin",
+        "iso_639_1": "la",
+        "iso_639_2": "lat",
+        "native_name": "Latina"
+    },
+    {
+        "name": "Silent",
+        "iso_639_1": "",
+        "iso_639_2": "zxx",
+        "native_name": "No linguistic content"
+    }
+]

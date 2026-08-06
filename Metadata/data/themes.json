@@ -1,1 +1,67 @@
-[]
+[
+    {
+        "name": "Life",
+        "description": "Themes focused on personal experiences and human development.",
+        "parent_theme": null
+    },
+    {
+        "name": "Coming of Age",
+        "description": "Stories centered around personal growth, maturity, and transition into adulthood.",
+        "parent_theme": "Life"
+    },
+    {
+        "name": "Slice of Life",
+        "description": "Stories focused on everyday experiences and ordinary moments.",
+        "parent_theme": "Life"
+    },
+    {
+        "name": "Audience",
+        "description": "Themes related to intended viewer groups.",
+        "parent_theme": null
+    },
+    {
+        "name": "Family",
+        "description": "Programming suitable for family viewing.",
+        "parent_theme": "Audience"
+    },
+    {
+        "name": "Children",
+        "description": "Programming designed primarily for younger audiences.",
+        "parent_theme": "Audience"
+    },
+    {
+        "name": "Seasonal",
+        "description": "Themes associated with specific times of year.",
+        "parent_theme": null
+    },
+    {
+        "name": "Holiday",
+        "description": "Programming associated with holidays and celebrations.",
+        "parent_theme": "Seasonal"
+    },
+    {
+        "name": "Summer",
+        "description": "Programming associated with summer seasons or vacations.",
+        "parent_theme": "Seasonal"
+    },
+    {
+        "name": "Nostalgia",
+        "description": "Programming focused on memories, history, or retro culture.",
+        "parent_theme": null
+    },
+    {
+        "name": "Educational",
+        "description": "Programming designed to teach or inform.",
+        "parent_theme": null
+    },
+    {
+        "name": "Competition",
+        "description": "Programming centered around contests and challenges.",
+        "parent_theme": null
+    },
+    {
+        "name": "Travel",
+        "description": "Programming focused on locations, cultures, and exploration.",
+        "parent_theme": null
+    }
+]

@@ -84,8 +84,10 @@ class MetadataSerializer:
         )  
         self._write_json(  
             directory / "music_genres.json",  
-            [self._music_genre_to_dictionary(g)  
-             for g in self.library.get_music_genres()],  
+            [  
+                self._music_genre_to_dictionary(g)  
+                for g in self.library.get_music_genres()  
+            ],  
         )
         self._write_json(  
             directory / "series.json",  

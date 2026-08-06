@@ -25,7 +25,7 @@ from metadata.vocabulary.country import Country
 from metadata.vocabulary.theme import Theme  
 from metadata.vocabulary.tag import Tag  
 from metadata.vocabulary.language import Language  
-from metadata.vocabulary.content_rating import ContentRating 
+from metadata.vocabulary.content_rating import ContentRating
   
 # Library entities  
 from metadata.library.network import Network  
@@ -206,7 +206,8 @@ class MetadataLoader:
         self._load_countries(library, metadata_path)  
         self._load_themes(library, metadata_path)  
         self._load_tags(library, metadata_path)  
-        self._load_languages(library, metadata_path) 
+        self._load_languages(library, metadata_path)  
+        self._load_content_ratings(library, metadata_path) 
   
     def _load_genres(  
         self,  
@@ -231,7 +232,7 @@ class MetadataLoader:
         library: MetadataLibrary,  
         metadata_path: Path,  
     ):  
-        """Load music genre metadata."""  
+        """Load music-genre metadata (parent links resolved by name)."""  
   
         path = metadata_path / "music_genres.json"  
   
@@ -240,12 +241,12 @@ class MetadataLoader:
         # First pass: create every music genre without its parent link.  
         for item in records:  
   
-            music_genre = MusicGenre(  
+            genre = MusicGenre(  
                 name=item["name"],  
                 description=item.get("description", ""),  
             )  
   
-            library.add_music_genre(music_genre)  
+            library.add_music_genre(genre)  
   
         # Second pass: resolve parent_genre references by name.  
         lookup = {g.get_name(): g for g in library.get_music_genres()}  
@@ -261,7 +262,28 @@ class MetadataLoader:
             parent = lookup.get(parent_name)  
   
             if child is not None and parent is not None:  
-                child.parent_genre = parent 
+                child.parent_genre = parent  
+  
+    def _load_content_ratings(  
+        self,  
+        library: MetadataLibrary,  
+        metadata_path: Path,  
+    ):  
+        """Load content-rating metadata."""  
+  
+        path = metadata_path / "content_ratings.json"  
+  
+        for item in self._read_json(path):  
+  
+            rating = ContentRating(  
+                name=item["name"],  
+                system=item.get("system", ""),  
+                country=item.get("country", ""),  
+                min_age=item.get("min_age", 0),  
+                description=item.get("description", ""),  
+            )  
+  
+            library.add_content_rating(rating)
   
     def _load_countries(  
         self,  

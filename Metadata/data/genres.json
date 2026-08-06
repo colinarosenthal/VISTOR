@@ -1,54 +1,67 @@
 [
     {
         "name": "Action",
-        "description": "Programming centered around physical conflict, adventure, or high intensity events."
+        "description": "Programming centered around physical conflict, adventure, or high intensity events.",
+        "parent_genre": null
     },
     {
         "name": "Adventure",
-        "description": "Programming focused on exploration, discovery, and journeys."
+        "description": "Programming focused on exploration, discovery, and journeys.",
+        "parent_genre": null
     },
     {
         "name": "Animation",
-        "description": "Animated television and film programming."
+        "description": "Animated television and film programming.",
+        "parent_genre": null
     },
     {
         "name": "Comedy",
-        "description": "Programming intended to entertain through humor."
+        "description": "Programming intended to entertain through humor.",
+        "parent_genre": null
     },
     {
         "name": "Drama",
-        "description": "Character-driven fictional storytelling."
+        "description": "Character-driven fictional storytelling.",
+        "parent_genre": null
     },
     {
         "name": "Documentary",
-        "description": "Non-fiction programming covering real subjects."
+        "description": "Non-fiction programming covering real subjects.",
+        "parent_genre": null
     },
     {
         "name": "Horror",
-        "description": "Programming intended to create suspense, fear, or unsettling experiences."
+        "description": "Programming intended to create suspense, fear, or unsettling experiences.",
+        "parent_genre": null
     },
     {
         "name": "Science Fiction",
-        "description": "Stories involving science, technology, space, or future concepts."
+        "description": "Stories involving science, technology, space, or future concepts.",
+        "parent_genre": null
     },
     {
         "name": "Fantasy",
-        "description": "Stories involving magical or imaginary settings."
+        "description": "Stories involving magical or imaginary settings.",
+        "parent_genre": null
     },
     {
         "name": "Reality",
-        "description": "Unscripted programming featuring real people and events."
+        "description": "Unscripted programming featuring real people and events.",
+        "parent_genre": null
     },
     {
         "name": "Sports",
-        "description": "Competitive athletic programming."
+        "description": "Competitive athletic programming.",
+        "parent_genre": null
     },
     {
         "name": "News",
-        "description": "Current events and informational programming."
+        "description": "Current events and informational programming.",
+        "parent_genre": null
     },
     {
         "name": "Music",
-        "description": "Music performances, videos, and related programming."
+        "description": "Music performances, videos, and related programming.",
+        "parent_genre": null
     }
 ]

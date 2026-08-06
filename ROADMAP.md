@@ -972,3 +972,14 @@ the `(provider, reference)` pair the fetchers expect (youtu.be & `watch?v=` -> y
 ## 2026-08-03
 
 - Fixed the vocabulary-link regression: MetadataLoader never loaded music_genres.json (no _load_music_genres in _load_vocabulary) and both genres.json / music_genres.json were empty, so name-based relinking in _resolve_relationships dropped genres and music_genre on every reload. Added _load_music_genres, repopulated both files from MetadataPopulation, and expanded _TAG_TO_MUSIC_GENRE to the full controlled MusicGenre set.
+- Resolved the KNOWN ISSUE from 2026-08-03: genres and music_genre were dropped on commit write-back because MetadataLoader never loaded music_genres.json and the vocabulary files were empty on disk.  
+- Added `_load_music_genres` to MetadataLoader (two-pass; resolves `parent_genre` by name, mirroring `_load_themes`) and wired it plus content-rating loading into `_load_vocabulary`.  
+- MetadataSerializer now writes `music_genres.json` and `content_ratings.json` so all seven controlled-vocabulary types round-trip on save/load.  
+- Seeded all seven controlled-vocabulary files (genres, music_genres, tags, themes, languages, countries, content_ratings) straight from MetadataPopulation so the loader's exact-name relinking has a full vocabulary to match against.  
+- Expanded `_TAG_TO_MUSIC_GENRE` to cover every controlled MusicGenre; remapped synth-pop/synthpop -> "Synth Pop" so The Buggles resolves to a real controlled style instead of collapsing to plain Pop.  
+- Added the missing `import time` to `media_describer.py` and a bounded retry/backoff on the Internet Archive metadata scrape, so a single 10s ReadTimeout no longer degrades a record to `Untitled`.  
+- Verified: re-dropping the Buggles archive.org link with Confirm & replace persists `genres: ["Music"]` and `music_genre: "Synth Pop"`; `test.py` round-trip loads all vocabulary offline.  
+- Completed controlled-vocabulary round-trip: added MetadataLoader._load_content_rating and wired it into _load_vocabulary, and MetadataSerializer now writes content_ratings.json, so all seven controlled types (genres, music_genres, tags, themes, languages, countries, content_ratings) reload instead of dropping.  
+- Seeded the remaining five vocabulary files (tags, themes, languages, countries, content_ratings) from MetadataPopulation; genres.json and music_genres.json were populated in the prior step.
+  
+---

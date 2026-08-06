@@ -1,1 +1,140 @@
-[]
+[
+    {
+        "name": "United States",
+        "iso_alpha2": "US",
+        "iso_alpha3": "USA",
+        "region": "North America"
+    },
+    {
+        "name": "Canada",
+        "iso_alpha2": "CA",
+        "iso_alpha3": "CAN",
+        "region": "North America"
+    },
+    {
+        "name": "Mexico",
+        "iso_alpha2": "MX",
+        "iso_alpha3": "MEX",
+        "region": "North America"
+    },
+    {
+        "name": "Brazil",
+        "iso_alpha2": "BR",
+        "iso_alpha3": "BRA",
+        "region": "South America"
+    },
+    {
+        "name": "Argentina",
+        "iso_alpha2": "AR",
+        "iso_alpha3": "ARG",
+        "region": "South America"
+    },
+    {
+        "name": "United Kingdom",
+        "iso_alpha2": "GB",
+        "iso_alpha3": "GBR",
+        "region": "Europe"
+    },
+    {
+        "name": "Ireland",
+        "iso_alpha2": "IE",
+        "iso_alpha3": "IRL",
+        "region": "Europe"
+    },
+    {
+        "name": "France",
+        "iso_alpha2": "FR",
+        "iso_alpha3": "FRA",
+        "region": "Europe"
+    },
+    {
+        "name": "Germany",
+        "iso_alpha2": "DE",
+        "iso_alpha3": "DEU",
+        "region": "Europe"
+    },
+    {
+        "name": "Spain",
+        "iso_alpha2": "ES",
+        "iso_alpha3": "ESP",
+        "region": "Europe"
+    },
+    {
+        "name": "Italy",
+        "iso_alpha2": "IT",
+        "iso_alpha3": "ITA",
+        "region": "Europe"
+    },
+    {
+        "name": "Netherlands",
+        "iso_alpha2": "NL",
+        "iso_alpha3": "NLD",
+        "region": "Europe"
+    },
+    {
+        "name": "Sweden",
+        "iso_alpha2": "SE",
+        "iso_alpha3": "SWE",
+        "region": "Europe"
+    },
+    {
+        "name": "Russia",
+        "iso_alpha2": "RU",
+        "iso_alpha3": "RUS",
+        "region": "Europe"
+    },
+    {
+        "name": "Japan",
+        "iso_alpha2": "JP",
+        "iso_alpha3": "JPN",
+        "region": "Asia"
+    },
+    {
+        "name": "South Korea",
+        "iso_alpha2": "KR",
+        "iso_alpha3": "KOR",
+        "region": "Asia"
+    },
+    {
+        "name": "China",
+        "iso_alpha2": "CN",
+        "iso_alpha3": "CHN",
+        "region": "Asia"
+    },
+    {
+        "name": "India",
+        "iso_alpha2": "IN",
+        "iso_alpha3": "IND",
+        "region": "Asia"
+    },
+    {
+        "name": "Hong Kong",
+        "iso_alpha2": "HK",
+        "iso_alpha3": "HKG",
+        "region": "Asia"
+    },
+    {
+        "name": "Australia",
+        "iso_alpha2": "AU",
+        "iso_alpha3": "AUS",
+        "region": "Oceania"
+    },
+    {
+        "name": "New Zealand",
+        "iso_alpha2": "NZ",
+        "iso_alpha3": "NZL",
+        "region": "Oceania"
+    },
+    {
+        "name": "South Africa",
+        "iso_alpha2": "ZA",
+        "iso_alpha3": "ZAF",
+        "region": "Africa"
+    },
+    {
+        "name": "Nigeria",
+        "iso_alpha2": "NG",
+        "iso_alpha3": "NGA",
+        "region": "Africa"
+    }
+]
