@@ -115,7 +115,9 @@
         "original_network": null,
         "production_country": null,
         "languages": [],
-        "genres": [],
+        "genres": [
+            "Music"
+        ],
         "tags": [],
         "themes": [],
         "appearances": [],
@@ -150,6 +152,6 @@
             }
         ],
         "studios": [],
-        "music_genre": null
+        "music_genre": "Synth Pop"
     }
 ]

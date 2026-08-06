@@ -968,4 +968,7 @@ the `(provider, reference)` pair the fetchers expect (youtu.be & `watch?v=` -> y
 - KNOWN ISSUE (next up): genres and music_genre are dropped on commit write-back. MetadataLoader never loads music_genres.json (no _load_music_genres in _load_vocabulary), and genres.json / music_genres.json are empty on disk, so name-based relinking has nothing to match. Fix: add _load_music_genres and repopulate both vocabulary files from MetadataPopulation.  
 
 ---
-  
+
+## 2026-08-03
+
+- Fixed the vocabulary-link regression: MetadataLoader never loaded music_genres.json (no _load_music_genres in _load_vocabulary) and both genres.json / music_genres.json were empty, so name-based relinking in _resolve_relationships dropped genres and music_genre on every reload. Added _load_music_genres, repopulated both files from MetadataPopulation, and expanded _TAG_TO_MUSIC_GENRE to the full controlled MusicGenre set.

@@ -249,9 +249,9 @@ class MediaClassifier:
         network. Wire the real call here when the download pipeline lands.  
         """  
         try:  
-            import acoustid  # noqa: F401 - optional, download-stage only  
+            import acoustid  # type: ignore[import-not-found]  # noqa: F401 - optional, download-stage only  
         except ImportError:  
-            return record  
+            return record
         # Intentionally not implemented until the download pipeline exists.  
         return record  
   

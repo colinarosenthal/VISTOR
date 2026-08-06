@@ -18,12 +18,14 @@ from core.logger import Logger
 from metadata.services.metadata_library import MetadataLibrary  
   
 # Vocabulary  
+# Vocabulary  
 from metadata.vocabulary.genre import Genre  
+from metadata.vocabulary.music_genre import MusicGenre  
 from metadata.vocabulary.country import Country  
 from metadata.vocabulary.theme import Theme  
 from metadata.vocabulary.tag import Tag  
 from metadata.vocabulary.language import Language  
-from metadata.vocabulary.content_rating import ContentRating  
+from metadata.vocabulary.content_rating import ContentRating 
   
 # Library entities  
 from metadata.library.network import Network  
@@ -200,10 +202,11 @@ class MetadataLoader:
         """Load vocabulary metadata."""  
   
         self._load_genres(library, metadata_path)  
+        self._load_music_genres(library, metadata_path)  
         self._load_countries(library, metadata_path)  
         self._load_themes(library, metadata_path)  
         self._load_tags(library, metadata_path)  
-        self._load_languages(library, metadata_path)  
+        self._load_languages(library, metadata_path) 
   
     def _load_genres(  
         self,  
@@ -221,7 +224,44 @@ class MetadataLoader:
                 description=item.get("description", ""),  
             )  
   
-            library.add_genre(genre)  
+            library.add_genre(genre) 
+
+    def _load_music_genres(  
+        self,  
+        library: MetadataLibrary,  
+        metadata_path: Path,  
+    ):  
+        """Load music genre metadata."""  
+  
+        path = metadata_path / "music_genres.json"  
+  
+        records = self._read_json(path)  
+  
+        # First pass: create every music genre without its parent link.  
+        for item in records:  
+  
+            music_genre = MusicGenre(  
+                name=item["name"],  
+                description=item.get("description", ""),  
+            )  
+  
+            library.add_music_genre(music_genre)  
+  
+        # Second pass: resolve parent_genre references by name.  
+        lookup = {g.get_name(): g for g in library.get_music_genres()}  
+  
+        for item in records:  
+  
+            parent_name = item.get("parent_genre")  
+  
+            if parent_name is None:  
+                continue  
+  
+            child = lookup.get(item["name"])  
+            parent = lookup.get(parent_name)  
+  
+            if child is not None and parent is not None:  
+                child.parent_genre = parent 
   
     def _load_countries(  
         self,  

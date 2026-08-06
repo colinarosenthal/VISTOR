@@ -13,6 +13,7 @@ missing tool or network error never raises.
 """  
   
 import re  
+import time
   
 from core.logger import Logger  
   
@@ -157,13 +158,26 @@ class MediaDescriber:
         identifier = reference.split("/", 1)[0]  
         url = f"https://archive.org/metadata/{identifier}"  
   
-        try:  
-            resp = requests.get(url, timeout=10)  
-            resp.raise_for_status()  
-            meta = (resp.json() or {}).get("metadata", {}) or {}  
-        except Exception as exc:  # noqa: BLE001  
-            Logger.warning(f"Could not scrape Internet Archive metadata: {exc!r}.")  
-            return {}  
+        meta = None  
+        # (connect, read) timeout: fail fast on connect, allow a slow body.  
+        for attempt in range(3):  
+            try:  
+                resp = requests.get(url, timeout=(5, 30))  
+                resp.raise_for_status()  
+                meta = (resp.json() or {}).get("metadata", {}) or {}  
+                break  
+            except Exception as exc:  # noqa: BLE001 - describe is best-effort  
+                if attempt == 2:  
+                    Logger.warning(  
+                        f"Could not scrape Internet Archive metadata "  
+                        f"after 3 attempts: {exc!r}."  
+                    )  
+                    return {}  
+                Logger.info(  
+                    f"Archive metadata attempt {attempt + 1} failed "  
+                    f"({exc!r}); retrying."  
+                )  
+                time.sleep(1.5 * (attempt + 1))
   
         data = {}  
   

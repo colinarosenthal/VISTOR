@@ -103,37 +103,93 @@ _TRAILING_NOISE = re.compile(
 # Only names that exist in MetadataPopulation.create_music_genres() may appear  
 # on the right; anything unmapped is dropped so we never invent a genre.  
 _TAG_TO_MUSIC_GENRE = {  
+    # --- Rock + sub-genres ------------------------------------------  
     "rock": "Rock",  
+    "alternative rock": "Alternative Rock",  
+    "alternative": "Alternative Rock",  
+    "alt-rock": "Alternative Rock",  
+    "classic rock": "Classic Rock",  
+    "hard rock": "Hard Rock",  
+    "glam rock": "Glam Rock",  
+    "glam": "Glam Rock",  
+    "progressive rock": "Progressive Rock",  
+    "prog rock": "Progressive Rock",  
+    "prog": "Progressive Rock",  
+    "punk rock": "Punk Rock",  
+    "punk": "Punk Rock",  
+    "post-punk": "Punk Rock",  
+    "pop punk": "Punk Rock",  
+    "indie rock": "Indie Rock",  
+    "indie": "Indie Rock",  
+    "grunge": "Grunge",  
+    "pop rock": "Pop Rock",  
+  
+    # --- Metal + sub-genres -----------------------------------------  
+    "metal": "Metal",  
+    "heavy metal": "Heavy Metal",  
+    "thrash metal": "Thrash Metal",  
+    "thrash": "Thrash Metal",  
+    "death metal": "Death Metal",  
+    "black metal": "Black Metal",  
+    "doom metal": "Doom Metal",  
+    "doom": "Doom Metal",  
+    "nu metal": "Nu Metal",  
+    "nu-metal": "Nu Metal",  
+    "power metal": "Power Metal",  
+  
+    # --- Pop + sub-genres -------------------------------------------  
     "pop": "Pop",  
+    "teen pop": "Teen Pop",  
+    "dance pop": "Dance Pop",  
+    "dance-pop": "Dance Pop",  
+    "synth pop": "Synth Pop",  
+    "synth-pop": "Synth Pop",  
+    "synthpop": "Synth Pop",  
+    "new wave": "Synth Pop",   # Buggles-era synth new wave  
+    "bubblegum pop": "Bubblegum Pop",  
+    "bubblegum": "Bubblegum Pop",  
+  
+    # --- Hip Hop + sub-genres ---------------------------------------  
     "hip hop": "Hip Hop",  
     "hip-hop": "Hip Hop",  
     "rap": "Hip Hop",  
+    "east coast hip hop": "East Coast Hip Hop",  
+    "west coast hip hop": "West Coast Hip Hop",  
+    "gangsta rap": "Gangsta Rap",  
+    "alternative hip hop": "Alternative Hip Hop",  
+    "trap": "Trap",  
+  
+    # --- Electronic + sub-genres ------------------------------------  
     "electronic": "Electronic",  
+    "electronica": "Electronic",  
+    "edm": "Electronic",  
     "dance": "Electronic",  
-    "house": "Electronic",  
-    "techno": "Electronic",  
-    "new wave": "Pop",        # Buggles-era synth new wave; nearest controlled  
-    "synth-pop": "Pop",  
-    "synthpop": "Pop",  
+    "house": "House",  
+    "techno": "Techno",  
+    "trance": "Trance",  
+    "drum and bass": "Drum and Bass",  
+    "drum & bass": "Drum and Bass",  
+    "dnb": "Drum and Bass",  
+    "ambient": "Ambient",  
+    "synthwave": "Synthwave",  
+  
+    # --- Standalone genres ------------------------------------------  
     "jazz": "Jazz",  
-    "funk": "Jazz",        # no Funk in the catalog; nearest controlled value  
     "acid jazz": "Jazz",  
-    "soul": "Jazz",  
+    "funk": "Jazz",              # no Funk in the catalog; nearest controlled  
+    "soul": "Jazz",             # no Soul in the catalog; nearest controlled  
     "classical": "Classical",  
+    "orchestral": "Classical",  
     "country": "Country",  
     "blues": "Blues",  
+    "rhythm and blues": "Blues",  # nearest controlled (no R&B genre)  
+    "r&b": "Blues",             # nearest controlled (no R&B genre)  
     "folk": "Folk",  
     "reggae": "Reggae",  
+    "ska": "Reggae",            # nearest controlled  
     "latin": "Latin",  
     "world": "World",  
-    "r&b": "Pop",  
-    "rhythm and blues": "Pop",  
-    "metal": "Rock",  
-    "punk": "Rock",  
-    "indie": "Rock",  
-    "alternative": "Rock",  
-}  
-  
+}
   
 class MusicBrainzSource:  
     """Best-effort music lookup. Never raises to the caller."""  

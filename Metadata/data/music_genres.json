@@ -1,1 +1,222 @@
-[]
+[
+    {
+        "name": "Rock",
+        "description": "A broad genre centered around electric guitars, drums, and popular song structures.",
+        "parent_genre": null
+    },
+    {
+        "name": "Alternative Rock",
+        "description": "Rock music associated with alternative and independent scenes.",
+        "parent_genre": "Rock"
+    },
+    {
+        "name": "Classic Rock",
+        "description": "Rock music from influential 1960s through 1980s artists.",
+        "parent_genre": "Rock"
+    },
+    {
+        "name": "Hard Rock",
+        "description": "A heavier rock style emphasizing powerful guitar riffs.",
+        "parent_genre": "Rock"
+    },
+    {
+        "name": "Glam Rock",
+        "description": "Theatrical rock style known for visual presentation and performance.",
+        "parent_genre": "Rock"
+    },
+    {
+        "name": "Progressive Rock",
+        "description": "Rock style featuring complex structures and experimental compositions.",
+        "parent_genre": "Rock"
+    },
+    {
+        "name": "Punk Rock",
+        "description": "Fast and aggressive rock style associated with punk movements.",
+        "parent_genre": "Rock"
+    },
+    {
+        "name": "Indie Rock",
+        "description": "Independent rock music emphasizing unique artistic approaches.",
+        "parent_genre": "Rock"
+    },
+    {
+        "name": "Grunge",
+        "description": "Alternative rock movement associated with the Seattle music scene.",
+        "parent_genre": "Rock"
+    },
+    {
+        "name": "Pop Rock",
+        "description": "Rock music incorporating accessible pop songwriting structures.",
+        "parent_genre": "Rock"
+    },
+    {
+        "name": "Metal",
+        "description": "A heavy music genre characterized by amplified guitars and aggressive performance.",
+        "parent_genre": null
+    },
+    {
+        "name": "Heavy Metal",
+        "description": "Traditional metal style emphasizing powerful riffs and vocals.",
+        "parent_genre": "Metal"
+    },
+    {
+        "name": "Thrash Metal",
+        "description": "Fast and aggressive metal style.",
+        "parent_genre": "Metal"
+    },
+    {
+        "name": "Death Metal",
+        "description": "Extreme metal style featuring heavy distortion and harsh vocals.",
+        "parent_genre": "Metal"
+    },
+    {
+        "name": "Black Metal",
+        "description": "Extreme metal style emphasizing atmosphere and intensity.",
+        "parent_genre": "Metal"
+    },
+    {
+        "name": "Doom Metal",
+        "description": "Slow and heavy metal style focused on atmosphere and weight.",
+        "parent_genre": "Metal"
+    },
+    {
+        "name": "Nu Metal",
+        "description": "1990s and 2000s metal fusion incorporating hip hop and alternative influences.",
+        "parent_genre": "Metal"
+    },
+    {
+        "name": "Power Metal",
+        "description": "Melodic metal style emphasizing fantasy themes and dramatic compositions.",
+        "parent_genre": "Metal"
+    },
+    {
+        "name": "Pop",
+        "description": "Popular music focused on accessibility and broad audience appeal.",
+        "parent_genre": null
+    },
+    {
+        "name": "Teen Pop",
+        "description": "Pop music targeted toward younger audiences.",
+        "parent_genre": "Pop"
+    },
+    {
+        "name": "Dance Pop",
+        "description": "Pop music influenced by electronic dance production.",
+        "parent_genre": "Pop"
+    },
+    {
+        "name": "Synth Pop",
+        "description": "Pop music centered around synthesizers and electronic production.",
+        "parent_genre": "Pop"
+    },
+    {
+        "name": "Bubblegum Pop",
+        "description": "Highly accessible and upbeat pop music.",
+        "parent_genre": "Pop"
+    },
+    {
+        "name": "Hip Hop",
+        "description": "Music centered around rhythmic vocals, beats, and sampling.",
+        "parent_genre": null
+    },
+    {
+        "name": "East Coast Hip Hop",
+        "description": "Hip hop style associated with the eastern United States.",
+        "parent_genre": "Hip Hop"
+    },
+    {
+        "name": "West Coast Hip Hop",
+        "description": "Hip hop style associated with the western United States.",
+        "parent_genre": "Hip Hop"
+    },
+    {
+        "name": "Gangsta Rap",
+        "description": "Hip hop style focused on street narratives.",
+        "parent_genre": "Hip Hop"
+    },
+    {
+        "name": "Alternative Hip Hop",
+        "description": "Experimental and unconventional hip hop.",
+        "parent_genre": "Hip Hop"
+    },
+    {
+        "name": "Trap",
+        "description": "Modern hip hop style featuring electronic production.",
+        "parent_genre": "Hip Hop"
+    },
+    {
+        "name": "Electronic",
+        "description": "Music created primarily through electronic instruments and production.",
+        "parent_genre": null
+    },
+    {
+        "name": "House",
+        "description": "Electronic dance music style built around four-on-the-floor rhythms.",
+        "parent_genre": "Electronic"
+    },
+    {
+        "name": "Techno",
+        "description": "Electronic genre emphasizing repetitive mechanical rhythms.",
+        "parent_genre": "Electronic"
+    },
+    {
+        "name": "Trance",
+        "description": "Electronic style focused on melodic and atmospheric progression.",
+        "parent_genre": "Electronic"
+    },
+    {
+        "name": "Drum and Bass",
+        "description": "Fast electronic genre centered around breakbeats and bass.",
+        "parent_genre": "Electronic"
+    },
+    {
+        "name": "Ambient",
+        "description": "Atmospheric electronic music focused on texture.",
+        "parent_genre": "Electronic"
+    },
+    {
+        "name": "Synthwave",
+        "description": "Electronic style inspired by 1980s music and media.",
+        "parent_genre": "Electronic"
+    },
+    {
+        "name": "Jazz",
+        "description": "Music genre emphasizing improvisation and instrumentation.",
+        "parent_genre": null
+    },
+    {
+        "name": "Classical",
+        "description": "Traditional orchestral and composed music.",
+        "parent_genre": null
+    },
+    {
+        "name": "Country",
+        "description": "Music genre rooted in American folk traditions.",
+        "parent_genre": null
+    },
+    {
+        "name": "Blues",
+        "description": "Genre based around expressive vocals and twelve-bar structures.",
+        "parent_genre": null
+    },
+    {
+        "name": "Folk",
+        "description": "Traditional music based around cultural storytelling.",
+        "parent_genre": null
+    },
+    {
+        "name": "Reggae",
+        "description": "Jamaican music style emphasizing rhythm and bass.",
+        "parent_genre": null
+    },
+    {
+        "name": "Latin",
+        "description": "Music styles originating from Latin American traditions.",
+        "parent_genre": null
+    },
+    {
+        "name": "World",
+        "description": "Music from global cultural traditions.",
+        "parent_genre": null
+    }
+]
