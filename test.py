@@ -1455,6 +1455,38 @@ assert asset.get("download_status") == "DOWNLOADED"
   
 shutil.rmtree(wb_dir, ignore_errors=True)  
 print("MediaIngestor write-back (download_status persisted) verified.")
+
+print("\n=== Testing Breakpoint Detection ===")  
+  
+from metadata.relationships.media_asset import MediaAsset  
+from metadata.services.fetchers.breakpoint_detector import BreakpointDetector  
+  
+# Round-trip: breakpoints survive to_dictionary/from_dictionary.  
+asset = MediaAsset("bp1", "Media/Episodes/ep.mkv", runtime_seconds=1800)  
+asset.set_breakpoints([540, 1080])  
+restored = MediaAsset.from_dictionary(asset.to_dictionary())  
+assert restored.get_breakpoints() == [540, 1080]  
+  
+# Parsers are pure: black+silence midpoints intersect within proximity.  
+det = BreakpointDetector()  
+log = (  
+    "black_start:539.5 black_end:541.0\n"  
+    "silence_start: 539.8\nsilence_end: 541.2\n"  
+    "black_start:1200.0 black_end:1201.0\n"   # no matching silence -> dropped  
+)  
+blacks = det._black_midpoints(log)  
+silences = det._silence_midpoints(log)  
+assert any(abs(b - s) <= det.PROXIMITY_SECONDS for b in blacks for s in silences)  
+  
+# Tier 3 runtime fallback: even ~10-min spacing when no signals exist.  
+empty = MediaAsset("bp2", "Media/Episodes/ep2.mkv", runtime_seconds=1800)  
+fallback = det._runtime_fallback(empty)  
+assert fallback == [600, 1200]  
+# Short clip -> no fabricated breaks.  
+short = MediaAsset("bp3", "Media/Episodes/ep3.mkv", runtime_seconds=300)  
+assert det._runtime_fallback(short) == []  
+  
+print("Breakpoint Detection verified.")
   
 # ------------------------------------------------------------------  
 # Final Result  

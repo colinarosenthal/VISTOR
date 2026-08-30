@@ -1063,8 +1063,6 @@ the `(provider, reference)` pair the fetchers expect (youtu.be & `watch?v=` -> y
 - Verified end-to-end: deleted `Media/MusicVideos/the_buggles_video_killed_the_radio_star_mtv.mkv`, ran the rebuild -> reconcile flipped the asset to MISSING, re-fetched the 134 MB `.mkv` (probed 199s 720x480 mpeg2video/mp3), and `media.json` returned to `download_status: DOWNLOADED`.  
 
 ---
-
----  
   
 ## 2026-08-29
   
@@ -1099,3 +1097,13 @@ the `(provider, reference)` pair the fetchers expect (youtu.be & `watch?v=` -> y
 - `Player.set_renderer` now seeks the new backend to `self.position_seconds` (when > 0) after `load` and before `play`, so a channel switch shows the live program at the correct offset.  
 - Added `test_playback.py` Test 8 (position-sync): advance a playing Player 3s, swap in a `RecordingRenderer`, and assert the new backend receives load -> seek(3) -> play; extended `RecordingRenderer` with a `seek` recorder.  
 - Verified: `test.py` and `test_playback.py` both pass to completion.
+
+---
+
+## 2026-08-30
+  
+- Added `src/metadata/services/fetchers/breakpoint_detector.py`: a `BreakpointDetector` that derives commercial-break offsets offline via the existing ffmpeg/ffprobe toolchain (no new dependency), in three tiers: (1) container chapters (`ffprobe -show_chapters`, ignoring the 0s program start), (2) black-frame + silence intersection (`ffmpeg blackdetect` + `silencedetect`, keeping only black midpoints that coincide with a silence midpoint within 2s), (3) runtime-spacing fallback (~every 10 min) per Design Bible 3.4. Every tier degrades to [] when a binary is missing or parsing fails, so a download never fails on detection.  
+- Persisted a new `breakpoints` field on `MediaAsset` (constructor, `get_breakpoints`/`set_breakpoints`, `to_dictionary`/`from_dictionary`) and in `MetadataSerializer._media_asset_to_dictionary`, so offsets round-trip and survive eviction like the fingerprint.  
+- Wired detection into `BaseFetcher._finalize` after probe + fingerprint (runs on the temp file before the atomic move), guarded so a failure never fails the download.  
+- Verified in `test.py` (`=== Testing Breakpoint Detection ===`): breakpoints round-trip through serialization; black/silence stderr parsers intersect correctly; runtime fallback yields even 10-min spacing for a 30-min asset and nothing for a 5-min clip. `test.py` and `test_playback.py` both pass to completion.  
+- KNOWN LIMITATION: breakpoints are now detected and stored, but `MidProgramMode` cannot consume them yet (broadcast_modes.py not present) and the item-based Player/PlaybackQueue still can't split a file mid-play. Black/silence is a heuristic and may fire on in-content fades.

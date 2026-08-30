@@ -249,28 +249,3 @@ class MetadataSerializer:
             data["music_genre"] = music_genre.get_name() if music_genre else None  
   
         return data
-
-    def _media_asset_to_dictionary(self, asset):  
-        """Flatten a MediaAsset (Path -> str, enum -> name)."""  
-  
-        return {  
-            "asset_id": asset.get_asset_id(),  
-            "path": str(asset.get_path()),  
-            "checksum": asset.get_checksum(),  
-            "runtime_seconds": asset.get_runtime_seconds(),  
-            "file_size": asset.get_file_size(),  
-            "video_codec": asset.get_video_codec(),  
-            "audio_codec": asset.get_audio_codec(),  
-            "container": asset.get_container(),  
-            "width": asset.get_resolution()[0],  
-            "height": asset.get_resolution()[1],  
-            "frame_rate": asset.get_frame_rate(),  
-            "verified": asset.is_verified(),  
-            "download_status": asset.get_download_status().name,  
-            "last_played": asset.get_last_played(),  
-            "sources": asset.get_sources(),  
-            "pinned": asset.is_pinned(),  
-            "broadcast_score": asset.get_broadcast_score(),  
-            "retention_score": asset.get_retention_score(),  
-            "fingerprint": asset.get_fingerprint(),
-        }

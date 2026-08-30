@@ -35,6 +35,7 @@ class MediaAsset:
         broadcast_score: float = 0.0,  
         retention_score: float = 0.0,  
         fingerprint: str = "",  
+        breakpoints=None,
     ):  
         self.asset_id = asset_id  
   
@@ -91,6 +92,11 @@ class MediaAsset:
         # Perceptual/keyframe fingerprint used to find replacement media  
         # when a source disappears. Populated in a later stage.  
         self.fingerprint = fingerprint  
+
+        # Commercial-break offsets (seconds into the file) where Mid-Program  
+        # mode may insert a Broadcast Event. Detected at download time from  
+        # container chapters or black+silence analysis; [] means none known.  
+        self.breakpoints = list(breakpoints) if breakpoints else []
   
     # ------------------------------------------------------------------  
     # Identification  
@@ -342,6 +348,16 @@ class MediaAsset:
         """Set the keyframe fingerprint."""  
   
         self.fingerprint = fingerprint  
+  
+    def get_breakpoints(self):  
+        """Return the detected commercial-break offsets (seconds)."""  
+  
+        return self.breakpoints  
+  
+    def set_breakpoints(self, breakpoints):  
+        """Set the detected commercial-break offsets (seconds)."""  
+  
+        self.breakpoints = list(breakpoints) if breakpoints else []
     
     # ------------------------------------------------------------------  
     # Serialization  
@@ -369,7 +385,8 @@ class MediaAsset:
             "pinned": self.pinned,  
             "broadcast_score": self.broadcast_score,  
             "retention_score": self.retention_score,  
-            "fingerprint": self.fingerprint,  
+            "fingerprint": self.fingerprint,
+            "breakpoints": list(self.breakpoints),    
         }  
   
     @classmethod  
@@ -402,7 +419,8 @@ class MediaAsset:
             pinned=data.get("pinned", False),  
             broadcast_score=data.get("broadcast_score", 0.0),  
             retention_score=data.get("retention_score", 0.0),  
-            fingerprint=data.get("fingerprint", ""),  
+            fingerprint=data.get("fingerprint", ""), 
+            breakpoints=data.get("breakpoints", []),   
         )
   
     # ------------------------------------------------------------------  

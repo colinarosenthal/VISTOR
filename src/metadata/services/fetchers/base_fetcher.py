@@ -14,8 +14,10 @@ import tempfile
 from pathlib import Path  
   
 from core.logger import Logger  
+
 from metadata.services.source_resolver import FetchResult  
-from metadata.services.fetchers.metadata_probe import MetadataProbe  
+from metadata.services.fetchers.metadata_probe import MetadataProbe
+from metadata.services.fetchers.breakpoint_detector import BreakpointDetector 
 from metadata.services.keyframe_fingerprint import KeyframeFingerprintService  
   
 # Same "gone/forbidden" codes SourceResolver understands.  
@@ -41,6 +43,7 @@ class BaseFetcher:
         self.fingerprint_service = (  
             fingerprint_service or KeyframeFingerprintService()  
         )  
+        self.breakpoint_detector = BreakpointDetector()
         # Set by RealFetcher before each fetch so we can populate technical  
         # fields / fingerprint on the exact asset being resolved.  
         self.current_asset = None  
@@ -117,7 +120,16 @@ class BaseFetcher:
         # 2. Fingerprint BEFORE the file can ever be evicted.  
         self.fingerprint_service.ensure_fingerprint(asset)  
   
-        # 3. Move temp -> the asset's declared final path.  
-        final_path = Path(asset.get_path())  
+        # 3. Detect commercial-break offsets from chapters / black+silence  
+        #    (best-effort; never fails the download).  
+        try:  
+            asset.set_breakpoints(  
+                self.breakpoint_detector.detect(asset, temp_path)  
+            )  
+        except Exception as error:  # noqa: BLE001  
+            Logger.warning(f"Breakpoint detection skipped: {error}.")  
+  
+        # 4. Move temp -> the asset's declared final path.  
+        final_path = Path(asset.get_path())
         final_path.parent.mkdir(parents=True, exist_ok=True)  
         shutil.move(str(temp_path), str(final_path))
