@@ -1,0 +1,13 @@
+{
+    "debug": false,
+    "version": "0.6.0",
+    "media_directory": "Media",
+    "assets_directory": "Assets",
+    "metadata_directory": "Metadata",
+    "weather_enabled": true,
+    "osd_enabled": true,
+    "recommended_media": false,
+    "recommendation_mode": "suggest_only",
+    "seed_source": "whole_library",
+    "max_auto_additions_per_week": 0
+}

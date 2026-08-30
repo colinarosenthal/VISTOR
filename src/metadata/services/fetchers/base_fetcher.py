@@ -27,12 +27,16 @@ class BaseFetcher:
   
     def __init__(  
         self,  
-        media_root="Media",  
+        media_root=None,  
         probe=None,  
         fingerprint_service=None,  
     ):  
-        self.media_root = Path(media_root)  
-        self.temp_dir = self.media_root / "tmp"  
+        from core.paths import Paths  
+  
+        self.media_root = (  
+            Path(media_root) if media_root else Paths().get_media_directory()  
+        )  
+        self.temp_dir = self.media_root / "tmp"
         self.probe = probe or MetadataProbe()  
         self.fingerprint_service = (  
             fingerprint_service or KeyframeFingerprintService()  

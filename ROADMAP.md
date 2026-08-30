@@ -2,9 +2,9 @@
 
 **Project Status:** Pre-Alpha
 
-**Current Version:** 0.8.0
+**Current Version:** 0.8.1
 
-**Last Updated:** JAugust 3, 2026
+**Last Updated:** August 29, 2026
 
 ---
 
@@ -563,6 +563,33 @@ the watched channel renders while all others advance headlessly._
 - [ ] Position-sync on channel switch (resume mid-program instead of restart)    
   
 ---
+
+# Storage & Configuration Foundation  
+  
+_Milestone: media storage is portable and budget-managed, and settings are  
+adjustable from the TV — so content population is safe on any drive. This  
+foundation precedes Phase 8 content population._  
+  
+## Storage  
+  
+- [x] Configurable media root (Config-driven `Paths`; absolute/external drive support)  
+- [ ] Storage-budget setting + wire `evict_to_budget` into the runtime  
+  
+## Settings Surface  
+  
+- [ ] TV Settings Menu on the remote (OSD settings overlay + `settings` binding)  
+  
+## Broadcast Realism  
+  
+- [ ] Position-sync on channel switch (resume mid-program instead of restart)  
+- [ ] Broadcast Events model + Broadcast Modes (Off / Between Programs / Mid-Program)  
+  
+## Scheduling Content (metadata-only)  
+  
+- [ ] Seasonal scheduling logic (Clock calendar helpers → Scheduler selection)  
+- [ ] Schedule authoring (populate `Schedules/`, referencing media by metadata id)  
+  
+---
     
 # Phase 8 — Broadcast Programming    
     
@@ -1040,7 +1067,7 @@ the `(provider, reference)` pair the fetchers expect (youtu.be & `watch?v=` -> y
 
 ---  
   
-## 2026-08-30  
+## 2026-08-29
   
 - Added a real playback/rendering layer behind the headless Player (`src/player/renderer.py`): a `Renderer` base with `NullRenderer` (headless no-op) and `MpvRenderer` (libmpv audio/video), plus `create_renderer()` which returns an `MpvRenderer` when libmpv is importable and falls back to `NullRenderer` otherwise — so unwatched channels and offline tests never decode.    
 - `Player` now mirrors `load` / `play` / `pause` / `stop` / `set_volume` / `set_mute` onto an injected renderer (defaults to `NullRenderer`), resolving the on-disk file via `_resolve_source_path`; missing-asset items warn and skip `load` instead of crashing.    
@@ -1049,6 +1076,10 @@ the `(provider, reference)` pair the fetchers expect (youtu.be & `watch?v=` -> y
 - Bootstrapped `libmpv-2.dll` onto PATH via an absolute path before `import mpv` (python-mpv's loader rejects DLLs found under relative %PATH% entries).    
 - Added `test_playback.py`: Player→renderer wiring, audio propagation, missing-asset safety, headless `NullRenderer` fallback, real mpv playback (auto-skips if libmpv/media absent), `_format_overlay` pure-function coverage, and `set_renderer` swap+resurface.    
 - Verified end-to-end: real mpv playback of `Media/Episodes/neon_genesis_evangelion.mkv` reported `time_pos ≈ 1.189` after ~2s; all seven tests pass, and `create_renderer()` falls back cleanly when libmpv is absent.    
-- Flipped `DiscoveryLoop` and `Suggest-Only mode` to done in Phase 7 (verified in `src/metadata/services/discovery_loop.py`); assisted/automatic/source-URL-discovery stay open because `_discover_source_url` still returns `None`.    
-  
----
+- Flipped `DiscoveryLoop` and `Suggest-Only mode` to done in Phase 7 (verified in `src/metadata/services/discovery_loop.py`); assisted/automatic/source-URL-discovery stay open because `_discover_source_url` still returns `None`.
+## 2026-08-30 (Storage foundation #1)  
+- Made the media storage root fully configurable (Design Bible 3.6 / 4.3): `Paths.media` now derives from `Config().load().get_media_directory()`, using an absolute value as-is (external USB SSD / Raspberry Pi drive) and anchoring a relative value under the project root.  
+- Removed hardcoded `"Media/"` strings from `record_builder.py` (`_path_for` builds from `Paths()`; `LOCAL_DIRS` fallback changed `"Media"` -> `""` to stop double-nesting), `media_ingestor.py` (backlog episode path), and `base_fetcher.py` (default `media_root` falls back to `Paths()` so the `tmp` staging dir shares the destination drive for atomic moves).  
+- `Paths.verify()` now warns instead of raising when a configured absolute media root is not mounted, so a missing external drive never crashes boot; missing local dirs are created.  
+- `library_reconciler.py` needed no change — it already resolves through `Paths().get_media_directory()`.  
+- Verified: default resolves under the project root; an absolute override (`D:\VISTOR_Media`) redirected `Paths`, `RecordBuilder`, and `BaseFetcher` together; `verify()` warned without crashing on an absent drive; `test.py` and `test_playback.py` pass with no leftover hardcoded paths.

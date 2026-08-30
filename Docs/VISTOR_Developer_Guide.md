@@ -254,7 +254,12 @@ Responsibilities:
   
 Holds runtime configuration values, including the active version string.  
   
-Note: the version constant here must stay in sync with `version.py`.  
+Note: the version constant here must stay in sync with `version.py`.
+
+`media_directory` sets the media storage root consumed by `Paths` (see 4.5);  
+`get_media_directory()` returns it and it may be absolute (external/Pi drive)  
+or relative (anchored under the project root). Missing config files fall back  
+to defaults, so first boot works with no `config.json` present.
   
 ## 4.3 logger.py  
   
@@ -267,10 +272,20 @@ Defines the single `VERSION` constant reported by the application.
   
 ## 4.5 paths.py  
   
-Resolves all top-level project directories relative to the project root.  
-Directory names follow a capitalized convention: `Assets`, `Media`, `Logs`,  
-`Config`, `Metadata`, `Schedules`. Consumers should resolve paths through  
-`Paths` rather than hardcoding strings, so casing never drifts.  
+Resolves all top-level project directories. Directory names follow a  
+capitalized convention: `Assets`, `Media`, `Logs`, `Config`, `Metadata`,  
+`Schedules`. Consumers should resolve paths through `Paths` rather than  
+hardcoding strings, so casing never drifts and storage stays portable.  
+  
+The media root is configurable (Design Bible 3.6 / 4.3): `Paths.media` is  
+derived from `Config().load().get_media_directory()`. An absolute value  
+(e.g. an external USB SSD or Raspberry Pi mount) is used as-is; a relative  
+value is anchored under the project root. All other directories remain  
+project-root-relative.  
+  
+`verify()` creates missing local directories and, when the configured media  
+root is an absolute path that is not currently mounted, logs a warning  
+instead of raising — so an unplugged external drive never blocks boot. 
   
 ## 4.6 clock.py  
   

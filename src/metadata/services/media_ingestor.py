@@ -387,11 +387,17 @@ class MediaIngestor:
                                 ep_record[k] = record[k]  
                     else:  
                         # Backlog episode: no source yet (acquisition loop fills).  
+                        from core.paths import Paths  
+                        _ep_path = str(  
+                            Paths().get_media_directory()  
+                            / "Episodes"  
+                            / f"{ep_id}.mkv"  
+                        )  
                         ep_record["assets"] = [{  
                             "asset_id": f"{ep_id}-asset-1",  
-                            "path": f"Media/Episodes/{ep_id}.mkv",  
+                            "path": _ep_path,  
                             "sources": [],  
-                        }]  
+                        }]
                     expanded.append(ep_record)  
   
         if touched:  

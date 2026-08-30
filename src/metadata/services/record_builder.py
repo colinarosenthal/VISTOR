@@ -183,5 +183,8 @@ class RecordBuilder:
             record[key] = value  
   
     def _path_for(self, media_type, media_id):  
-        folder = self.LOCAL_DIRS.get(media_type, "Media")  
-        return f"Media/{folder}/{media_id}.mkv"
+        from core.paths import Paths  
+  
+        folder = self.LOCAL_DIRS.get(media_type, "")  
+        media_root = Paths().get_media_directory()  
+        return str(media_root / folder / f"{media_id}.mkv")
