@@ -38,9 +38,10 @@ class RemoteController:
             "channel_up": self._on_channel_up,  
             "channel_down": self._on_channel_down,  
             "prev": self._on_previous_channel,  
-            "clock": self._on_clock,
+            "clock": self._on_clock,  
             "guide": self._on_guide,  
-        }  
+            "settings": self._on_settings,  
+        }
   
     # ------------------------------------------------------------------  
     # Dispatch  
@@ -103,6 +104,15 @@ class RemoteController:
             return  
   
         self.engine.toggle_guide()
+
+    def _on_settings(self):  
+        """Settings button: toggle the TV settings menu."""  
+  
+        if self.engine is None:  
+            Logger.warning("Settings button pressed but no engine is bound.")  
+            return  
+  
+        self.engine.toggle_settings()
   
     def _on_digit(self, digit):  
         """Accumulate a digit for numeric channel entry."""  

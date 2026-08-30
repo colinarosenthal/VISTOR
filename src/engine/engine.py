@@ -4,6 +4,7 @@ VISTOR Engine
   
 from core.logger import Logger  
 from core.clock import Clock  
+from core.config import Config
   
 from scheduler.scheduler import Scheduler  
 from scheduler.broadcast_controller import BroadcastController  
@@ -19,6 +20,8 @@ from osd.osd_manager import OSDManager
 from metadata.services.storage_manager import StorageManager
 
 from guide.guide import Guide  
+  
+from settings.settings_menu import SettingsMenu
   
   
 class Engine:  
@@ -50,7 +53,10 @@ class Engine:
         self.channel_manager = None  
         self.osd = None
 
-        self.guide = None
+        self.guide = None  
+  
+        self.config = None  
+        self.settings_menu = None
   
     def initialize(self):  
         """Initialize the engine."""  
@@ -79,6 +85,11 @@ class Engine:
         self.channel_manager.set_on_channel_change(self._on_channel_change)
 
         self.guide = Guide(self.channel_manager, self.clock)  
+  
+        # TV Settings Menu (adjustable from the remote). Wraps a persisted  
+        # Config; changes are saved to disk when the menu closes.  
+        self.config = Config().load()  
+        self.settings_menu = SettingsMenu(self.config)  
   
         # Build the real renderer (falls back to NullRenderer when python-mpv  
         # / libmpv is unavailable) and surface only the active channel.  
@@ -336,6 +347,61 @@ class Engine:
             return  
   
         self.guide.move_down()
+
+    # ------------------------------------------------------------------  
+    # Settings Control  
+    # ------------------------------------------------------------------  
+  
+    def toggle_settings(self):  
+        """Toggle the TV settings menu and raise/lower its OSD overlay."""  
+  
+        if self.settings_menu is None:  
+            return  
+  
+        opened = self.settings_menu.toggle()  
+  
+        if self.osd is not None:  
+            if opened:  
+                self.osd.show_settings(self.settings_menu.get_rows())  
+            else:  
+                self.osd.hide()  
+  
+    def _refresh_settings_overlay(self):  
+        """Re-paint the settings overlay after a navigation/adjust action."""  
+  
+        if self.settings_menu is None or not self.settings_menu.is_open():  
+            return  
+  
+        if self.osd is not None:  
+            self.osd.show_settings(self.settings_menu.get_rows())  
+  
+    def settings_up(self):  
+        """Move the settings selection up one row."""  
+  
+        if self.settings_menu is not None:  
+            self.settings_menu.move_up()  
+            self._refresh_settings_overlay()  
+  
+    def settings_down(self):  
+        """Move the settings selection down one row."""  
+  
+        if self.settings_menu is not None:  
+            self.settings_menu.move_down()  
+            self._refresh_settings_overlay()  
+  
+    def settings_left(self):  
+        """Decrease / toggle / cycle the selected setting backward."""  
+  
+        if self.settings_menu is not None:  
+            self.settings_menu.adjust_left()  
+            self._refresh_settings_overlay()  
+  
+    def settings_right(self):  
+        """Increase / toggle / cycle the selected setting forward."""  
+  
+        if self.settings_menu is not None:  
+            self.settings_menu.adjust_right()  
+            self._refresh_settings_overlay()
   
     # ------------------------------------------------------------------  
     # OSD callbacks  

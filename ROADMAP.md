@@ -566,18 +566,18 @@ the watched channel renders while all others advance headlessly._
 
 # Storage & Configuration Foundation  
   
-_Milestone: media storage is portable and budget-managed, and settings are  
+Milestone: media storage is portable and budget-managed, and settings are  
 adjustable from the TV — so content population is safe on any drive. This  
 foundation precedes Phase 8 content population._  
   
 ## Storage  
   
 - [x] Configurable media root (Config-driven `Paths`; absolute/external drive support)  
-- [ ] Storage-budget setting + wire `evict_to_budget` into the runtime  
+- [x] Storage-budget setting + wire `evict_to_budget` into the runtime  
   
 ## Settings Surface  
   
-- [ ] TV Settings Menu on the remote (OSD settings overlay + `settings` binding)  
+- [x] TV Settings Menu on the remote (OSD settings overlay + `settings` binding)  
   
 ## Broadcast Realism  
   
@@ -1083,3 +1083,15 @@ the `(provider, reference)` pair the fetchers expect (youtu.be & `watch?v=` -> y
 - `Paths.verify()` now warns instead of raising when a configured absolute media root is not mounted, so a missing external drive never crashes boot; missing local dirs are created.  
 - `library_reconciler.py` needed no change — it already resolves through `Paths().get_media_directory()`.  
 - Verified: default resolves under the project root; an absolute override (`D:\VISTOR_Media`) redirected `Paths`, `RecordBuilder`, and `BaseFetcher` together; `verify()` warned without crashing on an absent drive; `test.py` and `test_playback.py` pass with no leftover hardcoded paths.
+- Storage-budget setting + eviction wired. Added a persisted `storage_budget_bytes` config field (default 0 = disabled) with `get_storage_budget_bytes()` / `is_storage_budget_enabled()` accessors.  
+- Fixed `RollingCache.evict_to_budget` to physically delete files from disk (it previously only flipped `download_status` to MISSING and never freed space); fingerprint + sources are retained for re-fetch (Deleted-Content Metadata Retention).  
+- Added `StorageManager` to collect resident (downloaded, unpinned) assets from the library and enforce the budget; a no-op when disabled.  
+- Eviction stays off until an external drive is in place and a nonzero budget is set.
+- New `SettingsMenu` (`src/settings/settings_menu.py`) wrapping `Config`, with `bool`, `bytes` (1 GiB step), and `choice` field kinds.  
+- New `OSDOverlay.SETTINGS` + `OSDManager.show_settings(rows)`.  
+- New `settings` remote binding + `RemoteController._on_settings`.  
+- Engine control: `toggle_settings`, `settings_up/down/left/right`, `_refresh_settings_overlay`.  
+- `MpvRenderer._format_overlay` `settings` case for on-screen rendering.  
+- New `Config` settings `captions_enabled` and `broadcast_mode` (`off` / `between_programs` / `mid_program`) + getters; persisted in `Config.save()`.  
+- Storage budget wired into the runtime via `StorageManager.enforce_budget()`.  
+- Verified via `test.py` and `test_playback.py` (both pass to completion).

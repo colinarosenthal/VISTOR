@@ -259,9 +259,13 @@ assert fmt(None, _FakeOverlay("volume"), {"level": 40, "muted": False}) == "Volu
 assert fmt(None, _FakeOverlay("volume"), {"level": 40, "muted": True}) == "Muted"  
 assert fmt(None, _FakeOverlay("mute"), {"muted": True}) == "Muted"  
 assert fmt(None, _FakeOverlay("clock"), {"time": "8:30 PM"}) == "8:30 PM"  
+
+settings_text = fmt(None, _FakeOverlay("settings"),  
+                    {"rows": [{"label": "Captions", "value": "On", "selected": True}]})  
+assert "SETTINGS" in settings_text  
+assert "Captions" in settings_text and "On" in settings_text
   
 print("Overlay formatting verified.")  
-  
   
 # ------------------------------------------------------------------  
 # Test 7: set_renderer swaps backend + resurfaces the in-progress item  

@@ -836,6 +836,70 @@ assert engine.guide.is_open() is False
   
 print("TV Guide verified.")
 
+print("\n=== Testing Settings Menu ===") 
+
+import json  
+engine.config.captions_enabled = True  
+engine.config.broadcast_mode = "mid_program"  
+engine.config.save()  
+with open(engine.config.path, encoding="utf-8") as handle:  
+    on_disk = json.load(handle)  
+assert on_disk["captions_enabled"] is True  
+assert on_disk["broadcast_mode"] == "mid_program"  
+print("Settings persistence verified.")
+  
+from osd.osd_manager import OSDOverlay  
+  
+# The engine (built above) owns a SettingsMenu wrapping its Config.  
+assert engine.settings_menu is not None  
+assert engine.config is not None  
+  
+# Pressing "settings" on the remote raises the SETTINGS overlay.  
+remote.press("settings")  
+assert engine.settings_menu.is_open() is True  
+assert engine.osd.get_overlay() == OSDOverlay.SETTINGS  
+  
+# The overlay payload carries one row per adjustable Config field.  
+rows = engine.osd.get_payload()["rows"]  
+assert len(rows) == 6  
+assert rows[0]["selected"] is True          # cursor starts at the top  
+  
+# --- bytes field: storage budget steps by 1 GiB and clamps at 0 ---  
+engine.config.storage_budget_bytes = 0  
+engine.settings_menu.selected_row = 0  
+engine.settings_right()  
+assert engine.config.storage_budget_bytes == 1024 * 1024 * 1024  
+engine.settings_left()  
+engine.settings_left()                      # clamp at 0, never negative  
+assert engine.config.storage_budget_bytes == 0  
+  
+# --- choice field: broadcast_mode cycles Off / Between / Mid ---  
+engine.settings_menu.selected_row = 1  
+engine.config.broadcast_mode = "off"  
+engine.settings_right()  
+assert engine.config.broadcast_mode == "between_programs"  
+engine.settings_right()  
+assert engine.config.broadcast_mode == "mid_program"  
+engine.settings_right()  
+assert engine.config.broadcast_mode == "off"   # wraps around  
+  
+# --- bool field: captions toggle ---  
+engine.settings_menu.selected_row = 2  
+before = engine.config.captions_enabled  
+engine.settings_right()  
+assert engine.config.captions_enabled != before  
+  
+# --- navigation clamps at both ends ---  
+engine.settings_menu.selected_row = 0  
+engine.settings_up()  
+assert engine.settings_menu.get_selected_row() == 0  
+  
+# Closing persists to disk and lowers the overlay.  
+engine.toggle_settings()  
+assert engine.settings_menu.is_open() is False  
+  
+print("Settings Menu verified.")
+
 print("\n=== Testing Intelligent Content Management (asset persistence) ===")  
   
 import tempfile  

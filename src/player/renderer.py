@@ -156,7 +156,15 @@ class MpvRenderer(Renderer):
             return "Muted" if payload.get("muted") else f"Volume {payload.get('level', 0)}"  
   
         if kind == "mute":  
-            return "Muted" if payload.get("muted") else "Unmuted"  
+            return "Muted" if payload.get("muted") else "Unmuted" 
+
+        if kind == "settings":  
+            rows = payload.get("rows", [])  
+            lines = ["SETTINGS"]  
+            for row in rows:  
+                marker = ">" if row.get("selected") else " "  
+                lines.append(f"{marker} {row.get('label')}: {row.get('value')}")  
+            return "\n".join(lines)  
   
         if kind == "clock":  
             return str(payload.get("time", ""))  

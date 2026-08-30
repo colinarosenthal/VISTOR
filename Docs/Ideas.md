@@ -521,3 +521,68 @@ Full automation depends on reliable source discovery and a real settings/
 config persistence layer (the current Config.load() is a placeholder). The  
 first buildable slice is Suggest Only over the known TMDB "recommendations"  
 endpoint, with a persisted `recommended_media` toggle.
+
+---  
+  
+## Coexisting with Jellyfin (Streaming Mode Alongside Cable Mode)  
+  
+VISTOR and a media server such as Jellyfin could run side-by-side on the same  
+Raspberry Pi, pointed at the same downloaded media, giving the operator two  
+front-ends over the same bytes: traditional "always airing" cable television  
+through VISTOR, and on-demand "streaming mode" browsing through Jellyfin.  
+  
+Both would run as separate processes with no shared runtime - just a shared  
+folder. Jellyfin would be pointed at the same `Media/` tree that VISTOR  
+resolves through `Paths.get_media_directory()` (`src/core/paths.py`). There is  
+no code-level conflict in two processes *reading* the same files; every  
+friction below comes from VISTOR *writing and deleting* within that tree.  
+  
+### Problem 1 - Retention-driven eviction deletes files out from under Jellyfin  
+  
+VISTOR's rolling cache (`evict_to_budget` in  
+`src/metadata/services/rolling_cache.py`) intentionally keeps only a small  
+resident window of upcoming episodes and evicts already-aired ones to stay  
+within the storage budget. Jellyfin assumes a stable, always-present library,  
+so any evicted episode would simply show as missing/unavailable there.  
+Eviction is non-destructive to *metadata* - it flips `download_status` to  
+MISSING and preserves the sidecar/fingerprint for re-fetch - but the playable  
+file Jellyfin needs is gone.  
+  
+Solution: either set the storage budget to `0` (unbounded) so window-based  
+eviction never fires - at the cost of the #1/#2 disk-management behavior - or  
+accept that Jellyfin only reliably sees VISTOR's currently-resident window  
+rather than the full catalog.  
+  
+### Problem 2 - File naming is VISTOR-shaped, not Jellyfin-shaped  
+  
+Files are named by internal media id via `RecordBuilder._path_for`  
+(`src/metadata/services/record_builder.py`), e.g. `Media/<folder>/<media_id>.mkv`,  
+rather than Jellyfin's expected `Show Name/Season 01/Show Name - S01E02`  
+convention. Jellyfin's scanner and metadata agents rely on filename/folder  
+conventions to identify content, so pointing it at VISTOR's tree yields a  
+poorly-identified library. VISTOR's own `<file>.vistor.json` sidecars  
+(`src/metadata/services/asset_sidecar.py`) are a VISTOR-specific format that  
+Jellyfin cannot read.  
+  
+Solution: treat the tree as a "mixed / home videos" library in Jellyfin, or add  
+an `.nfo`-generation bridge step that translates VISTOR metadata into a format  
+Jellyfin's agents understand.  
+  
+### Problem 3 - Conceptually opposite models  
+  
+VISTOR is a broadcast simulator ("watch what's airing"); Jellyfin is a library  
+browser ("browse and pick"), which is an explicit VISTOR non-goal. This is not  
+a technical conflict but a UX one: the two front-ends behave differently over  
+the same media, which is exactly the point of this setup.  
+  
+Solution / guardrails: decide who owns deletion (VISTOR's eviction vs. a stable  
+Jellyfin library), and consider pointing Jellyfin at a curated subset rather  
+than the whole `Media/` tree so VISTOR's `Raw/`, `tmp/`, and sidecar files do  
+not clutter the Jellyfin library.  
+  
+### Deferral Note  
+  
+This is an optional deployment/integration idea, not a core roadmap item. It  
+becomes cleanly viable once the storage-budget setting (#2) is respected  
+everywhere and a naming/`.nfo` bridge exists; until then the safest  
+configuration is an unbounded budget plus a curated Jellyfin library subset.

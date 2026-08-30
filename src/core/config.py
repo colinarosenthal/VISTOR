@@ -21,8 +21,17 @@ class Config:
         self.metadata_directory = "Metadata"  
   
         # Features  
+        # Features  
         self.weather_enabled = True  
         self.osd_enabled = True  
+        self.captions_enabled = False  
+  
+        # Broadcast Mode (see Design Bible 3.4 -> Broadcast Modes). Controls  
+        # where commercial blocks air relative to programs:  
+        #   "off"              -> no commercials at all  
+        #   "between_programs" -> commercials only after a program ends  
+        #   "mid_program"      -> commercials at authentic mid-program breaks  
+        self.broadcast_mode = "between_programs"  
   
         # Recommended Media (see Docs/Ideas.md -> Recommended Media).  
         # recommended_media gates the whole feature; recommendation_mode is  
@@ -79,6 +88,8 @@ class Config:
             "metadata_directory": self.metadata_directory,  
             "weather_enabled": self.weather_enabled,  
             "osd_enabled": self.osd_enabled,  
+            "captions_enabled": self.captions_enabled,  
+            "broadcast_mode": self.broadcast_mode,  
             "recommended_media": self.recommended_media,  
             "recommendation_mode": self.recommendation_mode,  
             "seed_source": self.seed_source,  
@@ -112,11 +123,16 @@ class Config:
     def get_media_directory(self):  
         return self.media_directory  
   
+    def set_media_directory(self, path):  
+        """Set the media root and persist it (TV Settings Menu #1)."""  
+        self.media_directory = path  
+        self.save()  
+  
     def get_assets_directory(self):  
         return self.assets_directory  
   
     def get_metadata_directory(self):  
-        return self.metadata_directory 
+        return self.metadata_directory  
 
     # ------------------------------------------------------------------  
     # Storage Budget
@@ -147,3 +163,9 @@ class Config:
   
     def get_recommendation_mode(self):  
         return self.recommendation_mode
+
+    def is_captions_enabled(self):  
+        return self.captions_enabled  
+  
+    def get_broadcast_mode(self):  
+        return self.broadcast_mode

@@ -26,6 +26,8 @@ class OSDOverlay(Enum):
     VOLUME = "volume"  
     MUTE = "mute"  
     CLOCK = "clock"  
+    SETTINGS = "settings"
+     
   
   
 class OSDPhase(Enum):  
@@ -179,7 +181,12 @@ class OSDManager:
     def show_clock(self, time_text):  
         """Show the clock overlay with a preformatted time string."""  
   
-        self.show(OSDOverlay.CLOCK, {"time": time_text})  
+        self.show(OSDOverlay.CLOCK, {"time": time_text}) 
+
+    def show_settings(self, rows):  
+        """Show the settings menu overlay with a snapshot of its rows."""  
+  
+        self.show(OSDOverlay.SETTINGS, {"rows": rows}) 
   
     def hide(self):  
         """Immediately hide any overlay (skips the fade)."""  
