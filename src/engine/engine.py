@@ -16,6 +16,8 @@ from channel.channel_manager import ChannelManager
   
 from osd.osd_manager import OSDManager  
 
+from metadata.services.storage_manager import StorageManager
+
 from guide.guide import Guide  
   
   
@@ -32,6 +34,9 @@ class Engine:
         self.queue = None  
         self.broadcast_controller = None  
         self.player = None  
+  
+        self.storage_manager = None
+        self._storage_tick_accumulator = 0.0
   
         # Real audio/video output. One shared renderer is attached to only  
         # the currently-watched channel's Player; every other channel keeps  
@@ -79,6 +84,10 @@ class Engine:
         # / libmpv is unavailable) and surface only the active channel.  
         self.renderer = create_renderer()  
         self._attach_renderer_to_active()
+        # Storage budget enforcement (no-op until a library is loaded and a  
+        # nonzero storage_budget_bytes is configured).  
+        if self.library is not None:  
+            self.storage_manager = StorageManager(self.library)
   
     def start(self):  
         """Start the engine."""  
@@ -134,6 +143,12 @@ class Engine:
                 self.renderer.render_osd(self.osd)
   
         Logger.info("Engine update.")
+        # Enforce the storage budget on a throttle (no-op when disabled).  
+        if self.storage_manager is not None:  
+            self._storage_tick_accumulator += elapsed_seconds  
+            if self._storage_tick_accumulator >= 3600:  # hourly  
+                self._storage_tick_accumulator = 0.0  
+                self.storage_manager.enforce_budget()
 
         if self.guide is not None and self.guide.is_open():  
             self.guide.refresh_time()

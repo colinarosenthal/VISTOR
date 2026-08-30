@@ -30,9 +30,15 @@ class Config:
         # (reserved for a later slice - not yet wired to auto-download).  
         self.recommended_media = False  
         self.recommendation_mode = "suggest_only"  
-        # Discovery loop bounds (see Docs/Ideas.md -> Possible Settings).  
-        self.seed_source = "whole_library"      # whole_library | per_channel | specific  
-        self.max_auto_additions_per_week = 0    # hard cap for automatic mode
+        # Discovery loop bounds (see Docs/Ideas.md -> Possible Settings).    
+        self.seed_source = "whole_library"      # whole_library | per_channel | specific    
+        self.max_auto_additions_per_week = 0    # hard cap for automatic mode  
+  
+        # Storage budget (Intelligent Content Management). Max bytes VISTOR  
+        # may keep on disk under the media root before retention-driven  
+        # eviction runs. 0 = disabled (no eviction), the safe default until  
+        # an external drive is in place (#1).  
+        self.storage_budget_bytes = 0
   
         # Where load()/save() persist overrides.  
         self.path = path  
@@ -76,7 +82,8 @@ class Config:
             "recommended_media": self.recommended_media,  
             "recommendation_mode": self.recommendation_mode,  
             "seed_source": self.seed_source,  
-            "max_auto_additions_per_week": self.max_auto_additions_per_week,  
+            "max_auto_additions_per_week": self.max_auto_additions_per_week,    
+            "storage_budget_bytes": self.storage_budget_bytes,
         }
   
         directory = os.path.dirname(self.path)  
@@ -109,7 +116,21 @@ class Config:
         return self.assets_directory  
   
     def get_metadata_directory(self):  
-        return self.metadata_directory  
+        return self.metadata_directory 
+
+    # ------------------------------------------------------------------  
+    # Storage Budget
+    # ------------------------------------------------------------------  
+
+    def get_storage_budget_bytes(self):  
+        """Return the on-disk storage budget in bytes (0 = disabled)."""  
+  
+        return self.storage_budget_bytes  
+  
+    def is_storage_budget_enabled(self):  
+        """Return whether a nonzero storage budget is configured."""  
+  
+        return self.storage_budget_bytes > 0
   
     # ------------------------------------------------------------------  
     # Features  

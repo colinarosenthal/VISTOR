@@ -118,21 +118,36 @@ class RollingCache:
   
         evicted = []  
   
-        for asset in evictable:  
+        for asset in evictable:    
+    
+            if current <= budget_bytes:    
+                break    
+    
+            # Delete the physical file so space is actually reclaimed.  
+            # Metadata (fingerprint/sources) is retained on the asset, so  
+            # the file can be re-fetched later (Deleted-Content Metadata  
+            # Retention).  
+            path = asset.get_path()  
+            try:  
+                if path.exists():  
+                    path.unlink()  
+            except OSError as error:  
+                Logger.error(  
+                    f"Could not delete '{asset.get_asset_id()}' "  
+                    f"at {path}: {error}; skipping."  
+                )  
+                continue  
   
-            if current <= budget_bytes:  
-                break  
-  
-            asset.set_download_status(DownloadStatus.MISSING)  
-  
-            current -= asset.get_file_size()  
-  
-            evicted.append(asset.get_asset_id())  
-  
-            Logger.warning(  
-                f"Evicted '{asset.get_asset_id()}' "  
-                f"(retention={asset.get_retention_score()}, "  
-                f"size={asset.get_file_size()}); metadata retained."  
+            asset.set_download_status(DownloadStatus.MISSING)    
+    
+            current -= asset.get_file_size()    
+    
+            evicted.append(asset.get_asset_id())    
+    
+            Logger.warning(    
+                f"Evicted '{asset.get_asset_id()}' "    
+                f"(retention={asset.get_retention_score()}, "    
+                f"size={asset.get_file_size()}); metadata retained."    
             )  
   
         if current > budget_bytes:  
