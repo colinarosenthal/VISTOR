@@ -560,7 +560,7 @@ the watched channel renders while all others advance headlessly._
 - [x] OSD drawn on the mpv surface each Engine tick (`render_osd`)    
 - [x] `_format_overlay` maps OSD payloads to on-screen text    
 - [x] `test_playback.py` (wiring, audio, missing-asset, fallback, real mpv, overlay, resurface)    
-- [ ] Position-sync on channel switch (resume mid-program instead of restart)    
+- [x] Position-sync on channel switch (resume mid-program instead of restart)    
   
 ---
 
@@ -581,7 +581,6 @@ foundation precedes Phase 8 content population._
   
 ## Broadcast Realism  
   
-- [ ] Position-sync on channel switch (resume mid-program instead of restart)  
 - [ ] Broadcast Events model + Broadcast Modes (Off / Between Programs / Mid-Program)  
   
 ## Scheduling Content (metadata-only)  
@@ -1095,3 +1094,8 @@ the `(provider, reference)` pair the fetchers expect (youtu.be & `watch?v=` -> y
 - New `Config` settings `captions_enabled` and `broadcast_mode` (`off` / `between_programs` / `mid_program`) + getters; persisted in `Config.save()`.  
 - Storage budget wired into the runtime via `StorageManager.enforce_budget()`.  
 - Verified via `test.py` and `test_playback.py` (both pass to completion).
+- Added position-sync so switching to a channel resumes its program mid-play instead of restarting from 0. Every channel's headless `Player` already advances `position_seconds` on every engine tick (channels never stop); the gap was that `Player.set_renderer` re-`load`ed the file on the newly-surfaced backend but never seeked to that tracked position, so the mpv surface restarted the program at 0.  
+- Added a `seek(seconds)` method to the renderer interface: `Renderer.seek` (contract), `NullRenderer.seek` (headless log), and `MpvRenderer.seek` (absolute `seek` command, guarded so a not-yet-loaded file can't crash the swap).  
+- `Player.set_renderer` now seeks the new backend to `self.position_seconds` (when > 0) after `load` and before `play`, so a channel switch shows the live program at the correct offset.  
+- Added `test_playback.py` Test 8 (position-sync): advance a playing Player 3s, swap in a `RecordingRenderer`, and assert the new backend receives load -> seek(3) -> play; extended `RecordingRenderer` with a `seek` recorder.  
+- Verified: `test.py` and `test_playback.py` both pass to completion.

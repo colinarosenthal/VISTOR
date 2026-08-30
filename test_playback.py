@@ -37,7 +37,10 @@ class RecordingRenderer(NullRenderer):
         self.calls.append(("set_volume", level))  
   
     def set_mute(self, flag):  
-        self.calls.append(("set_mute", flag))  
+        self.calls.append(("set_mute", flag)) 
+
+    def seek(self, seconds):  
+        self.calls.append(("seek", seconds)) 
   
     def names(self):  
         return [c[0] for c in self.calls]  
@@ -299,3 +302,29 @@ print("set_renderer resurface verified.")
   
   
 print("\nAll playback rendering tests passed.")
+
+# ------------------------------------------------------------------  
+# Test 8: set_renderer resumes mid-program (position-sync)  
+# ------------------------------------------------------------------  
+  
+print("\n=== Test 8: set_renderer resumes mid-program (position-sync) ===")  
+  
+sync_tmp = Path(tempfile.mkdtemp()) / "midprogram.mkv"  
+sync_tmp.write_bytes(b"not a real video, just bytes for exists()")  
+  
+player8 = Player()  
+player8.set_source(_OneShotSource(_FakeItem("Mid Show", [_FakeAsset(sync_tmp)])))  
+assert player8.load_next() is True  
+player8.play()  
+player8.tick(3)                       # advance 3s into the program (duration 5s)  
+assert player8.get_position() == 3  
+  
+resume_renderer = RecordingRenderer()  
+player8.set_renderer(resume_renderer)  
+  
+# The new backend is loaded, sought to the tracked position, then played.  
+assert ("load", str(sync_tmp)) in resume_renderer.calls  
+assert ("seek", 3) in resume_renderer.calls  
+assert ("play",) in resume_renderer.calls  
+  
+print("Position-sync verified.")

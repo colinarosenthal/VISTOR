@@ -102,6 +102,12 @@ class Player:
             if path is not None:  
                 renderer.load(path)  
   
+                # Resume mid-program: jump the new backend to the position the  
+                # headless transport has tracked (channels never stop), so a  
+                # channel switch shows the running program at the right offset.  
+                if self.position_seconds > 0:  
+                    renderer.seek(self.position_seconds)  
+  
                 if self.state == PlaybackState.PLAYING:  
                     renderer.play()
   

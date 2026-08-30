@@ -28,6 +28,9 @@ class Renderer:
   
     def stop(self):  
         """Stop output and release the current file."""  
+
+    def seek(self, seconds):  
+        """Jump to an absolute position (in seconds) in the current file."""
   
     def set_volume(self, level):  
         """Set output volume (0-100)."""  
@@ -56,6 +59,12 @@ class NullRenderer(Renderer):
   
     def stop(self):  
         Logger.info("NullRenderer: stop (no output).")  
+
+    def stop(self):  
+        Logger.info("NullRenderer: stop (no output).")  
+  
+    def seek(self, seconds):  
+        Logger.info(f"NullRenderer: seek {seconds}s (no output).")
   
     def set_volume(self, level):  
         Logger.info(f"NullRenderer: volume {level} (no output).")  
@@ -106,6 +115,12 @@ class MpvRenderer(Renderer):
     def stop(self):  
         self._mpv.command("stop")  
         self._loaded_path = None  
+
+    def seek(self, seconds):  
+        try:  
+            self._mpv.command("seek", str(seconds), "absolute")  
+        except Exception as error:  # file may not be loaded yet  
+            Logger.warning(f"MpvRenderer: seek to {seconds}s failed ({error}).")
   
     def set_volume(self, level):  
         self._mpv.volume = max(0, min(100, int(level)))  
