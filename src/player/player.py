@@ -10,10 +10,13 @@ advances playback position when ticked by the runtime loop.
   
 from __future__ import annotations  
   
-from enum import Enum  
+from enum import Enum 
+
 from typing import Optional, Protocol  
   
-from core.logger import Logger  
+from core.logger import Logger
+
+from player.renderer import NullRenderer
   
   
 class PlaybackState(Enum):  
@@ -34,9 +37,13 @@ class MediaSource(Protocol):
     This keeps the broadcast structure configurable outside the Player.  
     """  
   
+    def has_next(self):  
+        """Return whether another item is available."""  
+        ...  
+  
     def get_next(self):  
         """Return the next media item, or None if the source is empty."""  
-        ...  
+        ...
   
   
 class Player:  
@@ -46,8 +53,13 @@ class Player:
     # Construction  
     # ------------------------------------------------------------------  
   
-    def __init__(self, source: Optional[MediaSource] = None):  
+    def __init__(self, source: Optional[MediaSource] = None, renderer=None):  
         self.source = source  
+  
+        # Real output layer. Defaults to headless so tests / unwatched  
+        # channels never touch a display; swap in an MpvRenderer for the  
+        # channel the viewer is actually watching.  
+        self.renderer = renderer or NullRenderer()  
   
         self.current_item = None  
   
@@ -57,7 +69,7 @@ class Player:
   
         self.duration_seconds = 0  
   
-        # Audio state (headless; a future renderer/audio layer reads these).  
+        # Audio state (mirrored to the renderer).  
         self.volume = 50  
   
         self.muted = False
@@ -70,6 +82,28 @@ class Player:
         """Set the media source the Player pulls from."""  
   
         self.source = source  
+
+    def set_renderer(self, renderer):  
+        """Swap the output renderer, mirroring audio + playback state.  
+  
+        Pushes current volume/mute onto the new backend, then resurfaces the  
+        in-progress item so a channel switch shows the live program  
+        immediately instead of a black screen.  
+        """  
+  
+        self.renderer = renderer  
+  
+        renderer.set_volume(self.volume)  
+        renderer.set_mute(self.muted)  
+  
+        if self.current_item is not None:  
+            path = self._resolve_source_path(self.current_item)  
+  
+            if path is not None:  
+                renderer.load(path)  
+  
+                if self.state == PlaybackState.PLAYING:  
+                    renderer.play()
   
     # ------------------------------------------------------------------  
     # Loading  
@@ -93,7 +127,11 @@ class Player:
   
         self.position_seconds = 0  
   
-        self.duration_seconds = self._resolve_duration(item)  
+        self.duration_seconds = self._resolve_duration(item)
+
+        path = self._resolve_source_path(item)  
+        if path is not None:  
+            self.renderer.load(path)
   
         self.state = PlaybackState.STOPPED  
   
@@ -136,7 +174,9 @@ class Player:
   
         self.state = PlaybackState.PLAYING  
   
-        Logger.info(f"Playing '{self.current_item.get_title()}'.")  
+        self.renderer.play()  
+  
+        Logger.info(f"Playing '{self.current_item.get_title()}'.")
   
     def pause(self):  
         """Pause playback, preserving position."""  
@@ -146,7 +186,9 @@ class Player:
   
         self.state = PlaybackState.PAUSED  
   
-        Logger.info(f"Paused '{self.current_item.get_title()}'.")  
+        self.renderer.pause()  
+  
+        Logger.info(f"Paused '{self.current_item.get_title()}'.")
   
     def stop(self):  
         """Stop playback and clear the current item."""  
@@ -154,7 +196,9 @@ class Player:
         if self.current_item is not None:  
             Logger.info(f"Stopped '{self.current_item.get_title()}'.")  
   
-        self._reset()  
+        self.renderer.stop()  
+  
+        self._reset()
   
     # ------------------------------------------------------------------  
     # Runtime  
@@ -250,6 +294,19 @@ class Player:
   
         return item.get_runtime_minutes() * 60
 
+    def _resolve_source_path(self, item):  
+        """Return the on-disk path of the first present media asset, or None."""  
+  
+        for asset in item.get_media_assets():  
+            if asset.exists():  
+                return str(asset.get_path())  
+  
+        Logger.warning(  
+            f"No downloaded asset on disk for '{item.get_title()}'; "  
+            f"renderer has nothing to open."  
+        )  
+        return None
+
     # ------------------------------------------------------------------  
     # Audio  
     # ------------------------------------------------------------------  
@@ -259,7 +316,9 @@ class Player:
   
         self.volume = max(0, min(100, int(level)))  
   
-        Logger.info(f"Volume set to {self.volume}.")  
+        self.renderer.set_volume(self.volume)  
+  
+        Logger.info(f"Volume set to {self.volume}.")
   
     def volume_up(self, step=5):  
         """Increase the volume by step (clamped)."""  
@@ -276,7 +335,9 @@ class Player:
   
         self.muted = bool(flag)  
   
-        Logger.info("Muted." if self.muted else "Unmuted.")  
+        self.renderer.set_mute(self.muted)  
+  
+        Logger.info("Muted." if self.muted else "Unmuted.")
   
     def toggle_mute(self):  
         """Toggle the mute state."""  

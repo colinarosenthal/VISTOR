@@ -75,7 +75,9 @@ class Config:
             "osd_enabled": self.osd_enabled,  
             "recommended_media": self.recommended_media,  
             "recommendation_mode": self.recommendation_mode,  
-        }  
+            "seed_source": self.seed_source,  
+            "max_auto_additions_per_week": self.max_auto_additions_per_week,  
+        }
   
         directory = os.path.dirname(self.path)  
         if directory:  

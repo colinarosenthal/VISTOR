@@ -8,8 +8,9 @@ from core.clock import Clock
 from scheduler.scheduler import Scheduler  
 from scheduler.broadcast_controller import BroadcastController  
   
-from player.player import Player  
-from player.playback_queue import PlaybackQueue  
+from player.player import Player    
+from player.playback_queue import PlaybackQueue    
+from player.renderer import create_renderer, NullRenderer 
   
 from channel.channel_manager import ChannelManager  
   
@@ -31,6 +32,12 @@ class Engine:
         self.queue = None  
         self.broadcast_controller = None  
         self.player = None  
+  
+        # Real audio/video output. One shared renderer is attached to only  
+        # the currently-watched channel's Player; every other channel keeps  
+        # its headless NullRenderer so it advances without decoding.  
+        self.renderer = None  
+        self._rendered_player = None  
   
         self.current_block = None  
   
@@ -66,7 +73,12 @@ class Engine:
         self.osd = OSDManager()  
         self.channel_manager.set_on_channel_change(self._on_channel_change)
 
-        self.guide = Guide(self.channel_manager, self.clock)
+        self.guide = Guide(self.channel_manager, self.clock)  
+  
+        # Build the real renderer (falls back to NullRenderer when python-mpv  
+        # / libmpv is unavailable) and surface only the active channel.  
+        self.renderer = create_renderer()  
+        self._attach_renderer_to_active()
   
     def start(self):  
         """Start the engine."""  
@@ -113,8 +125,13 @@ class Engine:
             self.channel_manager.update(elapsed_seconds)  
   
         # Advance the OSD so banners/indicators fade and auto-hide.  
-        if self.osd is not None:  
-            self.osd.tick(elapsed_seconds)  
+        # Advance the OSD so banners/indicators fade and auto-hide.    
+        if self.osd is not None:    
+            self.osd.tick(elapsed_seconds)    
+  
+            # Paint the current overlay onto the active renderer's surface.  
+            if self.renderer is not None:  
+                self.renderer.render_osd(self.osd)
   
         Logger.info("Engine update.")
 
@@ -167,7 +184,31 @@ class Engine:
   
         channel = self.channel_manager.get_active_channel()  
   
-        return channel.get_player() if channel is not None else None  
+        return channel.get_player() if channel is not None else None 
+
+    def _attach_renderer_to_active(self):  
+        """Give the shared renderer to the watched channel's Player only.  
+  
+        The previously-surfaced Player is reset to a headless NullRenderer  
+        (so it keeps advancing without decoding); the active channel's Player  
+        receives the real renderer and resurfaces its in-progress item.  
+        """  
+  
+        if self.renderer is None:  
+            return  
+  
+        active = self._active_player()  
+  
+        if self._rendered_player is active:  
+            return  
+  
+        if self._rendered_player is not None:  
+            self._rendered_player.set_renderer(NullRenderer())  
+  
+        if active is not None:  
+            active.set_renderer(self.renderer)  
+  
+        self._rendered_player = active 
   
     def volume_up(self, step=5):  
         """Raise volume on the active channel and show the volume indicator."""  
@@ -285,11 +326,14 @@ class Engine:
     # OSD callbacks  
     # ------------------------------------------------------------------  
   
-    def _on_channel_change(self, channel):  
-        """Raise the channel banner for the newly-active channel."""  
+    def _on_channel_change(self, channel):    
+        """Raise the channel banner for the newly-active channel."""    
+    
+        if self.osd is not None and channel is not None:    
+            self.osd.show_channel_banner(channel, channel.get_player())    
   
-        if self.osd is not None and channel is not None:  
-            self.osd.show_channel_banner(channel, channel.get_player())  
+        # Re-point the real renderer at the newly-watched channel's Player.  
+        self._attach_renderer_to_active()
   
     def stop(self):  
         """Stop the engine."""  

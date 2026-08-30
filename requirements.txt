@@ -34,13 +34,21 @@ Flask              # Local drag-and-drop web ingest UI (add_media_web.py)
 #   - fpcalc: Windows -> download Chromaprint and add fpcalc.exe to PATH  
 #             macOS   -> brew install chromaprint  
 #             Linux   -> apt install libchromaprint-tools  
-pyacoustid         # AcoustID/Chromaprint fingerprint -> MusicBrainz recording  
+pyacoustid         # AcoustID/Chromaprint fingerprint -> MusicBrainz recording    
   
-# ------------------------------------------------------------------  
-# Planned Dependencies (Subject to Change)  
-# ------------------------------------------------------------------  
+# Real audio/video output layer behind the headless Player (src/player/renderer.py).    
+# The Python binding is optional and imported lazily inside MpvRenderer, so the    
+# headless tests (test_playback.py) and unwatched channels never need it --    
+# create_renderer() falls back to NullRenderer when it's absent. It ALSO requires    
+# the native libmpv DLL/shared library on PATH (a SYSTEM package, NOT pip-installable):    
+#   - Windows -> download an mpv-dev build and put libmpv-2.dll (a.k.a. mpv-2.dll) on PATH    
+#   - macOS   -> brew install mpv    
+#   - Linux   -> apt install libmpv2 (or libmpv-dev)    
+python-mpv         # MPV media player integration (real video/audio playback)    
   
-# python-mpv       # MPV media player integration  
+# ------------------------------------------------------------------    
+# Planned Dependencies (Subject to Change)    
+# ------------------------------------------------------------------ 
 # Pillow           # Image processing and OSD graphics  
 # watchdog         # Automatic media library monitoring  
 # python-dateutil  # Advanced date and schedule calculations  

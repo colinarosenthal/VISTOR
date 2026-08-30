@@ -14,8 +14,17 @@ load, which constructs `TMDBSource()`, which reads TMDB_API_KEY *once* in its
 __init__. If the key isn't in os.environ at that moment, every lookup is  
 skipped and you get the raw 2019 "Word" scrape with no candidates.  
 """  
-  
+   
 import os  
+  
+# Ensure libmpv-2.dll is loadable via an ABSOLUTE path. python-mpv's loader  
+# refuses DLLs found under relative %PATH% entries (e.g. the cwd), so point it  
+# at the repo root where libmpv-2.dll lives before importing the binding.  
+_dll_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  
+if _dll_dir not in os.environ.get("PATH", ""):  
+    os.environ["PATH"] = _dll_dir + os.pathsep + os.environ.get("PATH", "")  
+  
+import mpv
 import sys  
 import glob  
 import threading  

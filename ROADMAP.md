@@ -2,9 +2,9 @@
 
 **Project Status:** Pre-Alpha
 
-**Current Version:** 0.7.0
+**Current Version:** 0.8.0
 
-**Last Updated:** July 31, 2026
+**Last Updated:** JAugust 3, 2026
 
 ---
 
@@ -32,7 +32,7 @@ Major features should be completed one at a time and thoroughly tested before ad
 
 # Current Milestone
 
-**Phase 6 — Broadcast Experience**
+**Phase 8 — Broadcast Programming**
 
 ---
 
@@ -438,281 +438,322 @@ re-fetched without losing metadata or fingerprints._
   
 ---  
   
-# Phase 7 — Media Acquisition Pipeline  
+# Phase 7 — Media Acquisition Pipeline    
+    
+_Milestone: any dropped URL becomes a fully enriched, downloaded,    
+fingerprinted media.json record; VISTOR can also grow its own catalogue._    
+    
+## Media Acquisition    
+    
+### Infrastructure    
+    
+- [x] Multi-Provider Download Layer (Internet Archive, YouTube, Direct URL)    
+- [x] Provider Registry + Fetcher Routing    
+- [x] Technical Metadata Extraction (ffprobe/mutagen)    
+- [x] Fingerprint-on-Download    
+- [x] JSON Media Ingestion Service    
+- [x] Auto-Resolve Undownloaded Assets on Ingest    
+- [x] `add_media` CLI Entry Point    
+- [x] Descriptive Metadata Scraping (title/year/genre)    
+- [ ] Batch Folder Ingestion    
+- [x] Rolling Episode Window (per-series, window-gated)    
+    
+### Library Maintenance    
+    
+- [x] LibraryReconciler (merge scanner/verifier/validator into one janitor)    
+- [x] Remove dead MediaFetcher / MediaAssociator    
+- [x] Flag-by-default dangling-asset resolution (metadata survives)    
   
-_Milestone: any dropped URL becomes a fully enriched, downloaded,  
-fingerprinted media.json record; VISTOR can also grow its own catalogue._  
-  
-## Media Acquisition  
-  
-### Infrastructure  
-  
-- [x] Multi-Provider Download Layer (Internet Archive, YouTube, Direct URL)  
-- [x] Provider Registry + Fetcher Routing  
-- [x] Technical Metadata Extraction (ffprobe/mutagen)  
-- [x] Fingerprint-on-Download  
-- [x] JSON Media Ingestion Service  
-- [x] Auto-Resolve Undownloaded Assets on Ingest  
-- [x] `add_media` CLI Entry Point  
-- [x] Descriptive Metadata Scraping (title/year/genre)  
-- [ ] Batch Folder Ingestion  
-- [x] Rolling Episode Window (per-series, window-gated)  
-  
-### Library Maintenance  
-  
-- [ ] LibraryReconciler (merge scanner/verifier/validator into one janitor)  
-- [ ] Remove dead MediaFetcher / MediaAssociator  
-- [ ] Flag-by-default dangling-asset resolution (metadata survives)  
+### Asset Sidecar    
+    
+- [x] Sidecar Writer (`<file>.vistor.json` next to each download)    
+- [x] Sidecar Reader + Media-Tree Scan    
+- [x] Rebuild media.json from sidecars (catalog-loss / marathon recovery)    
+- [x] Eviction preserves sidecar (metadata survives file deletion)  
+    
+### Link-Driven Ingestion    
+    
+- [x] Link Resolver (URL -> provider + reference)    
+- [x] Media Describer (scrape title / year / description / runtime)    
+- [x] Media Classifier (type + vocabulary genre guess)    
+- [x] Record Builder (override > TMDB > classified > scraped > default)    
+- [x] Media Ingestor (dedupe-by-id, self-healing retry, write-back)    
+- [x] add_media CLI (link or JSON drop-in)    
+- [x] Archive-Aware Classifier (weak Movie vote; Artist-Track + music tag out-votes)    
+- [x] Query Title Normalization (strip MTV / (Official Video) / lyric-video noise)    
+- [x] Internet Archive Signal Scrape (mediatype/collection/subject + poster_url)    
+    
+### Web Ingest UI    
+    
+- [x] Flask drag-and-drop front-end (`add_media_web.py` + `src/ingest/web_app.py`)    
+- [x] IngestSession backend seam (build / candidates / build-from-tmdb / commit)    
+- [x] Live preview card (poster, title, year, runtime, genres, description)    
+- [x] TMDB "did you mean?" candidate picker    
+- [x] Overwrite-on-commit (replace existing id)    
+- [x] Launcher env bootstrap (ffmpeg PATH + TMDB_API_KEY + browser auto-open)    
+- [x] Genre vocabulary bootstrap fix (populate genres.json for round-trip)    
+- [x] Media-type override dropdown (Auto / Movie / MusicVideo / Episode / Commercial)    
+- [ ] Persist vocabulary buckets on setup (genres/tags/themes/countries/languages)    
+    
+### Content-Based Type Detection    
+    
+- [x] Provider Signal Surfacing (categories/duration/tags/channel + Archive signals)    
+- [x] ContentProfile (provider-agnostic normalized signal bag)    
+- [x] TypeScorer (weighted multi-signal voting)    
+- [x] Confidence Floor + Tie Handling (undecidable -> default/override)    
+- [x] Internet Archive MusicVideo Detection (music bucket + Artist-Track shape)    
+- [x] AcoustID / Chromaprint Audio Refiner — deferred    
+- [x] Per-signal Weight Tuning from labeled sample — deferred    
+    
+### Authoritative Enrichment    
+    
+- [x] Authoritative Source Interface (pluggable lookup provider)    
+- [x] TMDB Lookup Backend (title/year search)    
+- [x] Genre Mapping (external -> controlled Genre vocabulary)    
+- [x] Metadata Enricher (overrides > authoritative > classified > default)    
+- [x] Authoritative Year Precedence (TMDB year over scraped year)    
+- [x] Cast / Crew Credits Enrichment (TMDB -> people.json + appearances)    
+- [x] Studio Enrichment (TMDB production companies -> studios.json)    
+- [x] Graceful Offline Degradation (no key / no network -> fall back)    
+- [x] TMDB Candidate List (search_candidates -> picker)    
+- [x] TMDB Lookup-by-ID (chosen candidate -> full credits + poster)    
+- [x] Poster / Cover Art (poster_url on results)    
+- [x] MusicBrainz Lookup Backend (keyless recording lookup)    
+- [x] CompositeSource (TMDB for film/TV, MusicBrainz for music)    
+- [x] Type-Routed Enrichment (media type selects backend)    
+- [x] MusicBrainz Original-Year Precedence (earliest release-group date)    
+- [x] MusicBrainz Genre Mapping (artist genres/tags -> MusicGenre)    
+- [x] MusicBrainz Original-Type Preference (Single/Album/EP over compilation)    
+- [x] Title Noise Stripping (trailing MTV/VEVO/HD/HQ/4K)    
+- [x] Lyrics Enrichment (keyless lyrics.ovh -> MusicVideo caption)    
+- [ ] TMDB Year+Match Scoring (smarter default pick)    
+- [ ] IMDb / Wikidata Backends — deferred    
+- [ ] LLM Classifier Backend — deferred    
+    
+### Autonomous Catalogue Expansion    
+    
+- [x] RecommendationSource (TMDB /recommendations -> similar titles)    
+- [x] Config recommended_media toggle + recommendation_mode    
+- [x] DiscoveryLoop (seed -> suggest -> source-discover -> acquire)    
+- [x] Suggest-Only mode (queue suggestions; no download)    
+- [ ] Assisted mode (auto-find candidate URL; human confirms)    
+- [ ] Automatic mode (auto URL-discovery + ingest, week-capped)    
+- [ ] Source URL Discovery backend (archive search for a suggested title)    
+- [x] Config Persistence (JSON load/save; recommended_media toggle)    
+- [x] seed_source + max_auto_additions_per_week config fields    
+    
+---  
 
-### Asset Sidecar  
+# Playback & Rendering    
   
-- [x] Sidecar Writer (`<file>.vistor.json` next to each download)  
-- [x] Sidecar Reader + Media-Tree Scan  
-- [x] Rebuild media.json from sidecars (catalog-loss / marathon recovery)  
-- [ ] Eviction preserves sidecar (metadata survives file deletion)
+_Milestone: the headless Player drives a real on-screen video/audio surface;    
+the watched channel renders while all others advance headlessly._    
   
-### Link-Driven Ingestion  
+- [x] Renderer abstraction (`src/player/renderer.py`: base + Null + Mpv)    
+- [x] NullRenderer headless fallback (`create_renderer()` when libmpv absent)    
+- [x] MpvRenderer real libmpv audio/video output    
+- [x] Player mirrors load/play/pause/stop/volume/mute onto the renderer    
+- [x] libmpv-2.dll absolute-path PATH bootstrap before `import mpv`    
+- [x] Engine builds + attaches the shared renderer to the watched channel    
+- [x] Renderer swap on channel change (old -> NullRenderer, new -> Mpv)    
+- [x] set_renderer resurfaces the in-progress item on swap    
+- [x] OSD drawn on the mpv surface each Engine tick (`render_osd`)    
+- [x] `_format_overlay` maps OSD payloads to on-screen text    
+- [x] `test_playback.py` (wiring, audio, missing-asset, fallback, real mpv, overlay, resurface)    
+- [ ] Position-sync on channel switch (resume mid-program instead of restart)    
   
-- [x] Link Resolver (URL -> provider + reference)  
-- [x] Media Describer (scrape title / year / description / runtime)  
-- [x] Media Classifier (type + vocabulary genre guess)  
-- [x] Record Builder (override > TMDB > classified > scraped > default)  
-- [x] Media Ingestor (dedupe-by-id, self-healing retry, write-back)  
-- [x] add_media CLI (link or JSON drop-in)  
-- [x] Archive-Aware Classifier (weak Movie vote; Artist-Track + music tag out-votes)  
-- [x] Query Title Normalization (strip MTV / (Official Video) / lyric-video noise)  
-- [x] Internet Archive Signal Scrape (mediatype/collection/subject + poster_url)  
+---
+    
+# Phase 8 — Broadcast Programming    
+    
+_Milestone: each content category and channel is populated and schedulable._    
+    
+### Programming    
+    
+- [ ] Television Shows    
+- [ ] Movies    
+- [ ] Sports    
+- [ ] News    
+- [ ] Documentaries    
+- [ ] Game Shows    
+- [ ] Talk Shows    
+    
+---    
+    
+### Supporting Content    
+    
+- [ ] Commercials    
+- [ ] Station IDs    
+- [ ] Network Promos    
+- [ ] Music Videos    
+- [ ] Infomercials    
+- [ ] Ambient Loops    
+    
+---    
+    
+## Channels    
+    
+- [x] Nickelodeon (#1)    
+- [x] VISTOR General (#2)    
+- [x] VISTOR Toons (#3)    
+- [x] VISTOR Movies (#4)    
+- [x] VISTOR Kids (#5)    
+- [x] VISTOR Hits (#6)    
+- [x] VISTOR Sports (#7)    
+- [x] VISTOR News (#8)    
+- [x] VISTOR Docs (#9)    
+- [x] VISTOR Classic (#10)    
+- [x] VISTOR Infomercials (#11)    
+- [x] VISTOR Aquarium (#12)    
+- [x] VISTOR Fireplace (#13)    
+- [x] VISTOR Public Access (#14)    
+- [x] VISTOR Weather (#15)    
+- [x] VISTOR Seasonal (#16)    
+    
+> Note: channel objects are defined and load from `channels.json`, but every    
+> `programming_sources` / `commercial_pools` / `promotional_material` /    
+> `station_id_graphics` array is still empty. Actual programming is tracked    
+> in the "Programming", "Supporting Content", and "Commercial System" sections.    
+    
+---    
+    
+## Commercial System    
+    
+- [ ] Commercial Pools    
+- [ ] Network Promos    
+- [ ] Station IDs    
+- [ ] Time-Based Commercial Selection    
+- [ ] Seasonal Commercial Selection    
+    
+---    
+    
+## Seasonal Programming    
+    
+- [ ] Halloween Marathons    
+- [ ] Thanksgiving Specials    
+- [ ] Christmas Programming    
+- [ ] Summer Programming    
+- [ ] Weekend Marathons    
+    
+---    
+    
+## Weather Channel    
+    
+- [ ] Live Weather API    
+- [ ] Forecast Generation    
+- [ ] Radar Graphics    
+- [ ] Local Forecast    
+- [ ] Classic Weather Channel Styling    
+    
+---    
+    
+## Milestone    
+    
+VISTOR delivers a television broadcast experience.    
+    
+---  
   
-### Web Ingest UI  
+# Phase 9 — Raspberry Pi Deployment  
   
-- [x] Flask drag-and-drop front-end (`add_media_web.py` + `src/ingest/web_app.py`)  
-- [x] IngestSession backend seam (build / candidates / build-from-tmdb / commit)  
-- [x] Live preview card (poster, title, year, runtime, genres, description)  
-- [x] TMDB "did you mean?" candidate picker  
-- [x] Overwrite-on-commit (replace existing id)  
-- [x] Launcher env bootstrap (ffmpeg PATH + TMDB_API_KEY + browser auto-open)  
-- [x] Genre vocabulary bootstrap fix (populate genres.json for round-trip)  
-- [x] Media-type override dropdown (Auto / Movie / MusicVideo / Episode / Commercial)  
-- [ ] Persist vocabulary buckets on setup (genres/tags/themes/countries/languages)  
+## Hardware  
   
-### Content-Based Type Detection  
-  
-- [x] Provider Signal Surfacing (categories/duration/tags/channel + Archive signals)  
-- [x] ContentProfile (provider-agnostic normalized signal bag)  
-- [x] TypeScorer (weighted multi-signal voting)  
-- [x] Confidence Floor + Tie Handling (undecidable -> default/override)  
-- [x] Internet Archive MusicVideo Detection (music bucket + Artist-Track shape)  
-- [x] AcoustID / Chromaprint Audio Refiner — deferred  
-- [x] Per-signal Weight Tuning from labeled sample — deferred  
-  
-### Authoritative Enrichment  
-  
-- [x] Authoritative Source Interface (pluggable lookup provider)  
-- [x] TMDB Lookup Backend (title/year search)  
-- [x] Genre Mapping (external -> controlled Genre vocabulary)  
-- [x] Metadata Enricher (overrides > authoritative > classified > default)  
-- [x] Authoritative Year Precedence (TMDB year over scraped year)  
-- [x] Cast / Crew Credits Enrichment (TMDB -> people.json + appearances)  
-- [x] Studio Enrichment (TMDB production companies -> studios.json)  
-- [x] Graceful Offline Degradation (no key / no network -> fall back)  
-- [x] TMDB Candidate List (search_candidates -> picker)  
-- [x] TMDB Lookup-by-ID (chosen candidate -> full credits + poster)  
-- [x] Poster / Cover Art (poster_url on results)  
-- [x] MusicBrainz Lookup Backend (keyless recording lookup)  
-- [x] CompositeSource (TMDB for film/TV, MusicBrainz for music)  
-- [x] Type-Routed Enrichment (media type selects backend)  
-- [x] MusicBrainz Original-Year Precedence (earliest release-group date)  
-- [x] MusicBrainz Genre Mapping (artist genres/tags -> MusicGenre)  
-- [x] MusicBrainz Original-Type Preference (Single/Album/EP over compilation)  
-- [x] Title Noise Stripping (trailing MTV/VEVO/HD/HQ/4K)  
-- [x] Lyrics Enrichment (keyless lyrics.ovh -> MusicVideo caption)  
-- [ ] TMDB Year+Match Scoring (smarter default pick)  
-- [ ] IMDb / Wikidata Backends — deferred  
-- [ ] LLM Classifier Backend — deferred  
-  
-### Autonomous Catalogue Expansion  
-  
-- [x] RecommendationSource (TMDB /recommendations -> similar titles)  
-- [x] Config recommended_media toggle + recommendation_mode  
-- [ ] DiscoveryLoop (seed -> suggest -> source-discover -> acquire)  
-- [ ] Suggest-Only mode (queue suggestions; no download)  
-- [ ] Assisted mode (auto-find candidate URL; human confirms)  
-- [ ] Automatic mode (auto URL-discovery + ingest, week-capped)  
-- [ ] Source URL Discovery backend (archive search for a suggested title)  
-- [ ] Config Persistence (JSON load/save; recommended_media toggle)  
-- [ ] seed_source + max_auto_additions_per_week config fields  
+- [ ] Purchase Raspberry Pi 5  
+- [ ] Purchase SSD  
+- [ ] Purchase Cooling Case  
+- [ ] Purchase IR Receiver  
+- [ ] Connect CRT Television  
   
 ---  
   
-# Phase 8 — Broadcast Programming  
+## Deployment  
   
-_Milestone: each content category and channel is populated and schedulable._  
-  
-### Programming  
-  
-- [ ] Television Shows  
-- [ ] Movies  
-- [ ] Sports  
-- [ ] News  
-- [ ] Documentaries  
-- [ ] Game Shows  
-- [ ] Talk Shows  
+- [ ] Transfer Project  
+- [ ] Configure Auto Boot  
+- [ ] Boot Directly Into VISTOR  
+- [ ] Full-Screen Startup  
+- [ ] CRT Output Testing  
+- [ ] Performance Optimization  
   
 ---  
   
-### Supporting Content  
+## Remote Control  
   
-- [ ] Commercials  
-- [ ] Station IDs  
-- [ ] Network Promos  
-- [ ] Music Videos  
-- [ ] Infomercials  
-- [ ] Ambient Loops  
-  
----  
-  
-## Channels  
-  
-- [x] Cartoon Network  
-- [ ] Nickelodeon  
-- [x] Movie Channel  
-- [x] Music Video Channel  
-- [x] Sports Channel  
-- [x] News Channel  
-- [x] Weather Channel  
-- [x] Aquarium Channel  
-- [x] Fireplace Channel  
-- [x] Infomercial Channel  
-  
----  
-  
-## Commercial System  
-  
-- [ ] Commercial Pools  
-- [ ] Network Promos  
-- [ ] Station IDs  
-- [ ] Time-Based Commercial Selection  
-- [ ] Seasonal Commercial Selection  
-  
----  
-  
-## Seasonal Programming  
-  
-- [ ] Halloween Marathons  
-- [ ] Thanksgiving Specials  
-- [ ] Christmas Programming  
-- [ ] Summer Programming  
-- [ ] Weekend Marathons  
-  
----  
-  
-## Weather Channel  
-  
-- [ ] Live Weather API  
-- [ ] Forecast Generation  
-- [ ] Radar Graphics  
-- [ ] Local Forecast  
-- [ ] Classic Weather Channel Styling  
+- [ ] IR Receiver  
+- [ ] Channel Up / Down  
+- [ ] Numeric Entry  
+- [ ] Previous Channel  
+- [ ] Volume  
+- [ ] Mute  
   
 ---  
   
 ## Milestone  
   
-VISTOR delivers a television broadcast experience.  
+VISTOR operates as a dedicated standalone cable box.  
+  
+---  
+  
+# Phase 10 — Version 1.0  
+  
+## Final Polish  
+  
+- [ ] Performance Optimization  
+- [ ] Bug Fixes  
+- [ ] Complete Documentation  
+- [ ] Final Testing  
+- [ ] Release Version 1.0  
+  
+---  
+  
+## Milestone  
+  
+VISTOR Version 1.0 is complete.  
+  
+---  
+  
+# Future Development  
+  
+Potential additions after Version 1.0 include:  
+  
+- Remote tape/record function preventing   
+episode/movie deletion  
+- Additional regional channel lineups  
+- Local access channels  
+- Public bulletin board channel  
+- Emergency Alert System simulation  
+- Interactive cable guide enhancements  
+- Additional broadcast eras  
+- Plugin architecture  
+- Optional DVR mode  
+- Expanded weather features  
+  
+---  
+  
+# Documentation Expansion Reminder  
+  
+The Design Bible is currently the primary project reference.  
+  
+Once development reaches a stable architecture, expand the documentation into:  
+  
+- VISTOR.md  
+- VISTOR_Developer_Guide.md  
+- VISTOR_User_Manual.md  
+  
+Until that point, continue maintaining the Design Bible as the authoritative description of VISTOR.  
   
 ---
 
-# Phase 7 — Raspberry Pi Deployment
-
-## Hardware
-
-- [ ] Purchase Raspberry Pi 5
-- [ ] Purchase SSD
-- [ ] Purchase Cooling Case
-- [ ] Purchase IR Receiver
-- [ ] Connect CRT Television
-
----
-
-## Deployment
-
-- [ ] Transfer Project
-- [ ] Configure Auto Boot
-- [ ] Boot Directly Into VISTOR
-- [ ] Full-Screen Startup
-- [ ] CRT Output Testing
-- [ ] Performance Optimization
-
----
-
-## Remote Control
-
-- [ ] IR Receiver
-- [ ] Channel Up / Down
-- [ ] Numeric Entry
-- [ ] Previous Channel
-- [ ] Volume
-- [ ] Mute
-
----
-
-## Milestone
-
-VISTOR operates as a dedicated standalone cable box.
-
----
-
-# Phase 8 — Version 1.0
-
-## Final Polish
-
-- [ ] Performance Optimization
-- [ ] Bug Fixes
-- [ ] Complete Documentation
-- [ ] Final Testing
-- [ ] Release Version 1.0
-
----
-
-## Milestone
-
-VISTOR Version 1.0 is complete.
-
----
-
-# Future Development
-
-Potential additions after Version 1.0 include:
-
-- Remote tape/record function preventing 
-episode/movie deletion
-- Additional regional channel lineups
-- Local access channels
-- Public bulletin board channel
-- Emergency Alert System simulation
-- Interactive cable guide enhancements
-- Additional broadcast eras
-- Plugin architecture
-- Optional DVR mode
-- Expanded weather features
-
----
-
-# Documentation Expansion Reminder
-
-The Design Bible is currently the primary project reference.
-
-Once development reaches a stable architecture, expand the documentation into:
-
-- VISTOR.md
-- VISTOR_Developer_Guide.md
-- VISTOR_User_Manual.md
-
-Until that point, continue maintaining the Design Bible as the authoritative description of VISTOR.
-
----
-
 # Development Log
+
+## 2026-04-27 (Pre-Git RetroTV prototype)  
+  
+- Early local development under the working title RetroTV
+- Explored core media-playback concepts prior to version control.  
+  
+## 2026-07-23 (Migration & reset to VISTOR)  
+  
+- Migrated the project to Git and established version history.  
+- Reset and rebuilt the project as VISTOR using the RetroTV prototype as its basis.
 
 ## 2026-07-23
 
@@ -995,4 +1036,19 @@ the `(provider, reference)` pair the fetchers expect (youtu.be & `watch?v=` -> y
 - Added `rebuild_media.py` CLI: `python rebuild_media.py` rebuilds and downloads; `--no-download` rebuilds catalog-only.  
 - Verified end-to-end: deleted `Media/MusicVideos/the_buggles_video_killed_the_radio_star_mtv.mkv`, ran the rebuild -> reconcile flipped the asset to MISSING, re-fetched the 134 MB `.mkv` (probed 199s 720x480 mpeg2video/mp3), and `media.json` returned to `download_status: DOWNLOADED`.  
 
+---
+
+---  
+  
+## 2026-08-30  
+  
+- Added a real playback/rendering layer behind the headless Player (`src/player/renderer.py`): a `Renderer` base with `NullRenderer` (headless no-op) and `MpvRenderer` (libmpv audio/video), plus `create_renderer()` which returns an `MpvRenderer` when libmpv is importable and falls back to `NullRenderer` otherwise — so unwatched channels and offline tests never decode.    
+- `Player` now mirrors `load` / `play` / `pause` / `stop` / `set_volume` / `set_mute` onto an injected renderer (defaults to `NullRenderer`), resolving the on-disk file via `_resolve_source_path`; missing-asset items warn and skip `load` instead of crashing.    
+- `Player.set_renderer` pushes current volume/mute onto the new backend and resurfaces the in-progress item (load + play when state is PLAYING) so a channel switch shows the running program immediately.    
+- Wired the renderer into `Engine`: build one shared renderer in `initialize()`, `_attach_renderer_to_active()` hands it to the watched channel's Player (previous surfaced player reset to `NullRenderer`), `_on_channel_change` moves it on every switch, and `update()` calls `renderer.render_osd(self.osd)` after the OSD tick so banner/volume/mute/clock overlays paint on the mpv surface. `MpvRenderer._format_overlay` maps the real OSD payload keys (channel_banner `number`/`name`/`program`; program_info `title`/`channel_name`; volume `level`/`muted`; mute `muted`; clock `time`).    
+- Bootstrapped `libmpv-2.dll` onto PATH via an absolute path before `import mpv` (python-mpv's loader rejects DLLs found under relative %PATH% entries).    
+- Added `test_playback.py`: Player→renderer wiring, audio propagation, missing-asset safety, headless `NullRenderer` fallback, real mpv playback (auto-skips if libmpv/media absent), `_format_overlay` pure-function coverage, and `set_renderer` swap+resurface.    
+- Verified end-to-end: real mpv playback of `Media/Episodes/neon_genesis_evangelion.mkv` reported `time_pos ≈ 1.189` after ~2s; all seven tests pass, and `create_renderer()` falls back cleanly when libmpv is absent.    
+- Flipped `DiscoveryLoop` and `Suggest-Only mode` to done in Phase 7 (verified in `src/metadata/services/discovery_loop.py`); assisted/automatic/source-URL-discovery stay open because `_discover_source_url` still returns `None`.    
+  
 ---

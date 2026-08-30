@@ -1245,13 +1245,40 @@ Future milestones will be added as the project evolves.
   
 ---  
   
-# 18. Version History  
-  
-The Design Bible should maintain a record of significant project changes.  
-  
-Major architectural decisions should be documented here to preserve the project's history and reasoning.  
-  
----  
+# 18. Version History    
+    
+The Design Bible maintains a record of significant project changes.    
+    
+Major architectural decisions are documented here to preserve the project's history and reasoning.    
+    
+## 18.1 Project Evolution: RetroTV → VISTOR    
+    
+VISTOR began as an earlier local prototype named *RetroTV*, developed on-machine before the project was placed under version control. This early phase was exploratory and served as the conceptual and technical foundation for the current project. When the project migrated to Git on 2026-07-24, it was deliberately reset and rebuilt as VISTOR, carrying forward the lessons of the RetroTV prototype while establishing a more disciplined architecture and workflow. See Section 1.2, "The Name VISTOR," for the naming history.    
+    
+### Language Migration: C → Python    
+    
+The RetroTV prototype was initially implemented in C. As the project's scope grew from simple media playback into a full broadcast simulation system, C's manual overhead became a poor fit for the problem. The reset to VISTOR included a migration to Python for the following reasons:    
+    
+- **Ease of imports and packaging** — Python's import system and package ecosystem removed the friction of manual build configuration and dependency management that slowed iteration in C.    
+- **Faster iteration** — High-level constructs and dynamic typing allowed features such as scheduling and broadcast events to be prototyped and revised quickly.    
+- **Rich standard library and ecosystem** — Built-in and third-party support for JSON, file handling, and media tooling (e.g., MPV integration) reduced the amount of low-level code required.    
+- **Readability and maintainability** — Python's clarity better supported the project's emphasis on modularity and separation of responsibilities as a long-term codebase.    
+- **Cross-platform portability** — Python simplified running the same codebase across a Windows development machine and the Raspberry Pi deployment target without per-platform build steps.    
+    
+### Summary of Changes During the Reset    
+    
+| Change | Description |    
+| --- | --- |    
+| Prototype matured | Early experimentation gave way to deliberate architecture |    
+| Scope expanded | The project became a broadcast simulation system |      
+| Git migration | Established version history and safer experimentation |    
+| VS Code environment | Created a more structured development workflow |    
+| Architecture changed | Media playback evolved into scheduling + broadcast events |    
+| Standards emerged | Relative paths, modularity, separation of responsibilities |    
+| Deployment became real | Raspberry Pi and CRT became concrete engineering targets |    
+| Identity matured | RetroTV evolved into VISTOR as a distinct long-term project |    
+    
+---
   
 # 19. Future Ideas  
   
