@@ -10,7 +10,9 @@ of whether the viewer is currently watching it.
 from core.logger import Logger  
   
 from scheduler.scheduler import Scheduler  
-from scheduler.broadcast_controller import BroadcastController  
+from scheduler.broadcast_controller import BroadcastController 
+from scheduler.broadcast_modes import create_broadcast_mode
+
 from player.playback_queue import PlaybackQueue  
 from player.player import Player  
   
@@ -173,6 +175,18 @@ class Channel:
         """Return this channel's broadcast controller."""  
   
         return self.broadcast_controller  
+
+    def set_broadcast_mode(self, mode_name):  
+        """Build and inject this channel's broadcast mode from a name.  
+  
+        Called by the ChannelManager so every channel honors the viewer's  
+        Config.broadcast_mode setting (off / between_programs / mid_program).  
+        """  
+  
+        if self.broadcast_controller is not None:  
+            self.broadcast_controller.set_mode(  
+                create_broadcast_mode(mode_name)  
+            )
   
     def get_player(self):  
         """Return this channel's player."""  

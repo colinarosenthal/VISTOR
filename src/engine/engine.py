@@ -8,6 +8,7 @@ from core.config import Config
   
 from scheduler.scheduler import Scheduler  
 from scheduler.broadcast_controller import BroadcastController  
+from scheduler.broadcast_modes import create_broadcast_mode
   
 from player.player import Player    
 from player.playback_queue import PlaybackQueue    
@@ -90,6 +91,21 @@ class Engine:
         # Config; changes are saved to disk when the menu closes.  
         self.config = Config().load()  
         self.settings_menu = SettingsMenu(self.config)  
+
+        # Broadcast Mode: build the airing/interruption strategy from the  
+        # persisted setting (Design Bible 3.4 -> Broadcast Modes) and inject  
+        # it everywhere. Done after Config().load() so the saved choice  
+        # (off / between_programs / mid_program) is honored, and after  
+        # ChannelManager.initialize() so every channel's own controller  
+        # already exists.  
+        broadcast_mode_name = self.config.get_broadcast_mode()  
+  
+        self.broadcast_controller.set_mode(  
+            create_broadcast_mode(broadcast_mode_name)  
+        )  
+  
+        for channel in self.channel_manager.get_channels():  
+            channel.set_broadcast_mode(broadcast_mode_name)
   
         # Build the real renderer (falls back to NullRenderer when python-mpv  
         # / libmpv is unavailable) and surface only the active channel.  

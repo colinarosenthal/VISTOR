@@ -1487,6 +1487,86 @@ short = MediaAsset("bp3", "Media/Episodes/ep3.mkv", runtime_seconds=300)
 assert det._runtime_fallback(short) == []  
   
 print("Breakpoint Detection verified.")
+
+# ------------------------------------------------------------------  
+# Broadcast Modes  
+# ------------------------------------------------------------------  
+  
+print("\n=== Testing Broadcast Modes ===")  
+  
+from scheduler.broadcast_modes import (  
+    OffMode,  
+    BetweenProgramsMode,  
+    MidProgramMode,  
+    create_broadcast_mode,  
+)  
+from scheduler.broadcast_event import BroadcastEvent  
+  
+  
+class _FakeProgram:  
+    """Minimal program stand-in exposing breakpoints + runtime."""  
+  
+    def __init__(self, name, breakpoints=None, runtime_seconds=0):  
+        self.name = name  
+        self._breakpoints = list(breakpoints or [])  
+        self._runtime = runtime_seconds  
+  
+    def get_breakpoints(self):  
+        return self._breakpoints  
+  
+    def get_runtime_seconds(self):  
+        return self._runtime  
+  
+    def __str__(self):  
+        return self.name  
+  
+  
+def _is_event(item):  
+    return isinstance(item, BroadcastEvent)  
+  
+  
+programs = [_FakeProgram("A"), _FakeProgram("B")]  
+  
+# Off: unchanged order, no events.  
+off = OffMode().build_sequence(programs)  
+assert off == programs  
+assert not any(_is_event(i) for i in off)  
+print("OffMode airs programs in order with no events.")  
+  
+# Between Programs: one commercial block after each program.  
+between = BetweenProgramsMode().build_sequence(programs)  
+assert len(between) == 4  
+assert not _is_event(between[0]) and _is_event(between[1])  
+assert not _is_event(between[2]) and _is_event(between[3])  
+print("BetweenProgramsMode inserts a block after each program.")  
+  
+# Mid-Program with stored breakpoints: one block per breakpoint.  
+with_breaks = [_FakeProgram("C", breakpoints=[300, 600])]  
+mid = MidProgramMode().build_sequence(with_breaks)  
+assert not _is_event(mid[0])  
+assert sum(1 for i in mid if _is_event(i)) == 2  
+print("MidProgramMode inserts one block per stored breakpoint.")  
+  
+# Mid-Program fallback: no breakpoints, 25 min -> breaks at 600 & 1200.  
+no_breaks = [_FakeProgram("D", runtime_seconds=25 * 60)]  
+mid_fallback = MidProgramMode().build_sequence(no_breaks)  
+assert sum(1 for i in mid_fallback if _is_event(i)) == 2  
+print("MidProgramMode falls back to runtime-spaced blocks.")  
+  
+# Mid-Program short program: no breakpoints, airs whole.  
+short = [_FakeProgram("E", runtime_seconds=5 * 60)]  
+mid_short = MidProgramMode().build_sequence(short)  
+assert not any(_is_event(i) for i in mid_short)  
+print("MidProgramMode airs short programs whole.")  
+  
+# Factory maps each Config string (and defaults unknowns to Off).  
+assert isinstance(create_broadcast_mode("off"), OffMode)  
+assert isinstance(create_broadcast_mode("between_programs"), BetweenProgramsMode)  
+assert isinstance(create_broadcast_mode("mid_program"), MidProgramMode)  
+assert isinstance(create_broadcast_mode("garbage"), OffMode)  
+print("create_broadcast_mode maps every Config value.")  
+  
+print("Broadcast mode tests passed.")
   
 # ------------------------------------------------------------------  
 # Final Result  

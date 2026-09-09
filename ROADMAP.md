@@ -581,7 +581,7 @@ foundation precedes Phase 8 content population._
   
 ## Broadcast Realism  
   
-- [ ] Broadcast Events model + Broadcast Modes (Off / Between Programs / Mid-Program)  
+- [x] Broadcast Events model + Broadcast Modes (Off / Between Programs / Mid-Program)  
   
 ## Scheduling Content (metadata-only)  
   
@@ -1107,3 +1107,11 @@ the `(provider, reference)` pair the fetchers expect (youtu.be & `watch?v=` -> y
 - Wired detection into `BaseFetcher._finalize` after probe + fingerprint (runs on the temp file before the atomic move), guarded so a failure never fails the download.  
 - Verified in `test.py` (`=== Testing Breakpoint Detection ===`): breakpoints round-trip through serialization; black/silence stderr parsers intersect correctly; runtime fallback yields even 10-min spacing for a 30-min asset and nothing for a 5-min clip. `test.py` and `test_playback.py` both pass to completion.  
 - KNOWN LIMITATION: breakpoints are now detected and stored, but `MidProgramMode` cannot consume them yet (broadcast_modes.py not present) and the item-based Player/PlaybackQueue still can't split a file mid-play. Black/silence is a heuristic and may fire on in-content fades.
+
+## 2026-09-09 (Broadcast Realism)  
+  
+- Added `src/scheduler/broadcast_event.py`: a `BroadcastEvent` model + `BroadcastEventType` enum (COMMERCIAL_BLOCK / STATION_ID / NETWORK_PROMO, plus reserved BREAKING_NEWS / EMERGENCY_ALERT / WEATHER) so interruptions are first-class items the Broadcast Controller can enqueue without the Player making scheduling decisions. `make_commercial_block()` is the convenience constructor for the common case; real commercial/station-ID media can be attached later via `items` without touching the modes.  
+- Added `src/scheduler/broadcast_modes.py`: the three concrete Broadcast Modes behind the existing `BroadcastController` seam — `OffMode` (programs in order, parity with `mode=None`), `BetweenProgramsMode` (one commercial block after each program), and `MidProgramMode` (a block per detected breakpoint, falling back to ~10-min runtime spacing, airing whole when neither breakpoints nor runtime are known). `create_broadcast_mode(name)` maps the persisted `Config.broadcast_mode` string (`off` / `between_programs` / `mid_program`) to an instance and defaults unknown values to Off. Item introspection is duck-typed (`get_breakpoints` / `get_runtime_seconds` on the item or its `MediaAsset`) so it works before program items settle on one type.  
+- Resolved the prior KNOWN LIMITATION: `MidProgramMode` now consumes the breakpoints stored on `MediaAsset` by `BreakpointDetector`. The item-based Player/PlaybackQueue still cannot split a single file mid-play, so for now the program is enqueued once and its breakpoints drive how many commercial blocks follow; the mid-file split remains future work.  
+- Wired mode selection from Config into the pipeline: `Engine.initialize()` injects `create_broadcast_mode(config.get_broadcast_mode())` into the broadcast controller after `Config().load()`, and `Channel.set_broadcast_mode(name)` lets the ChannelManager propagate the same setting to every channel's own controller.  
+- Added `=== Testing Broadcast Modes ===` to `test.py`: Off order/no-events, Between-Programs interleave, Mid-Program per-breakpoint split, runtime-spacing fallback, short-program whole-airing, and factory mapping (including the unknown-value default). `test.py` and `test_playback.py` both pass to completion.
