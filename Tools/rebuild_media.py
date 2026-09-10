@@ -9,9 +9,9 @@ media bytes:
 """
 
 import sys
-from pathlib import Path  
-  
-# Resolve <repo root>/src regardless of where this script is launched from.  
+from pathlib import Path
+
+# Resolve <repo root>/src regardless of where this script is launched from.
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 from metadata.services.media_ingestor import MediaIngestor

@@ -327,20 +327,20 @@ Separating these responsibilities prevents unnecessary code changes while preser
 
 ## Applied In VISTOR
 
-VISTOR uses Enums for architectural concepts that are expected to remain stable, including:  
-  
-- MediaType  
-- Audience  
-  
-VISTOR uses standardized vocabulary for descriptive metadata that may expand over time, including:  
-  
-- Genres  
-- Themes  
-- Languages  
-- Content Ratings  
-  
-Content Ratings are vocabulary rather than an Enum because rating systems vary by country and organization, and each rating preserves its original authority, country, and value.  
-  
+VISTOR uses Enums for architectural concepts that are expected to remain stable, including:
+
+- MediaType
+- Audience
+
+VISTOR uses standardized vocabulary for descriptive metadata that may expand over time, including:
+
+- Genres
+- Themes
+- Languages
+- Content Ratings
+
+Content Ratings are vocabulary rather than an Enum because rating systems vary by country and organization, and each rating preserves its original authority, country, and value.
+
 User-defined Tags remain free-form strings to support unlimited media classification without requiring changes to the application's architecture.
 
 ---
@@ -425,23 +425,23 @@ Models describe relationships between media rather than individual classificatio
 
 This separation improves maintainability, reduces duplication, and provides a scalable foundation for future features.
 
-## Applied In VISTOR  
-  
-The metadata package is organized into six sub-packages:  
-  
-```text  
-metadata/  
-├── enums/          architectural concepts (audience, content_rating, media_type, presentation_type)  
-├── vocabulary/     controlled descriptive terms (genre, music_genre, network, country, theme, tag)  
-├── library/        library-level container models  
-├── media/          media item models (movies, episodes, music videos, commercials, ...)  
-├── relationships/  relationship models (people, studios, franchises, series, seasons, ...)  
-└── services/       acquisition, enrichment, scoring, caching, serialization, ingestion  
-```  
-  
-This organization reflects the philosophy that architectural concepts,  
-descriptive vocabulary, media models, and their relationships should remain  
-independent systems while working together to describe every piece of media  
-within VISTOR. The `services/` layer holds the behavior — acquisition,  
-enrichment, scoring, caching, serialization, and ingestion — that operates over  
+## Applied In VISTOR
+
+The metadata package is organized into six sub-packages:
+
+```text
+metadata/
+├── enums/          architectural concepts (audience, content_rating, media_type, presentation_type)
+├── vocabulary/     controlled descriptive terms (genre, music_genre, network, country, theme, tag)
+├── library/        library-level container models
+├── media/          media item models (movies, episodes, music videos, commercials, ...)
+├── relationships/  relationship models (people, studios, franchises, series, seasons, ...)
+└── services/       acquisition, enrichment, scoring, caching, serialization, ingestion
+```
+
+This organization reflects the philosophy that architectural concepts,
+descriptive vocabulary, media models, and their relationships should remain
+independent systems while working together to describe every piece of media
+within VISTOR. The `services/` layer holds the behavior — acquisition,
+enrichment, scoring, caching, serialization, and ingestion — that operates over
 those models.

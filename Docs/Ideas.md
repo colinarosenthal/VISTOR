@@ -370,219 +370,219 @@ Broadcast Controller determines when interruptions occur.
 
 Player determines how media is played.
 
-## Resilient Acquisition and Replacement  
-  
-Media availability on public archives is not guaranteed. An upload that  
-satisfies a scheduled program today may be removed tomorrow. VISTOR must  
-therefore treat every remote source as unreliable and be able to recover  
-from a takedown automatically rather than failing the broadcast.  
-  
-### Multi-Archive Sources  
-  
-Each media asset should carry a ranked list of remote sources rather than  
-a single origin. A source is a lightweight descriptor (provider, remote  
-identifier / URL). When a file is missing locally, VISTOR walks the ranked  
-sources in order and downloads from the first that responds. A removed page  
-simply returns an error (e.g. 404 / 403); the resolver treats that as  
-"source unavailable" and advances to the next source instead of crashing.  
-  
-### Keyframe Fingerprints  
-  
-Every asset VISTOR successfully obtains is fingerprinted from its keyframes  
-before it can ever be evicted. The fingerprint is small and is retained  
-permanently even after the underlying file is deleted. When all known  
-sources for an asset fail, VISTOR uses the stored fingerprint to search  
-across multiple archives for a matching re-upload of the same content, so a  
-takedown does not permanently lose the ability to reacquire the file.  
-  
-### Relevant-Media Substitution  
-  
-If no acceptable match can be found for a specific missing item (for example  
-the next episode of a series is genuinely unavailable from every source),  
-VISTOR does not leave a gap. Instead it substitutes a different piece of  
-relevant media so the broadcast continues uninterrupted, and re-queues the  
-missing item for a later acquisition attempt. There is no low-quality  
-"cold storage" copy of the file; only the permanent fingerprint and metadata  
-are kept, which is enough to find and restore a full-quality replacement.  
-  
-### Two Independent Scores  
-  
-VISTOR maintains two deliberately separate scores per media item:  
-  
-1. Broadcast Score — how likely the item is to air. Driven by repurposability  
-   (applicable to more channels scores higher), non-seasonal content sitting  
-   in a higher bracket than seasonal, and overall appeal. This score alone  
-   drives broadcast frequency / selection for streaming.  
-  
-2. Retention Score — whether the file should stay on disk. This is a combined  
-   score derived from the Broadcast Score, the "at-risk" fragility of the  
-   item's sources (scarce or unreliable sources raise retention priority),  
-   and the storage footprint the file occupies (larger files are more  
-   expensive to keep). This score alone drives disk eviction decisions.  
-  
-The scores are kept separate because a frequently-aired item on a rock-solid,  
-widely-mirrored source may not need aggressive on-disk pinning, while a  
-medium-frequency item that survives on a single fragile upload should be  
-pinned. Collapsing them into one number would lose this distinction.  
-  
-### Deleted-Content Metadata Retention  
-  
-Deleting a file never deletes its metadata or its fingerprint. The metadata  
-library remains the complete catalog regardless of what exists on disk, so a  
-previously-evicted item can always be reverse-searched (via fingerprint and  
+## Resilient Acquisition and Replacement
+
+Media availability on public archives is not guaranteed. An upload that
+satisfies a scheduled program today may be removed tomorrow. VISTOR must
+therefore treat every remote source as unreliable and be able to recover
+from a takedown automatically rather than failing the broadcast.
+
+### Multi-Archive Sources
+
+Each media asset should carry a ranked list of remote sources rather than
+a single origin. A source is a lightweight descriptor (provider, remote
+identifier / URL). When a file is missing locally, VISTOR walks the ranked
+sources in order and downloads from the first that responds. A removed page
+simply returns an error (e.g. 404 / 403); the resolver treats that as
+"source unavailable" and advances to the next source instead of crashing.
+
+### Keyframe Fingerprints
+
+Every asset VISTOR successfully obtains is fingerprinted from its keyframes
+before it can ever be evicted. The fingerprint is small and is retained
+permanently even after the underlying file is deleted. When all known
+sources for an asset fail, VISTOR uses the stored fingerprint to search
+across multiple archives for a matching re-upload of the same content, so a
+takedown does not permanently lose the ability to reacquire the file.
+
+### Relevant-Media Substitution
+
+If no acceptable match can be found for a specific missing item (for example
+the next episode of a series is genuinely unavailable from every source),
+VISTOR does not leave a gap. Instead it substitutes a different piece of
+relevant media so the broadcast continues uninterrupted, and re-queues the
+missing item for a later acquisition attempt. There is no low-quality
+"cold storage" copy of the file; only the permanent fingerprint and metadata
+are kept, which is enough to find and restore a full-quality replacement.
+
+### Two Independent Scores
+
+VISTOR maintains two deliberately separate scores per media item:
+
+1. Broadcast Score — how likely the item is to air. Driven by repurposability
+   (applicable to more channels scores higher), non-seasonal content sitting
+   in a higher bracket than seasonal, and overall appeal. This score alone
+   drives broadcast frequency / selection for streaming.
+
+2. Retention Score — whether the file should stay on disk. This is a combined
+   score derived from the Broadcast Score, the "at-risk" fragility of the
+   item's sources (scarce or unreliable sources raise retention priority),
+   and the storage footprint the file occupies (larger files are more
+   expensive to keep). This score alone drives disk eviction decisions.
+
+The scores are kept separate because a frequently-aired item on a rock-solid,
+widely-mirrored source may not need aggressive on-disk pinning, while a
+medium-frequency item that survives on a single fragile upload should be
+pinned. Collapsing them into one number would lose this distinction.
+
+### Deleted-Content Metadata Retention
+
+Deleting a file never deletes its metadata or its fingerprint. The metadata
+library remains the complete catalog regardless of what exists on disk, so a
+previously-evicted item can always be reverse-searched (via fingerprint and
 metadata) and reacquired when the schedule needs it again.
 
-### Catalogue Expansion (Future)  
-  
-The discovery service described above operates over the *known* metadata  
-catalog: it can only select and acquire items VISTOR already knows about.  
-A true "find a show I have never catalogued" capability is a separate,  
-later feature that requires a metadata-ingest step first: querying an  
-external source, parsing series/episode metadata, and inserting new  
-MediaItems into the Library before any acquisition can target them.  
-  
-This is intentionally deferred until the core program is complete. The  
-buildable, testable core today is: (1) a provider-agnostic fetcher that  
-can pull from any backend (Internet Archive, YouTube, Smithsonian, etc.),  
-(2) a rolling acquisition loop that keeps the window filled and evicts  
-aired content, and (3) channel-spec discovery over the existing catalog.  
+### Catalogue Expansion (Future)
+
+The discovery service described above operates over the *known* metadata
+catalog: it can only select and acquire items VISTOR already knows about.
+A true "find a show I have never catalogued" capability is a separate,
+later feature that requires a metadata-ingest step first: querying an
+external source, parsing series/episode metadata, and inserting new
+MediaItems into the Library before any acquisition can target them.
+
+This is intentionally deferred until the core program is complete. The
+buildable, testable core today is: (1) a provider-agnostic fetcher that
+can pull from any backend (Internet Archive, YouTube, Smithsonian, etc.),
+(2) a rolling acquisition loop that keeps the window filled and evicts
+aired content, and (3) channel-spec discovery over the existing catalog.
 Catalogue expansion layers on top of these once metadata ingest exists.
 
-## Recommended Media (Automatic Catalogue Expansion)  
-  
-VISTOR should eventually be able to grow its own catalogue rather than  
-relying entirely on manual ingest through the drag-and-drop web UI. When  
-enabled, VISTOR would use an existing catalogued item as a seed, ask an  
-authoritative source (TMDB "recommendations"/"similar", IMDb) for related  
-titles, and surface them as suggestions for new programming.  
-  
-This builds directly on the existing RecordBuilder -> TMDBSource ->  
-MediaIngestor seam and is the concrete first slice of the "Catalogue  
-Expansion (Future)" item already noted at the end of this document.  
-  
-### Pipeline  
-  
-1. Seed selection - pick a catalogued MediaItem (or a whole channel spec)  
-   to base recommendations on.  
-2. Suggestion - query TMDB/IMDb for similar/recommended titles and build  
-   provisional metadata records (no asset yet).  
-3. Source discovery - for each accepted suggestion, search public archives  
-   (YouTube, Internet Archive, etc.) for a suitable URL, reusing the ranked  
-   multi-archive source model.  
-4. Acquisition - download, probe, and fingerprint via the normal ingest  
-   pipeline, then commit into media.json.  
-  
-### Autonomy Levels  
-  
-Because fully-automatic URL discovery is risky, the feature should ship in  
-graduated modes:  
-  
-- Suggest Only - recommendations appear in a queue; nothing is downloaded  
-  until a human confirms (same confirm step as the web UI today).  
-- Assisted - VISTOR finds candidate URLs automatically but still waits for  
-  confirmation before committing.  
-- Automatic - VISTOR discovers a URL, ingests, and commits with no  
-  interaction, feeding new similar shows straight into broadcasts.  
-  
-### Possible Settings  
-  
-Recommended Media:  
-On / Off  
-  
-Recommendation Mode:  
-Suggest Only / Assisted / Automatic  
-  
-Seed Source:  
-Whole Library / Per Channel / Specific Titles  
-  
-Max Auto-Additions Per Week:  
-(numeric limit)  
-  
-### Relationship to the Management Website and TV Settings Menu  
-  
-These toggles are part of a larger planned management surface. Two distinct  
-front-ends are envisioned:  
-  
-- Management Website - a full system console (separate from add_media_web)  
-  for editing every setting, including commercial-playback rules from the  
-  Design Bible and the Recommended Media toggles above.  
-- TV Settings Menu - the same settings viewable/toggleable on the  
-  television itself, mapped to a dedicated remote button, so the operator  
-  never needs a keyboard. A future USB mode could let the TV ingest media  
-  directly from a plugged-in drive of supported file types.  
-  
-The ingest/authoring surfaces remain separate from the TV-viewing runtime,  
-consistent with how src/ingest is already documented as "NOT part of the  
-TV-viewing runtime."  
-  
-### Deferral Note  
-  
-Full automation depends on reliable source discovery and a real settings/  
-config persistence layer (the current Config.load() is a placeholder). The  
-first buildable slice is Suggest Only over the known TMDB "recommendations"  
+## Recommended Media (Automatic Catalogue Expansion)
+
+VISTOR should eventually be able to grow its own catalogue rather than
+relying entirely on manual ingest through the drag-and-drop web UI. When
+enabled, VISTOR would use an existing catalogued item as a seed, ask an
+authoritative source (TMDB "recommendations"/"similar", IMDb) for related
+titles, and surface them as suggestions for new programming.
+
+This builds directly on the existing RecordBuilder -> TMDBSource ->
+MediaIngestor seam and is the concrete first slice of the "Catalogue
+Expansion (Future)" item already noted at the end of this document.
+
+### Pipeline
+
+1. Seed selection - pick a catalogued MediaItem (or a whole channel spec)
+   to base recommendations on.
+2. Suggestion - query TMDB/IMDb for similar/recommended titles and build
+   provisional metadata records (no asset yet).
+3. Source discovery - for each accepted suggestion, search public archives
+   (YouTube, Internet Archive, etc.) for a suitable URL, reusing the ranked
+   multi-archive source model.
+4. Acquisition - download, probe, and fingerprint via the normal ingest
+   pipeline, then commit into media.json.
+
+### Autonomy Levels
+
+Because fully-automatic URL discovery is risky, the feature should ship in
+graduated modes:
+
+- Suggest Only - recommendations appear in a queue; nothing is downloaded
+  until a human confirms (same confirm step as the web UI today).
+- Assisted - VISTOR finds candidate URLs automatically but still waits for
+  confirmation before committing.
+- Automatic - VISTOR discovers a URL, ingests, and commits with no
+  interaction, feeding new similar shows straight into broadcasts.
+
+### Possible Settings
+
+Recommended Media:
+On / Off
+
+Recommendation Mode:
+Suggest Only / Assisted / Automatic
+
+Seed Source:
+Whole Library / Per Channel / Specific Titles
+
+Max Auto-Additions Per Week:
+(numeric limit)
+
+### Relationship to the Management Website and TV Settings Menu
+
+These toggles are part of a larger planned management surface. Two distinct
+front-ends are envisioned:
+
+- Management Website - a full system console (separate from add_media_web)
+  for editing every setting, including commercial-playback rules from the
+  Design Bible and the Recommended Media toggles above.
+- TV Settings Menu - the same settings viewable/toggleable on the
+  television itself, mapped to a dedicated remote button, so the operator
+  never needs a keyboard. A future USB mode could let the TV ingest media
+  directly from a plugged-in drive of supported file types.
+
+The ingest/authoring surfaces remain separate from the TV-viewing runtime,
+consistent with how src/ingest is already documented as "NOT part of the
+TV-viewing runtime."
+
+### Deferral Note
+
+Full automation depends on reliable source discovery and a real settings/
+config persistence layer (the current Config.load() is a placeholder). The
+first buildable slice is Suggest Only over the known TMDB "recommendations"
 endpoint, with a persisted `recommended_media` toggle.
 
----  
-  
-## Coexisting with Jellyfin (Streaming Mode Alongside Cable Mode)  
-  
-VISTOR and a media server such as Jellyfin could run side-by-side on the same  
-Raspberry Pi, pointed at the same downloaded media, giving the operator two  
-front-ends over the same bytes: traditional "always airing" cable television  
-through VISTOR, and on-demand "streaming mode" browsing through Jellyfin.  
-  
-Both would run as separate processes with no shared runtime - just a shared  
-folder. Jellyfin would be pointed at the same `Media/` tree that VISTOR  
-resolves through `Paths.get_media_directory()` (`src/core/paths.py`). There is  
-no code-level conflict in two processes *reading* the same files; every  
-friction below comes from VISTOR *writing and deleting* within that tree.  
-  
-### Problem 1 - Retention-driven eviction deletes files out from under Jellyfin  
-  
-VISTOR's rolling cache (`evict_to_budget` in  
-`src/metadata/services/rolling_cache.py`) intentionally keeps only a small  
-resident window of upcoming episodes and evicts already-aired ones to stay  
-within the storage budget. Jellyfin assumes a stable, always-present library,  
-so any evicted episode would simply show as missing/unavailable there.  
-Eviction is non-destructive to *metadata* - it flips `download_status` to  
-MISSING and preserves the sidecar/fingerprint for re-fetch - but the playable  
-file Jellyfin needs is gone.  
-  
-Solution: either set the storage budget to `0` (unbounded) so window-based  
-eviction never fires - at the cost of the #1/#2 disk-management behavior - or  
-accept that Jellyfin only reliably sees VISTOR's currently-resident window  
-rather than the full catalog.  
-  
-### Problem 2 - File naming is VISTOR-shaped, not Jellyfin-shaped  
-  
-Files are named by internal media id via `RecordBuilder._path_for`  
-(`src/metadata/services/record_builder.py`), e.g. `Media/<folder>/<media_id>.mkv`,  
-rather than Jellyfin's expected `Show Name/Season 01/Show Name - S01E02`  
-convention. Jellyfin's scanner and metadata agents rely on filename/folder  
-conventions to identify content, so pointing it at VISTOR's tree yields a  
-poorly-identified library. VISTOR's own `<file>.vistor.json` sidecars  
-(`src/metadata/services/asset_sidecar.py`) are a VISTOR-specific format that  
-Jellyfin cannot read.  
-  
-Solution: treat the tree as a "mixed / home videos" library in Jellyfin, or add  
-an `.nfo`-generation bridge step that translates VISTOR metadata into a format  
-Jellyfin's agents understand.  
-  
-### Problem 3 - Conceptually opposite models  
-  
-VISTOR is a broadcast simulator ("watch what's airing"); Jellyfin is a library  
-browser ("browse and pick"), which is an explicit VISTOR non-goal. This is not  
-a technical conflict but a UX one: the two front-ends behave differently over  
-the same media, which is exactly the point of this setup.  
-  
-Solution / guardrails: decide who owns deletion (VISTOR's eviction vs. a stable  
-Jellyfin library), and consider pointing Jellyfin at a curated subset rather  
-than the whole `Media/` tree so VISTOR's `Raw/`, `tmp/`, and sidecar files do  
-not clutter the Jellyfin library.  
-  
-### Deferral Note  
-  
-This is an optional deployment/integration idea, not a core roadmap item. It  
-becomes cleanly viable once the storage-budget setting (#2) is respected  
-everywhere and a naming/`.nfo` bridge exists; until then the safest  
+---
+
+## Coexisting with Jellyfin (Streaming Mode Alongside Cable Mode)
+
+VISTOR and a media server such as Jellyfin could run side-by-side on the same
+Raspberry Pi, pointed at the same downloaded media, giving the operator two
+front-ends over the same bytes: traditional "always airing" cable television
+through VISTOR, and on-demand "streaming mode" browsing through Jellyfin.
+
+Both would run as separate processes with no shared runtime - just a shared
+folder. Jellyfin would be pointed at the same `Media/` tree that VISTOR
+resolves through `Paths.get_media_directory()` (`src/core/paths.py`). There is
+no code-level conflict in two processes *reading* the same files; every
+friction below comes from VISTOR *writing and deleting* within that tree.
+
+### Problem 1 - Retention-driven eviction deletes files out from under Jellyfin
+
+VISTOR's rolling cache (`evict_to_budget` in
+`src/metadata/services/rolling_cache.py`) intentionally keeps only a small
+resident window of upcoming episodes and evicts already-aired ones to stay
+within the storage budget. Jellyfin assumes a stable, always-present library,
+so any evicted episode would simply show as missing/unavailable there.
+Eviction is non-destructive to *metadata* - it flips `download_status` to
+MISSING and preserves the sidecar/fingerprint for re-fetch - but the playable
+file Jellyfin needs is gone.
+
+Solution: either set the storage budget to `0` (unbounded) so window-based
+eviction never fires - at the cost of the #1/#2 disk-management behavior - or
+accept that Jellyfin only reliably sees VISTOR's currently-resident window
+rather than the full catalog.
+
+### Problem 2 - File naming is VISTOR-shaped, not Jellyfin-shaped
+
+Files are named by internal media id via `RecordBuilder._path_for`
+(`src/metadata/services/record_builder.py`), e.g. `Media/<folder>/<media_id>.mkv`,
+rather than Jellyfin's expected `Show Name/Season 01/Show Name - S01E02`
+convention. Jellyfin's scanner and metadata agents rely on filename/folder
+conventions to identify content, so pointing it at VISTOR's tree yields a
+poorly-identified library. VISTOR's own `<file>.vistor.json` sidecars
+(`src/metadata/services/asset_sidecar.py`) are a VISTOR-specific format that
+Jellyfin cannot read.
+
+Solution: treat the tree as a "mixed / home videos" library in Jellyfin, or add
+an `.nfo`-generation bridge step that translates VISTOR metadata into a format
+Jellyfin's agents understand.
+
+### Problem 3 - Conceptually opposite models
+
+VISTOR is a broadcast simulator ("watch what's airing"); Jellyfin is a library
+browser ("browse and pick"), which is an explicit VISTOR non-goal. This is not
+a technical conflict but a UX one: the two front-ends behave differently over
+the same media, which is exactly the point of this setup.
+
+Solution / guardrails: decide who owns deletion (VISTOR's eviction vs. a stable
+Jellyfin library), and consider pointing Jellyfin at a curated subset rather
+than the whole `Media/` tree so VISTOR's `Raw/`, `tmp/`, and sidecar files do
+not clutter the Jellyfin library.
+
+### Deferral Note
+
+This is an optional deployment/integration idea, not a core roadmap item. It
+becomes cleanly viable once the storage-budget setting (#2) is respected
+everywhere and a naming/`.nfo` bridge exists; until then the safest
 configuration is an unbounded budget plus a curated Jellyfin library subset.

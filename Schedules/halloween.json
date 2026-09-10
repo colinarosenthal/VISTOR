@@ -1,12 +1,12 @@
-{  
-    "schedule_type": "halloween",  
-    "name": "Halloween",  
-    "blocks": [  
-        {  
-            "name": "Halloween Marathon",  
-            "start_hour": 0, "start_minute": 0,  
-            "end_hour": 23, "end_minute": 59,  
-            "items": []  
-        }  
-    ]  
+{
+    "schedule_type": "halloween",
+    "name": "Halloween",
+    "blocks": [
+        {
+            "name": "Halloween Marathon",
+            "start_hour": 0, "start_minute": 0,
+            "end_hour": 23, "end_minute": 59,
+            "items": []
+        }
+    ]
 }

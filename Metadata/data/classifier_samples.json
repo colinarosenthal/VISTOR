@@ -1,16 +1,16 @@
-[  
-  {"label": "MusicVideo",  
-   "scraped": {"title": "Jamiroquai - Virtual Insanity (Official Video)",  
-               "categories": ["Music"], "duration": 234,  
-               "tags": ["funk", "acid jazz"]}},  
-  {"label": "MusicVideo",  
-   "scraped": {"title": "The Buggles - Video Killed The Radio Star MTV",  
-               "mediatype": "movies", "duration": 210,  
-               "subject": ["music video", "MTV"]}},  
-  {"label": "Movie",  
-   "scraped": {"title": "Night of the Living Dead (1968) Full Movie",  
-               "categories": ["Film & Animation"], "duration": 5760}},  
-  {"label": "Movie",  
-   "scraped": {"title": "Immaculate Reception documentary",  
-               "categories": ["Sports"], "duration": 5400}}  
+[
+  {"label": "MusicVideo",
+   "scraped": {"title": "Jamiroquai - Virtual Insanity (Official Video)",
+               "categories": ["Music"], "duration": 234,
+               "tags": ["funk", "acid jazz"]}},
+  {"label": "MusicVideo",
+   "scraped": {"title": "The Buggles - Video Killed The Radio Star MTV",
+               "mediatype": "movies", "duration": 210,
+               "subject": ["music video", "MTV"]}},
+  {"label": "Movie",
+   "scraped": {"title": "Night of the Living Dead (1968) Full Movie",
+               "categories": ["Film & Animation"], "duration": 5760}},
+  {"label": "Movie",
+   "scraped": {"title": "Immaculate Reception documentary",
+               "categories": ["Sports"], "duration": 5400}}
 ]

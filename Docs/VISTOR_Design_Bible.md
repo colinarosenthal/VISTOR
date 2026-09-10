@@ -1,199 +1,199 @@
-# VISTOR Design Bible  
-  
-**Project Version:** 1.0  
-  
-**Last Updated:** 7/26/2026  
-  
----  
-  
-# Table of Contents  
-  
-1. Project Vision  
-   - 1.1 Project Motivation  
-   - 1.2 The Name "VISTOR"  
-2. Project Goals  
-3. Core Philosophy  
-   - 3.1 Television, Not Streaming  
-   - 3.2 Channels Never Stop  
-   - 3.3 Media Exists Independently  
-   - 3.4 Broadcast Simulation Philosophy  
-   - 3.5 Local First  
-   - 3.6 Relative Paths  
-   - 3.7 Raspberry Pi Production Target  
-   - 3.8 Planned Channel Types  
-   - 3.9 Cable Box Experience  
-4. Core Features  
-   - 4.1 Scheduling  
-   - 4.2 Weather Channel  
-   - 4.3 Portability  
-   - 4.4 Media Organization  
-   - 4.5 Seasonal and Special Event Programming  
-   - 4.6 Metadata System  
-   - 4.7 Media Architecture  
-   - 4.8 Identifier Philosophy  
-5. System Architecture  
-   - 5.1 Channel Engine  
-   - 5.2 Player  
-   - 5.3 Remote Handler  
-   - 5.4 OSD Manager  
-   - 5.5 Metadata Engine  
-   - 5.6 Architectural Standards  
-   - 5.7 Metadata Architecture  
-   - 5.8 Content Availability Philosophy  
-   - 5.9 Cross-Media Categorization  
-   - 5.10 Metadata Population Philosophy  
-6. Inspiration  
-7. Project Scope  
-8. Non-Goals  
-9. Broadcast Standards  
-10. Channel Standards  
-11. Commercial Philosophy  
-12. Audio Philosophy  
-13. Visual Philosophy  
-14. Metadata Standards  
-15. Configuration Philosophy  
-16. Performance Goals  
-17. Development Milestones  
-18. Version History  
-19. Future Ideas  
-20. Cable Provider Philosophy  
-21. Guiding Principle  
-22. Media Sources and Rights  
-23. Development Standards  
-  
----  
-  
-# 1. Project Vision  
-  
-VISTOR is a software project designed to recreate the experience of watching cable television during the late 1990s and early 2000s.  
-  
-Rather than functioning as a modern media player or streaming platform, VISTOR simulates a complete cable television ecosystem. Channels continuously broadcast scheduled programming, commercials, station identifications, promotional material, and special events. Every channel exists independently and continues playing regardless of whether it is currently being viewed.  
-  
----  
-  
-## 1.1 Project Motivation  
-  
-VISTOR is not intended to reject modern streaming. It exists to preserve and reintroduce the unique cultural experience of scheduled broadcast television—an experience built on anticipation, discovery, and shared moments that cannot be replicated by on-demand media.  
-  
----  
-  
-## 1.2 The Name "VISTOR"  
-  
-Choosing a name for the project became part of the design process itself.  
-  
-Early in development, the working title *RetroTV* accurately communicated the project's purpose, but they lacked a distinct identity. As the project's vision matured beyond recreating old television and toward preserving an entire broadcast experience, it became clear that the project required a name that could stand on its own rather than simply describe its function.  
-  
-The search for that identity drew inspiration from the naming conventions of classic consumer electronics manufacturers from the latter half of the twentieth century. Companies such as Sony, Aiwa, Denon, Pioneer, Grundig, Zenith, and Marantz became recognizable not because their names described televisions or audio equipment, but because decades of engineering excellence gave those names meaning.  
-  
-Many of these names are short, memorable, and phonetically distinctive. They feel familiar without being descriptive, allowing the company's reputation—not the literal meaning of its name—to define its identity.  
-  
-Rather than referencing nostalgia directly, the name is intended to feel like the name of a real electronics manufacturer that might have produced televisions, cable receivers, or professional broadcast equipment during the 1980s and 1990s. The goal was not to invent a fictional company for the sake of world-building, but to create a brand identity that naturally belongs within the era VISTOR seeks to preserve.  
-  
-Throughout the project, VISTOR is treated as though it were an established manufacturer whose products quietly became part of millions of homes. The software is presented as a modern continuation of that legacy—a contemporary broadcast receiver built around the same philosophy of reliability, simplicity, and respect for the television experience.  
-  
-In this way, the name VISTOR represents more than the software itself. It reflects the project's broader objective: preserving not only the content of broadcast television, but the feeling of interacting with the hardware, branding, and engineering culture that once surrounded it.  
-  
----  
-  
-# 2. Project Goals  
-  
-VISTOR aims to recreate the atmosphere of television as it existed before on-demand streaming became the standard.  
-  
-The software should emphasize authenticity, simplicity, and nostalgia over modern convenience.  
-  
-Primary goals include:  
-  
-- Persistent television channels.  
-- Authentic (end of episode) commercial breaks.  
-- Historically appropriate programming.  
-- Cable-box style user interface.  
-- Local-first media storage.  
-- Reliable Raspberry Pi deployment.  
-- Expandable architecture for future channels and features.  
-  
----  
-  
-# 3. Core Philosophy  
-  
-VISTOR follows several guiding principles.  
-  
----  
-  
-## 3.1 Television, Not Streaming  
-  
-VISTOR is designed to simulate television.  
-  
-Users do not browse a library.  
-  
-Users watch whatever is currently airing.  
-  
----  
-  
-## 3.2 Channels Never Stop  
-  
-Every channel always exists.  
-  
-Every channel always has a schedule.  
-  
-Changing channels never restarts playback.  
-  
-If a user leaves a channel for ten minutes, that channel should progress ten minutes while unattended.  
-  
----  
-  
-## 3.3 Media Exists Independently  
-  
-Shows, movies, commercials, music videos, and other content exist independently of channels.  
-  
-Channels reference media.  
-  
-Media does not belong to channels.  
-  
-A single episode may appear on multiple channels without duplication.  
-  
----  
-  
-## 3.4 Broadcast Simulation Philosophy  
-  
-### Core Principle  
-  
-VISTOR does not simulate media playback.  
-  
-VISTOR simulates television broadcasting.  
-  
-The goal is not simply to play episodes, movies, or commercials. The goal is to recreate the behavior of a real television network, where programming is continuously scheduled, interrupted, resumed, and transitioned exactly as it would be on a broadcast station.  
-  
-Every subsystem should be designed with this philosophy in mind.  
-  
----  
-  
-### Broadcast Events  
-  
-Programs are never interrupted directly by the player.  
-  
-Instead, interruptions are represented as **Broadcast Events**.  
-  
-Examples include:  
-  
-- Commercial Blocks  
-- Station Identification  
-- Network Promos  
-- Local Affiliate Promos  
-- Weather Bulletins  
-- Emergency Alert System (EAS)  
-- Breaking News Interruptions  
-- Holiday Bumpers  
-- Rating Screens  
-- "We'll Be Right Back" Screens  
-- Countdown Timers  
-- Future Broadcast Types  
-  
-Every interruption is treated as the same type of object within the broadcast pipeline.  
-  
----  
-  
-### Broadcast Pipeline  
-  
+# VISTOR Design Bible
+
+**Project Version:** 1.0
+
+**Last Updated:** 7/26/2026
+
+---
+
+# Table of Contents
+
+1. Project Vision
+   - 1.1 Project Motivation
+   - 1.2 The Name "VISTOR"
+2. Project Goals
+3. Core Philosophy
+   - 3.1 Television, Not Streaming
+   - 3.2 Channels Never Stop
+   - 3.3 Media Exists Independently
+   - 3.4 Broadcast Simulation Philosophy
+   - 3.5 Local First
+   - 3.6 Relative Paths
+   - 3.7 Raspberry Pi Production Target
+   - 3.8 Planned Channel Types
+   - 3.9 Cable Box Experience
+4. Core Features
+   - 4.1 Scheduling
+   - 4.2 Weather Channel
+   - 4.3 Portability
+   - 4.4 Media Organization
+   - 4.5 Seasonal and Special Event Programming
+   - 4.6 Metadata System
+   - 4.7 Media Architecture
+   - 4.8 Identifier Philosophy
+5. System Architecture
+   - 5.1 Channel Engine
+   - 5.2 Player
+   - 5.3 Remote Handler
+   - 5.4 OSD Manager
+   - 5.5 Metadata Engine
+   - 5.6 Architectural Standards
+   - 5.7 Metadata Architecture
+   - 5.8 Content Availability Philosophy
+   - 5.9 Cross-Media Categorization
+   - 5.10 Metadata Population Philosophy
+6. Inspiration
+7. Project Scope
+8. Non-Goals
+9. Broadcast Standards
+10. Channel Standards
+11. Commercial Philosophy
+12. Audio Philosophy
+13. Visual Philosophy
+14. Metadata Standards
+15. Configuration Philosophy
+16. Performance Goals
+17. Development Milestones
+18. Version History
+19. Future Ideas
+20. Cable Provider Philosophy
+21. Guiding Principle
+22. Media Sources and Rights
+23. Development Standards
+
+---
+
+# 1. Project Vision
+
+VISTOR is a software project designed to recreate the experience of watching cable television during the late 1990s and early 2000s.
+
+Rather than functioning as a modern media player or streaming platform, VISTOR simulates a complete cable television ecosystem. Channels continuously broadcast scheduled programming, commercials, station identifications, promotional material, and special events. Every channel exists independently and continues playing regardless of whether it is currently being viewed.
+
+---
+
+## 1.1 Project Motivation
+
+VISTOR is not intended to reject modern streaming. It exists to preserve and reintroduce the unique cultural experience of scheduled broadcast television—an experience built on anticipation, discovery, and shared moments that cannot be replicated by on-demand media.
+
+---
+
+## 1.2 The Name "VISTOR"
+
+Choosing a name for the project became part of the design process itself.
+
+Early in development, the working title *RetroTV* accurately communicated the project's purpose, but they lacked a distinct identity. As the project's vision matured beyond recreating old television and toward preserving an entire broadcast experience, it became clear that the project required a name that could stand on its own rather than simply describe its function.
+
+The search for that identity drew inspiration from the naming conventions of classic consumer electronics manufacturers from the latter half of the twentieth century. Companies such as Sony, Aiwa, Denon, Pioneer, Grundig, Zenith, and Marantz became recognizable not because their names described televisions or audio equipment, but because decades of engineering excellence gave those names meaning.
+
+Many of these names are short, memorable, and phonetically distinctive. They feel familiar without being descriptive, allowing the company's reputation—not the literal meaning of its name—to define its identity.
+
+Rather than referencing nostalgia directly, the name is intended to feel like the name of a real electronics manufacturer that might have produced televisions, cable receivers, or professional broadcast equipment during the 1980s and 1990s. The goal was not to invent a fictional company for the sake of world-building, but to create a brand identity that naturally belongs within the era VISTOR seeks to preserve.
+
+Throughout the project, VISTOR is treated as though it were an established manufacturer whose products quietly became part of millions of homes. The software is presented as a modern continuation of that legacy—a contemporary broadcast receiver built around the same philosophy of reliability, simplicity, and respect for the television experience.
+
+In this way, the name VISTOR represents more than the software itself. It reflects the project's broader objective: preserving not only the content of broadcast television, but the feeling of interacting with the hardware, branding, and engineering culture that once surrounded it.
+
+---
+
+# 2. Project Goals
+
+VISTOR aims to recreate the atmosphere of television as it existed before on-demand streaming became the standard.
+
+The software should emphasize authenticity, simplicity, and nostalgia over modern convenience.
+
+Primary goals include:
+
+- Persistent television channels.
+- Authentic (end of episode) commercial breaks.
+- Historically appropriate programming.
+- Cable-box style user interface.
+- Local-first media storage.
+- Reliable Raspberry Pi deployment.
+- Expandable architecture for future channels and features.
+
+---
+
+# 3. Core Philosophy
+
+VISTOR follows several guiding principles.
+
+---
+
+## 3.1 Television, Not Streaming
+
+VISTOR is designed to simulate television.
+
+Users do not browse a library.
+
+Users watch whatever is currently airing.
+
+---
+
+## 3.2 Channels Never Stop
+
+Every channel always exists.
+
+Every channel always has a schedule.
+
+Changing channels never restarts playback.
+
+If a user leaves a channel for ten minutes, that channel should progress ten minutes while unattended.
+
+---
+
+## 3.3 Media Exists Independently
+
+Shows, movies, commercials, music videos, and other content exist independently of channels.
+
+Channels reference media.
+
+Media does not belong to channels.
+
+A single episode may appear on multiple channels without duplication.
+
+---
+
+## 3.4 Broadcast Simulation Philosophy
+
+### Core Principle
+
+VISTOR does not simulate media playback.
+
+VISTOR simulates television broadcasting.
+
+The goal is not simply to play episodes, movies, or commercials. The goal is to recreate the behavior of a real television network, where programming is continuously scheduled, interrupted, resumed, and transitioned exactly as it would be on a broadcast station.
+
+Every subsystem should be designed with this philosophy in mind.
+
+---
+
+### Broadcast Events
+
+Programs are never interrupted directly by the player.
+
+Instead, interruptions are represented as **Broadcast Events**.
+
+Examples include:
+
+- Commercial Blocks
+- Station Identification
+- Network Promos
+- Local Affiliate Promos
+- Weather Bulletins
+- Emergency Alert System (EAS)
+- Breaking News Interruptions
+- Holiday Bumpers
+- Rating Screens
+- "We'll Be Right Back" Screens
+- Countdown Timers
+- Future Broadcast Types
+
+Every interruption is treated as the same type of object within the broadcast pipeline.
+
+---
+
+### Broadcast Pipeline
+
 The playback pipeline should remain separated into independent responsibilities.
 
 ```
@@ -212,24 +212,24 @@ Playback Queue
 Player
 ```
 
-Responsibilities:  
-  
-- **Engine** controls application runtime.  
-- **Scheduler** determines what should be airing.  
-- **Broadcast Controller** determines when interruptions occur.  
-- **Playback Queue** manages the ordered sequence of media.  
-- **Player** only plays the next queued media item.  
-  
-The Player should never make scheduling decisions.  
-  
----  
-  
-### Broadcast Modes  
-  
-Version 1.0 will support multiple broadcast behaviors.  
-  
-#### Off  
-  
+Responsibilities:
+
+- **Engine** controls application runtime.
+- **Scheduler** determines what should be airing.
+- **Broadcast Controller** determines when interruptions occur.
+- **Playback Queue** manages the ordered sequence of media.
+- **Player** only plays the next queued media item.
+
+The Player should never make scheduling decisions.
+
+---
+
+### Broadcast Modes
+
+Version 1.0 will support multiple broadcast behaviors.
+
+#### Off
+
 No interruptions.
 
 ```
@@ -271,1132 +271,1132 @@ Commercial Block
 Resume Episode
 ```
 
-If authentic breakpoint metadata is unavailable, VISTOR should generate breakpoints based on runtime.  
-  
----  
-  
-### Future Expansion  
-  
-The broadcast architecture should allow additional event types without redesigning the playback system.  
-  
-Possible future broadcast events include:  
-  
-- Local News Cut-Ins  
-- Severe Weather Interruptions  
-- Live Event Overrides  
-- Seasonal Network Branding  
-- Election Coverage  
-- Community-Created Broadcast Metadata  
-- Regional Affiliate Differences  
-  
-The broadcast pipeline should remain flexible enough that any future event can be inserted without modifying the Player itself.  
-  
----  
-  
-### Design Rule  
-  
-Scheduling determines **what** should happen.  
-  
-Broadcast Controller determines **when** interruptions occur.  
-  
-Player determines **how** media is played.  
-  
-Each subsystem should have a single responsibility and should not assume the responsibilities of another subsystem.  
-  
----  
-  
-## 3.5 Local First  
-  
-Whenever possible, all media should be stored locally.  
-  
-Internet access should be optional.  
-  
-The only planned exception is live weather data used by the Weather Channel.  
-  
----  
-  
-## 3.6 Relative Paths  
-  
-No file paths should ever be hardcoded.  
-  
-Every component of VISTOR should function correctly regardless of where the VISTOR project folder is stored.  
-  
----  
-  
-## 3.7 Raspberry Pi Production Target  
-  
-Development will occur primarily on Windows.  
-  
-The final production system will operate on a Raspberry Pi connected to a CRT television.  
-  
-The Raspberry Pi becomes the dedicated cable box.  
-  
----  
-  
-## 3.8 Planned Channel Types  
-  
-VISTOR is designed to support a wide variety of cable television channels inspired by the late 1990s and early 2000s.  
-  
-Planned channel categories include:  
-  
-- Cartoon channels  
-- Movie channels  
-- Music video channels  
-- Sports channels  
-- News channels  
-- Documentary channels  
-- Children's programming  
-- Classic television  
-- Late-night infomercial channels  
-- Aquarium channels  
-- Fireplace and ambient channels  
-- Public access style channels  
-- The Weather Channel  
-- Seasonal and holiday channels  
-- Experimental or custom channels  
-  
-Each channel should maintain its own identity through programming, commercial selection, promotional material, station branding, and scheduling.  
-  
----  
-  
-## 3.9 Cable Box Experience  
-  
-VISTOR should behave like a dedicated cable box rather than a computer application.  
-  
-The viewer should primarily interact with the system using a standard infrared television remote.  
-  
-Planned remote functionality includes:  
-  
-- Channel Up  
-- Channel Down  
-- Numeric channel entry  
-- Previous Channel (Last)  
-- Volume adjustment  
-- Mute  
-- Program Information  
-- Television Guide  
-  
-On-screen overlays should closely resemble cable boxes from the late 1990s and early 2000s.  
-  
-Typical overlays include:  
-  
-- Channel number  
-- Channel name  
-- Current program  
-- Volume indicator  
-- Mute indicator  
-- Clock  
-- Program information banner  
-  
----  
-  
-# 4. Core Features  
-  
-## 4.1 Scheduling  
-  
-Programming should follow realistic broadcast schedules rather than random playback.  
-  
-Examples include:  
-  
-- Scheduled programming blocks  
-- Commercial breaks  
-- Station identifications  
-- Network promotions  
-- "Coming Up Next" bumpers  
-- Holiday programming  
-- Weekend marathons  
-- Late-night programming  
-- Seasonal events  
-  
-The scheduler should create the illusion of an active television network operating continuously.  
-  
----  
-  
-## 4.2 Weather Channel  
-  
-VISTOR includes a dedicated Weather Channel inspired by the presentation style of The Weather Channel during the late 1990s and early 2000s.  
-  
-Unlike other channels, this channel may retrieve live weather information from the internet.  
-  
-The presentation should remain period appropriate while displaying:  
-  
-- Current conditions  
-- Local forecast  
-- Extended forecast  
-- Radar imagery  
-- Weather maps  
-- Local time  
-- Characteristic background music  
-- Classic broadcast graphics  
-  
-Internet connectivity should enhance this channel without becoming a requirement for the remainder of the system.  
-  
----  
-  
-## 4.3 Portability  
-  
-VISTOR should function as a completely portable project.  
-  
-The project directory should be movable without requiring configuration changes.  
-  
-Supported storage locations include:  
-  
-- Internal SSD  
-- External USB SSD  
-- Windows development computer  
-- Raspberry Pi storage  
-  
-Every component of the project should determine its location relative to the VISTOR project root.  
-  
-Hardcoded paths should never be used.  
-  
----  
-  
-## 4.4 Media Organization  
-  
-Media should be organized according to its broadcast purpose rather than the television channel on which it appears.  
-  
-For example, a television series may appear on multiple channels without requiring duplicate copies of the media.  
-  
-Commercials, movies, music videos, ambient programming, and television shows should each exist independently within the media library.  
-  
-Channels reference this content through configuration rather than ownership.  
-  
-This approach minimizes duplication while allowing maximum scheduling flexibility.  
-  
----  
-  
-## 4.5 Seasonal and Special Event Programming  
-  
-VISTOR should support dynamic programming based on the time of year.  
-  
-Rather than remaining static throughout the calendar year, channels should be capable of temporarily adjusting their schedules to recreate the seasonal programming commonly found on cable television.  
-  
-Examples include:  
-  
-### Halloween  
-  
-- Horror movie marathons  
-- Halloween television episodes  
-- Spooky cartoon specials  
-- Halloween-themed commercials  
-- Seasonal station bumpers  
-- Halloween music videos  
-- Special event graphics  
-  
----  
-  
-### Thanksgiving  
-  
-- Family movies  
-- Charlie Brown specials  
-- Thanksgiving-themed television episodes  
-- Holiday commercials  
-  
----  
-  
-### Christmas  
-  
-- Twenty-four hour Christmas movie marathons  
-- Classic Christmas specials  
-- Holiday music channels  
-- Christmas commercials  
-- Seasonal station branding  
-- Fireplace channels  
-- Snow ambience channels  
-  
----  
-  
-### New Year's  
-  
-- Countdown specials  
-- Music celebrations  
-- Fireworks programming  
-- Year-end retrospectives  
-  
----  
-  
-### Summer  
-  
-- Summer movie events  
-- Beach programming  
-- Vacation-themed commercials  
-  
----  
-  
-### Sporting Events  
-  
-VISTOR may also support temporary programming associated with major sporting events including:  
-  
-- Super Bowl weekend  
-- Olympics  
-- NCAA tournaments  
-- World Series  
-- Stanley Cup Finals  
-  
----  
-  
-Seasonal programming should feel like a real cable provider modifying existing schedules rather than creating entirely separate television systems.  
-  
-Whenever possible, existing channels should temporarily adopt seasonal programming blocks while maintaining their original identity.  
-  
----  
-  
-## 4.6 Metadata System  
-  
-VISTOR separates media from its descriptive information.  
-  
-Metadata should be stored independently of the media files themselves.  
-  
-Metadata may include:  
-  
-- Title  
-- Episode  
-- Season  
-- Original network  
-- Original air date  
-- Runtime  
-- Genre  
-- Tags  
-- Preferred channels  
-- Commercial preferences  
-- Scheduling information  
-  
-The metadata system should allow the scheduler to build realistic television lineups without depending on folder structure.  
-  
----  
-  
-## 4.7 Media Architecture  
-  
-VISTOR models television programming rather than media files.  
-  
-The scheduler, metadata engine, channel manager, television guide, downloader, and playback engine all operate on a hierarchy that mirrors how television programming is organized.  
-  
-Media Assets are considered the physical representation of content rather than the content itself.  
-  
-Programming exists independently of whether a playable file is currently stored on disk.  
-  
----  
-  
-### Metadata Hierarchy  
-  
-Library  
-↓  
-Series  
-↓  
-Season  
-↓  
-Episode  
-↓  
-Media Asset  
-  
----  
-  
-### Library  
-  
-The Library represents the complete catalog of all content known to VISTOR.  
-  
-It stores every television series, movie, commercial, music video, and other supported media regardless of whether individual Media Assets are currently downloaded.  
-  
-The Library is responsible for content discovery, searching, organization, and supplying programming to the Scheduler.  
-  
-Deleting a Media Asset should never remove content from the Library.  
-  
----  
-  
-### Series  
-  
-A Series represents an entire television series or film franchise.  
-  
-Examples include:  
-  
-- The Simpsons  
-- Friends  
-- Star Trek  
-- The Twilight Zone  
-  
-Movies are represented as a Series containing a single Season and a single Episode to maintain a consistent architecture across all supported media.  
-  
-Series-level metadata applies to every Episode contained within the Series.  
-  
-Examples include:  
-  
-- Title  
-- Media Type  
-- Genres  
-- Audience  
-- Default Rating  
-- Original Network  
-- Original Studio  
-- Country  
-- Language  
-- Runtime  
-- Description  
-  
----  
-  
-### Season  
-  
-A Season provides organizational structure for episodic programming.  
-  
-Season-level metadata primarily exists to group Episodes together and store production information.  
-  
-Examples include:  
-  
-- Season Number  
-- Production Year  
-- Episode Count  
-  
----  
-  
-### Episode  
-  
-An Episode represents an individual broadcast program.  
-  
-Scheduling decisions are performed primarily at the Episode level.  
-  
-Episode-level metadata may include:  
-  
-- Episode Title  
-- Episode Number  
-- Production Code  
-- Original Air Date  
-- Synopsis  
-- Runtime Override  
-- Popularity  
-- Themes  
-- Guest Stars  
-- Scheduling Tags  
-  
-Episode metadata applies only to the individual broadcast represented by that Episode.  
-  
----  
-  
-### Media Asset  
-  
-A Media Asset represents a physical playable file stored on disk.  
-  
-Media Assets contain only technical information required for playback.  
-  
-An Episode may contain zero, one, or multiple Media Assets.  
-  
-Media Asset metadata may include:  
-  
-- File Path  
-- Container  
-- Codec  
-- Resolution  
-- Audio Format  
-- Duration  
-- Checksum  
-- Download Status  
-- Verification Status  
-- Last Played  
-  
----  
-  
-### Design Principles  
-  
-The Scheduler operates on Episodes.  
-  
-The Downloader operates on Media Assets.  
-  
-The Player operates on Media Assets supplied by the Scheduler.  
-  
-Deleting a Media Asset never removes the Episode from the Library.  
-  
-The Library always represents the complete catalog of available programming regardless of what files currently exist on disk.  
-  
-This architecture allows VISTOR to support:  
-  
-- Automatic downloading  
-- Automatic deletion  
-- Rotating media libraries  
-- Persistent scheduling  
-- Multiple quality versions  
-- Efficient storage management  
-  
-without affecting scheduling or metadata.  
-  
----  
-  
-### Metadata Philosophy  
-  
-Metadata describes television programming rather than media files.  
-  
-Series-level metadata applies to every Episode within the Series.  
-  
-Episode-level metadata applies only to that Episode.  
-  
-Media Asset metadata describes only the technical characteristics of the physical file.  
-  
-This separation allows VISTOR to schedule television programming independently of file management, faithfully reproducing how a real broadcast network organizes, stores, and delivers content.  
-  
----  
-  
-## 4.8 Identifier Philosophy  
-  
-VISTOR uses two separate identification systems because metadata objects and physical media files serve different purposes.  
-  
-Metadata identifiers represent the identity of the content itself. These identifiers belong to persistent metadata objects such as Series, Seasons, Episodes, Movies, Commercials, Networks, People, Studios, Franchises, and other Library objects.  
-  
-A metadata identifier answers the question:  
-  
-"What piece of programming is this?"  
-  
-The identifier remains consistent regardless of where the media is stored or whether a playable file currently exists.  
-  
-Media Asset identifiers represent individual physical files stored on disk.  
-  
-A Media Asset identifier answers the question:  
-  
-"Which specific file is available for playback?"  
-  
-A single metadata object may reference multiple Media Assets, such as different resolutions, formats, restorations, or broadcast captures of the same content.  
-  
-Example:  
-  
-Episode:  
-  
-ID:  
-friends_s01e01  
-  
-  
-Media Assets:  
-  
-Asset ID:  
-asset_000001  
-  
-File:  
-Friends_S01E01_480p.mkv  
-  
-  
-Asset ID:  
-asset_000002  
-  
-File:  
-Friends_S01E01_Remaster.mkv  
-  
-  
-The Scheduler operates using metadata identifiers because it determines what programming should air.  
-  
-The Downloader and Player operate using Media Asset identifiers because they manage and play physical files.  
-  
-Metadata identity and physical file identity should remain separate throughout the VISTOR architecture.  
-  
-Content should remain identifiable even when media files are added, removed, replaced, or stored in different locations.  
-  
+If authentic breakpoint metadata is unavailable, VISTOR should generate breakpoints based on runtime.
+
 ---
 
-# 5. System Architecture  
-  
-VISTOR is divided into several independent components.  
-  
-Each component is responsible for a specific aspect of the cable television experience.  
-  
-  
-## 5.1 Channel Engine  
-  
-Responsible for:  
-  
-- Channel schedules  
-- Playback timing  
-- Program progression  
-- Commercial insertion  
-- Schedule generation  
-  
-  
-## 5.2 Player  
-  
-Responsible for:  
-  
-- Media playback  
-- Switching channels  
-- Audio output  
-- Maintaining playback state  
-  
-Changing channels should never restart programming.  
-  
-  
-## 5.3 Remote Handler  
-  
-Responsible for:  
-  
-- Infrared receiver input  
-- Keyboard controls during development  
-- Mapping remote buttons to VISTOR functions  
-  
-  
-## 5.4 OSD Manager  
-  
-Responsible for displaying temporary overlays including:  
-  
-- Channel number  
-- Channel name  
-- Program title  
-- Volume  
-- Mute  
-- Clock  
-- Guide information  
-  
-The OSD should resemble period-correct cable television equipment.  
-  
-  
-## 5.5 Metadata Engine  
-  
-Responsible for:  
-  
-- Reading metadata  
-- Organizing programming  
-- Providing information to the scheduler  
-- Tracking shows, movies, commercials, and promotions  
-  
+### Future Expansion
+
+The broadcast architecture should allow additional event types without redesigning the playback system.
+
+Possible future broadcast events include:
+
+- Local News Cut-Ins
+- Severe Weather Interruptions
+- Live Event Overrides
+- Seasonal Network Branding
+- Election Coverage
+- Community-Created Broadcast Metadata
+- Regional Affiliate Differences
+
+The broadcast pipeline should remain flexible enough that any future event can be inserted without modifying the Player itself.
+
 ---
 
-## 5.7 Metadata Architecture  
-  
-VISTOR separates metadata into four distinct categories based on responsibility.  
-  
-This separation ensures that architectural concepts, descriptive information, data models, and supporting systems remain independent while working together as a unified metadata engine.  
-  
-  
-### 5.7.1 Enums  
-  
-Enums define architectural concepts.  
-  
-These represent fixed classifications that should remain stable throughout the lifetime of VISTOR.  
-  
-Examples include:  
-  
-- Media Types  
-- Presentation Types  
-- Audience Classifications  
-- Commercial Types  
-- Person Roles  
-  
-Enums define how the application understands media rather than describing individual media items.  
-  
-  
-### 5.7.2 Vocabulary  
-  
-Vocabulary provides standardized descriptive values.  
-  
-Unlike Enums, vocabulary is expected to expand as the media library grows.  
-  
-Examples include:  
-  
-- Genres  
-- Music Genres  
-- Themes  
-- Countries  
-- Languages  
-- Tags  
-- Content Ratings  
-  
-Content Ratings are vocabulary rather than a single Enum because official rating systems differ between countries and organizations, and a single media item may carry different ratings per region.  
-  
-Vocabulary allows consistent metadata while remaining flexible enough to accommodate future media additions.  
-  
-  
-### 5.7.3 Models  
-  
-Models describe the structure and relationships of media within VISTOR.  
-  
-Every broadcast asset is represented as a Media Item.  
-  
-Specialized media types extend this shared foundation while adding only the metadata unique to that type.  
-  
-Examples include:  
-  
-- Movies  
-- Episodes  
-- Commercials  
-- Music Videos  
-- Sports Events  
-- News Segments  
-- Weather Segments  
-- Station IDs  
-  
-Supporting models such as Series, Seasons, Campaigns, Advertisers, Products, and People provide relationships between media rather than duplicating information.  
-  
-  
-### 5.7.4 Metadata Services  
-  
-Metadata Services manage the metadata system itself.  
-  
-These components load, validate, search, serialize, and maintain the metadata library used by the rest of the application.  
-  
-Keeping metadata services separate from metadata models allows the application to evolve without altering the underlying library structure.  
-  
-This layered architecture allows every broadcast asset to be treated consistently while supporting the wide variety of media required to accurately recreate a late-1990s and early-2000s cable television experience.  
-  
-  
-## 5.8 Content Availability Philosophy  
-  
-VISTOR distinguishes between a media item's existence and its local availability.  
-  
-The metadata library represents the complete broadcast catalog, regardless of whether every associated media asset currently exists on the local machine.  
-  
-Separate content management systems determine which assets should be downloaded, retained, or removed based upon scheduling requirements, storage limitations, seasonal relevance, and future broadcast demand.  
-  
-This separation allows VISTOR to simulate an extremely large broadcast library while requiring only a fraction of the storage space that a complete local archive would otherwise consume.  
-  
-Media metadata remains permanent.  
-  
-Media availability is treated as a dynamic runtime state.  
-  
-  
-## 5.9 Cross-Media Categorization  
-  
-VISTOR organizes metadata around reusable relationships rather than treating each media type as an isolated object.  
-  
-Whenever multiple forms of media share a common real-world concept, that concept is represented once and referenced throughout the metadata library.  
-  
-For example:  
-  
-- A **Franchise** may include television series, movies, promos, commercials, station identifications, documentaries, and other related media.  
-- A **Studio** may produce television series, feature films, documentaries, or promotional material.  
-- A **Network** may broadcast episodes, promos, station identifications, news segments, weather programming, and live events.  
-- An **Advertiser** may promote multiple products through numerous campaigns and commercials.  
-- A **Person** may participate in any type of media through the Appearance relationship model.  
-  
-This relationship-driven approach allows VISTOR to perform searching, scheduling, and organization across the entire media library without duplicating metadata for each individual media type.  
-  
-Examples include:  
-  
-- Every Studio Ghibli production.  
-- Every Disney Channel original broadcast.  
-- Every appearance by Robin Williams.  
-- Every commercial associated with the "Got Milk?" campaign.  
-- Every piece of media belonging to the Pokémon franchise.  
-  
-Rather than creating separate implementations for each media type, VISTOR models shared concepts once and reuses them throughout the metadata system. This philosophy keeps the architecture flexible, extensible, and consistent as additional broadcast media types are introduced.  
-  
-  
-## 5.10 Metadata Population Philosophy  
-  
-VISTOR populates its metadata library by constructing each shared entity exactly once.  
-  
-Reusable entities such as Advertisers, Products, Campaigns, Networks, and Studios are created a single time and then referenced by every object that depends on them.  
-  
-Population routines do not rebuild the entities they depend upon.  
-  
-For example, a Product references an existing Advertiser rather than constructing a new one, and a Campaign references an existing Product rather than constructing its own.  
-  
-This preserves a single source of truth throughout the metadata library and prevents duplicated entities that represent the same real-world organization.  
-  
-Dependent entities are assembled together so that shared references remain consistent:  
-  
-Advertiser  
-→ Product  
-→ Campaign  
-→ Commercial  
-  
-Because population follows the same reference-driven philosophy as the rest of the metadata system, populated data can be searched, scheduled, and organized by shared entities without duplication.  
-  
+### Design Rule
+
+Scheduling determines **what** should happen.
+
+Broadcast Controller determines **when** interruptions occur.
+
+Player determines **how** media is played.
+
+Each subsystem should have a single responsibility and should not assume the responsibilities of another subsystem.
+
 ---
 
-# 6. Inspiration  
-  
-VISTOR is an original software project.  
-  
-The initial inspiration came from the open-source project FieldStation42, which demonstrated the concept of continuously broadcasting television channels that remain synchronized regardless of whether they are actively being viewed.  
-  
-VISTOR adopts this broadcast philosophy as one of its core design principles.  
-  
-Beyond this concept, VISTOR is designed as an independent system with its own architecture, goals, and implementation.  
-  
-Major systems unique to VISTOR include:  
-  
-- Modular software architecture  
-- Metadata-driven media organization  
-- Cable-box style on-screen display  
-- Infrared remote integration  
-- Raspberry Pi appliance deployment  
-- Live Weather Channel generation  
-- Seasonal broadcast events  
-- Dynamic commercial scheduling  
-- Television guide  
-- Relative-path project structure  
-- Expandable channel framework  
-  
-While FieldStation42 helped inspire the original idea, VISTOR is not intended to be a modification, fork, or reimplementation of that project.  
-  
-Instead, it is an original project that shares the underlying philosophy of persistent television broadcasting while pursuing its own vision of recreating the complete cable television experience.  
-  
----  
-  
-# 7. Project Scope  
-  
-VISTOR is intended to faithfully recreate the experience of watching American cable television during the late 1990s and early 2000s.  
-  
-Historical authenticity should always take priority over adding modern conveniences or unnecessary features.  
-  
-Whenever multiple design decisions are possible, preference should be given to the option that better recreates the atmosphere and behavior of period-correct cable television.  
-  
-The project is intended to simulate an entire cable television ecosystem rather than simply providing access to a collection of media files.  
-  
----  
-  
-# 8. Non-Goals  
-  
-VISTOR is intentionally not designed to become a modern media platform.  
-  
-The project is **not** intended to function as:  
-  
-- A streaming service  
-- A Plex replacement  
-- A DVR  
-- A media server  
-- A smart television interface  
-- A movie library browser  
-- A video editor  
-- A home theater management system  
-  
-The objective is to recreate the experience of cable television rather than improve upon it with modern conveniences.  
-  
----  
-  
-# 9. Broadcast Standards  
-  
-Every broadcast should appear intentional.  
-  
-Programming should feel professionally scheduled rather than randomly assembled.  
-  
-Whenever possible:  
-  
-- Episodes should air in logical order.  
-- Commercial breaks should occur naturally.  
-- Station IDs should appear periodically.  
-- Network promotions should advertise upcoming programming.  
-- Time-of-day scheduling should resemble real television.  
-- Weekends and holidays should feel different from weekdays.  
-  
-The viewer should believe that every channel has been programmed by an actual television network.  
-  
----  
-  
-# 10. Channel Standards  
-  
-Every television channel should maintain its own identity.  
-  
-Each channel configuration should eventually define:  
-  
-- Channel number  
-- Channel name  
-- Channel logo  
-- Primary genre  
-- Target audience  
-- Programming sources  
-- Commercial pools  
-- Promotional material  
-- Broadcast schedule  
-- Station identification graphics  
-- Network branding  
-  
-No two channels should feel identical.  
-  
-Each should recreate the personality of a real cable network.  
-  
----  
-  
-# 11. Commercial Philosophy  
-  
-Commercials are considered an essential part of the VISTOR experience.  
-  
-Rather than interrupting programming, commercials help establish the illusion of authentic television broadcasting.  
-  
-Commercial selection should consider:  
-  
-- Television network  
-- Program genre  
-- Intended audience  
-- Time of day  
-- Season  
-- Year  
-- Holiday events  
-  
-Commercials should complement the surrounding programming whenever possible.  
-  
-Late-night programming should naturally transition toward infomercials and direct-response advertising.  
-  
----  
-  
-# 12. Audio Philosophy  
-  
-VISTOR should preserve the original character of archived media whenever practical.  
-  
-Minor imperfections contribute to authenticity.  
-  
-Whenever possible:  
-  
-- Preserve original stereo or mono mixes.  
-- Avoid unnecessary audio processing.  
-- Preserve original broadcast dynamics.  
-- Avoid excessive loudness normalization.  
-- Maintain consistent listening levels without sacrificing authenticity.  
-  
-The objective is to recreate the sound of television rather than modern digital media.  
-  
----  
-  
-# 13. Visual Philosophy  
-  
-Visual presentation should remain faithful to the era being recreated.  
-  
-Whenever practical:  
-  
-- Preserve original aspect ratios.  
-- Avoid stretching 4:3 programming.  
-- Preserve original broadcast logos.  
-- Avoid unnecessary AI enhancement.  
-- Maintain period-appropriate graphics.  
-- Design VISTOR graphics to complement CRT displays.  
-  
-Modern visual effects should only be used when they improve authenticity.  
-  
----  
-  
-# 14. Metadata Standards  
-  
-VISTOR separates media files from descriptive information.  
-  
-Every media item should have corresponding metadata whenever practical.  
-  
-Metadata may include:  
-  
-- Title  
-- Episode  
-- Season  
-- Runtime  
-- Original network  
-- Original air date  
-- Genre  
-- Tags  
-- Preferred channels  
-- Commercial preferences  
-- Scheduling information  
-  
-Folder structure should never determine scheduling behavior.  
-  
-Metadata should remain human-readable and easily editable.  
-  
----  
-  
-# 15. Configuration Philosophy  
-  
-Configuration should always be preferred over hardcoded values.  
-  
-Whenever practical:  
-  
-- Channels should be created through configuration files.  
-- Schedules should be generated from configuration.  
-- Settings should remain editable without modifying source code.  
-- Future expansion should require minimal programming changes.  
-  
-The project should remain flexible and maintainable as it grows.  
-  
----  
-  
-# 16. Performance Goals  
-  
-VISTOR is intended to operate as a dedicated appliance.  
-  
-Target hardware includes:  
-  
-- Raspberry Pi 5  
-- 8 GB RAM  
-- SSD storage  
-- CRT television  
-  
-Performance objectives include:  
-  
-- Automatic startup after boot.  
-- Stable long-term operation.  
-- Low CPU utilization.  
-- Efficient memory usage.  
-- Responsive channel changes.  
-- Reliable continuous playback.  
-  
-The finished system should require little or no maintenance during normal operation.  
-  
----  
-  
-# 17. Development Milestones  
-  
-The project will be developed in incremental phases.  
-  
-Major milestones currently include:  
-  
-- Project foundation  
-- Media library organization  
-- Metadata system  
-- Channel scheduler  
-- Playback engine  
-- On-screen display  
-- Remote control integration  
-- Television guide  
-- Weather Channel  
-- Seasonal broadcast events  
-- Raspberry Pi deployment  
-- Version 1.0 release  
-  
-Future milestones will be added as the project evolves.  
-  
----  
-  
-# 18. Version History    
-    
-The Design Bible maintains a record of significant project changes.    
-    
-Major architectural decisions are documented here to preserve the project's history and reasoning.    
-    
-## 18.1 Project Evolution: RetroTV → VISTOR    
-    
-VISTOR began as an earlier local prototype named *RetroTV*, developed on-machine before the project was placed under version control. This early phase was exploratory and served as the conceptual and technical foundation for the current project. When the project migrated to Git on 2026-07-24, it was deliberately reset and rebuilt as VISTOR, carrying forward the lessons of the RetroTV prototype while establishing a more disciplined architecture and workflow. See Section 1.2, "The Name VISTOR," for the naming history.    
-    
-### Language Migration: C → Python    
-    
-The RetroTV prototype was initially implemented in C. As the project's scope grew from simple media playback into a full broadcast simulation system, C's manual overhead became a poor fit for the problem. The reset to VISTOR included a migration to Python for the following reasons:    
-    
-- **Ease of imports and packaging** — Python's import system and package ecosystem removed the friction of manual build configuration and dependency management that slowed iteration in C.    
-- **Faster iteration** — High-level constructs and dynamic typing allowed features such as scheduling and broadcast events to be prototyped and revised quickly.    
-- **Rich standard library and ecosystem** — Built-in and third-party support for JSON, file handling, and media tooling (e.g., MPV integration) reduced the amount of low-level code required.    
-- **Readability and maintainability** — Python's clarity better supported the project's emphasis on modularity and separation of responsibilities as a long-term codebase.    
-- **Cross-platform portability** — Python simplified running the same codebase across a Windows development machine and the Raspberry Pi deployment target without per-platform build steps.    
-    
-### Summary of Changes During the Reset    
-    
-| Change | Description |    
-| --- | --- |    
-| Prototype matured | Early experimentation gave way to deliberate architecture |    
-| Scope expanded | The project became a broadcast simulation system |      
-| Git migration | Established version history and safer experimentation |    
-| VS Code environment | Created a more structured development workflow |    
-| Architecture changed | Media playback evolved into scheduling + broadcast events |    
-| Standards emerged | Relative paths, modularity, separation of responsibilities |    
-| Deployment became real | Raspberry Pi and CRT became concrete engineering targets |    
-| Identity matured | RetroTV evolved into VISTOR as a distinct long-term project |    
-    
+## 3.5 Local First
+
+Whenever possible, all media should be stored locally.
+
+Internet access should be optional.
+
+The only planned exception is live weather data used by the Weather Channel.
+
 ---
-  
-# 19. Future Ideas  
-  
-Ideas that fall outside the current development roadmap should be recorded rather than forgotten.  
-  
-Possible future additions include:  
-  
-- Emergency Alert System simulations  
-- Public access channels  
-- Cable outage simulations  
-- VHS tracking effects  
-- Static between channels  
-- Local bulletin board channel  
-- Interactive TV listings  
-- Multiple cable provider presets  
-- Regional station packages  
-- Alternate era presets  
-  
-Recording future ideas helps maintain long-term direction without interrupting current development.  
-  
----  
-  
-# 20. Cable Provider Philosophy  
-  
-VISTOR should be approached as though it were an actual cable television provider rather than a software application.  
-  
-Every design decision should reinforce the illusion that the viewer is connected to a professionally operated cable network.  
-  
-Questions considered during development should include:  
-  
-- Which channels does the provider carry?  
-- What channel numbers are assigned?  
-- How are premium channels organized?  
-- What station branding is used?  
-- What promotional material is broadcast?  
-- How are seasonal marathons scheduled?  
-- How do channels evolve throughout the year?  
-- What does the television guide display?  
-  
-Thinking from the perspective of operating a cable provider helps ensure that every feature contributes toward a consistent and believable television experience.  
-  
----  
-  
-# 21. Guiding Principle  
-  
-Whenever uncertainty exists during development, one question should always be asked:  
-  
-> **"Would this make the viewer believe they are watching real cable television?"**  
-  
-If the answer is **yes**, the feature likely belongs in VISTOR.  
-  
-If the answer is **no**, the design should be reconsidered.  
-  
-This principle takes precedence over convenience, modern expectations, or technical simplicity.  
-  
-VISTOR is not intended to imitate a media player.  
-  
-VISTOR is intended to recreate the experience of television.  
-  
----  
-  
-# 22. Media Sources and Rights  
-  
-VISTOR is designed to work with media that the user has the legal right to use.  
-  
-Potential media sources may include:  
-  
-- Public domain works  
-- Internet Archive collections  
-- Personally created recordings  
-- Personal VHS or DVD backups where legally permitted  
-- Home videos  
-- Other legally obtained media  
-  
-Internet Archive serves as one of the primary resources for locating historically significant television broadcasts, commercials, station identifications, and promotional material preserved by the community.  
-  
-VISTOR itself does not distribute copyrighted media.  
-  
-The project provides software for organizing and presenting media supplied by the user.  
-  
-Users are responsible for ensuring that any media added to their VISTOR installation complies with the copyright laws applicable in their jurisdiction.  
-  
-Whenever possible, original creators, preservation groups, and archival projects should be respected and credited.  
-  
-The VISTOR project encourages responsible media preservation and supports organizations dedicated to preserving television history for future generations.  
-  
-## Acknowledgements  
-  
-VISTOR would not be possible without the efforts of countless individuals and organizations dedicated to preserving television history.  
-  
-Special recognition is given to:  
-  
-- The Internet Archive, for preserving historically significant broadcasts and media.  
-- Home media preservation communities.  
-- VHS preservation projects.  
-- Broadcast history enthusiasts.  
-- Open-source software contributors whose work has inspired ideas incorporated into VISTOR.  
-  
-Their efforts help preserve a part of television history that might otherwise be lost.  
-  
----  
-  
-# 23. Development Standards  
-  
-## Naming Conventions  
-  
-To maintain consistency throughout the VISTOR codebase, the following naming conventions shall be used unless a specific exception is documented.  
-  
-### Directories  
-  
-- Lowercase only  
-- Use `snake_case` when multiple words are required  
-  
-Examples:  
-  
-```text  
-src/  
-channel_configs/  
+
+## 3.6 Relative Paths
+
+No file paths should ever be hardcoded.
+
+Every component of VISTOR should function correctly regardless of where the VISTOR project folder is stored.
+
+---
+
+## 3.7 Raspberry Pi Production Target
+
+Development will occur primarily on Windows.
+
+The final production system will operate on a Raspberry Pi connected to a CRT television.
+
+The Raspberry Pi becomes the dedicated cable box.
+
+---
+
+## 3.8 Planned Channel Types
+
+VISTOR is designed to support a wide variety of cable television channels inspired by the late 1990s and early 2000s.
+
+Planned channel categories include:
+
+- Cartoon channels
+- Movie channels
+- Music video channels
+- Sports channels
+- News channels
+- Documentary channels
+- Children's programming
+- Classic television
+- Late-night infomercial channels
+- Aquarium channels
+- Fireplace and ambient channels
+- Public access style channels
+- The Weather Channel
+- Seasonal and holiday channels
+- Experimental or custom channels
+
+Each channel should maintain its own identity through programming, commercial selection, promotional material, station branding, and scheduling.
+
+---
+
+## 3.9 Cable Box Experience
+
+VISTOR should behave like a dedicated cable box rather than a computer application.
+
+The viewer should primarily interact with the system using a standard infrared television remote.
+
+Planned remote functionality includes:
+
+- Channel Up
+- Channel Down
+- Numeric channel entry
+- Previous Channel (Last)
+- Volume adjustment
+- Mute
+- Program Information
+- Television Guide
+
+On-screen overlays should closely resemble cable boxes from the late 1990s and early 2000s.
+
+Typical overlays include:
+
+- Channel number
+- Channel name
+- Current program
+- Volume indicator
+- Mute indicator
+- Clock
+- Program information banner
+
+---
+
+# 4. Core Features
+
+## 4.1 Scheduling
+
+Programming should follow realistic broadcast schedules rather than random playback.
+
+Examples include:
+
+- Scheduled programming blocks
+- Commercial breaks
+- Station identifications
+- Network promotions
+- "Coming Up Next" bumpers
+- Holiday programming
+- Weekend marathons
+- Late-night programming
+- Seasonal events
+
+The scheduler should create the illusion of an active television network operating continuously.
+
+---
+
+## 4.2 Weather Channel
+
+VISTOR includes a dedicated Weather Channel inspired by the presentation style of The Weather Channel during the late 1990s and early 2000s.
+
+Unlike other channels, this channel may retrieve live weather information from the internet.
+
+The presentation should remain period appropriate while displaying:
+
+- Current conditions
+- Local forecast
+- Extended forecast
+- Radar imagery
+- Weather maps
+- Local time
+- Characteristic background music
+- Classic broadcast graphics
+
+Internet connectivity should enhance this channel without becoming a requirement for the remainder of the system.
+
+---
+
+## 4.3 Portability
+
+VISTOR should function as a completely portable project.
+
+The project directory should be movable without requiring configuration changes.
+
+Supported storage locations include:
+
+- Internal SSD
+- External USB SSD
+- Windows development computer
+- Raspberry Pi storage
+
+Every component of the project should determine its location relative to the VISTOR project root.
+
+Hardcoded paths should never be used.
+
+---
+
+## 4.4 Media Organization
+
+Media should be organized according to its broadcast purpose rather than the television channel on which it appears.
+
+For example, a television series may appear on multiple channels without requiring duplicate copies of the media.
+
+Commercials, movies, music videos, ambient programming, and television shows should each exist independently within the media library.
+
+Channels reference this content through configuration rather than ownership.
+
+This approach minimizes duplication while allowing maximum scheduling flexibility.
+
+---
+
+## 4.5 Seasonal and Special Event Programming
+
+VISTOR should support dynamic programming based on the time of year.
+
+Rather than remaining static throughout the calendar year, channels should be capable of temporarily adjusting their schedules to recreate the seasonal programming commonly found on cable television.
+
+Examples include:
+
+### Halloween
+
+- Horror movie marathons
+- Halloween television episodes
+- Spooky cartoon specials
+- Halloween-themed commercials
+- Seasonal station bumpers
+- Halloween music videos
+- Special event graphics
+
+---
+
+### Thanksgiving
+
+- Family movies
+- Charlie Brown specials
+- Thanksgiving-themed television episodes
+- Holiday commercials
+
+---
+
+### Christmas
+
+- Twenty-four hour Christmas movie marathons
+- Classic Christmas specials
+- Holiday music channels
+- Christmas commercials
+- Seasonal station branding
+- Fireplace channels
+- Snow ambience channels
+
+---
+
+### New Year's
+
+- Countdown specials
+- Music celebrations
+- Fireworks programming
+- Year-end retrospectives
+
+---
+
+### Summer
+
+- Summer movie events
+- Beach programming
+- Vacation-themed commercials
+
+---
+
+### Sporting Events
+
+VISTOR may also support temporary programming associated with major sporting events including:
+
+- Super Bowl weekend
+- Olympics
+- NCAA tournaments
+- World Series
+- Stanley Cup Finals
+
+---
+
+Seasonal programming should feel like a real cable provider modifying existing schedules rather than creating entirely separate television systems.
+
+Whenever possible, existing channels should temporarily adopt seasonal programming blocks while maintaining their original identity.
+
+---
+
+## 4.6 Metadata System
+
+VISTOR separates media from its descriptive information.
+
+Metadata should be stored independently of the media files themselves.
+
+Metadata may include:
+
+- Title
+- Episode
+- Season
+- Original network
+- Original air date
+- Runtime
+- Genre
+- Tags
+- Preferred channels
+- Commercial preferences
+- Scheduling information
+
+The metadata system should allow the scheduler to build realistic television lineups without depending on folder structure.
+
+---
+
+## 4.7 Media Architecture
+
+VISTOR models television programming rather than media files.
+
+The scheduler, metadata engine, channel manager, television guide, downloader, and playback engine all operate on a hierarchy that mirrors how television programming is organized.
+
+Media Assets are considered the physical representation of content rather than the content itself.
+
+Programming exists independently of whether a playable file is currently stored on disk.
+
+---
+
+### Metadata Hierarchy
+
+Library
+↓
+Series
+↓
+Season
+↓
+Episode
+↓
+Media Asset
+
+---
+
+### Library
+
+The Library represents the complete catalog of all content known to VISTOR.
+
+It stores every television series, movie, commercial, music video, and other supported media regardless of whether individual Media Assets are currently downloaded.
+
+The Library is responsible for content discovery, searching, organization, and supplying programming to the Scheduler.
+
+Deleting a Media Asset should never remove content from the Library.
+
+---
+
+### Series
+
+A Series represents an entire television series or film franchise.
+
+Examples include:
+
+- The Simpsons
+- Friends
+- Star Trek
+- The Twilight Zone
+
+Movies are represented as a Series containing a single Season and a single Episode to maintain a consistent architecture across all supported media.
+
+Series-level metadata applies to every Episode contained within the Series.
+
+Examples include:
+
+- Title
+- Media Type
+- Genres
+- Audience
+- Default Rating
+- Original Network
+- Original Studio
+- Country
+- Language
+- Runtime
+- Description
+
+---
+
+### Season
+
+A Season provides organizational structure for episodic programming.
+
+Season-level metadata primarily exists to group Episodes together and store production information.
+
+Examples include:
+
+- Season Number
+- Production Year
+- Episode Count
+
+---
+
+### Episode
+
+An Episode represents an individual broadcast program.
+
+Scheduling decisions are performed primarily at the Episode level.
+
+Episode-level metadata may include:
+
+- Episode Title
+- Episode Number
+- Production Code
+- Original Air Date
+- Synopsis
+- Runtime Override
+- Popularity
+- Themes
+- Guest Stars
+- Scheduling Tags
+
+Episode metadata applies only to the individual broadcast represented by that Episode.
+
+---
+
+### Media Asset
+
+A Media Asset represents a physical playable file stored on disk.
+
+Media Assets contain only technical information required for playback.
+
+An Episode may contain zero, one, or multiple Media Assets.
+
+Media Asset metadata may include:
+
+- File Path
+- Container
+- Codec
+- Resolution
+- Audio Format
+- Duration
+- Checksum
+- Download Status
+- Verification Status
+- Last Played
+
+---
+
+### Design Principles
+
+The Scheduler operates on Episodes.
+
+The Downloader operates on Media Assets.
+
+The Player operates on Media Assets supplied by the Scheduler.
+
+Deleting a Media Asset never removes the Episode from the Library.
+
+The Library always represents the complete catalog of available programming regardless of what files currently exist on disk.
+
+This architecture allows VISTOR to support:
+
+- Automatic downloading
+- Automatic deletion
+- Rotating media libraries
+- Persistent scheduling
+- Multiple quality versions
+- Efficient storage management
+
+without affecting scheduling or metadata.
+
+---
+
+### Metadata Philosophy
+
+Metadata describes television programming rather than media files.
+
+Series-level metadata applies to every Episode within the Series.
+
+Episode-level metadata applies only to that Episode.
+
+Media Asset metadata describes only the technical characteristics of the physical file.
+
+This separation allows VISTOR to schedule television programming independently of file management, faithfully reproducing how a real broadcast network organizes, stores, and delivers content.
+
+---
+
+## 4.8 Identifier Philosophy
+
+VISTOR uses two separate identification systems because metadata objects and physical media files serve different purposes.
+
+Metadata identifiers represent the identity of the content itself. These identifiers belong to persistent metadata objects such as Series, Seasons, Episodes, Movies, Commercials, Networks, People, Studios, Franchises, and other Library objects.
+
+A metadata identifier answers the question:
+
+"What piece of programming is this?"
+
+The identifier remains consistent regardless of where the media is stored or whether a playable file currently exists.
+
+Media Asset identifiers represent individual physical files stored on disk.
+
+A Media Asset identifier answers the question:
+
+"Which specific file is available for playback?"
+
+A single metadata object may reference multiple Media Assets, such as different resolutions, formats, restorations, or broadcast captures of the same content.
+
+Example:
+
+Episode:
+
+ID:
+friends_s01e01
+
+
+Media Assets:
+
+Asset ID:
+asset_000001
+
+File:
+Friends_S01E01_480p.mkv
+
+
+Asset ID:
+asset_000002
+
+File:
+Friends_S01E01_Remaster.mkv
+
+
+The Scheduler operates using metadata identifiers because it determines what programming should air.
+
+The Downloader and Player operate using Media Asset identifiers because they manage and play physical files.
+
+Metadata identity and physical file identity should remain separate throughout the VISTOR architecture.
+
+Content should remain identifiable even when media files are added, removed, replaced, or stored in different locations.
+
+---
+
+# 5. System Architecture
+
+VISTOR is divided into several independent components.
+
+Each component is responsible for a specific aspect of the cable television experience.
+
+
+## 5.1 Channel Engine
+
+Responsible for:
+
+- Channel schedules
+- Playback timing
+- Program progression
+- Commercial insertion
+- Schedule generation
+
+
+## 5.2 Player
+
+Responsible for:
+
+- Media playback
+- Switching channels
+- Audio output
+- Maintaining playback state
+
+Changing channels should never restart programming.
+
+
+## 5.3 Remote Handler
+
+Responsible for:
+
+- Infrared receiver input
+- Keyboard controls during development
+- Mapping remote buttons to VISTOR functions
+
+
+## 5.4 OSD Manager
+
+Responsible for displaying temporary overlays including:
+
+- Channel number
+- Channel name
+- Program title
+- Volume
+- Mute
+- Clock
+- Guide information
+
+The OSD should resemble period-correct cable television equipment.
+
+
+## 5.5 Metadata Engine
+
+Responsible for:
+
+- Reading metadata
+- Organizing programming
+- Providing information to the scheduler
+- Tracking shows, movies, commercials, and promotions
+
+---
+
+## 5.7 Metadata Architecture
+
+VISTOR separates metadata into four distinct categories based on responsibility.
+
+This separation ensures that architectural concepts, descriptive information, data models, and supporting systems remain independent while working together as a unified metadata engine.
+
+
+### 5.7.1 Enums
+
+Enums define architectural concepts.
+
+These represent fixed classifications that should remain stable throughout the lifetime of VISTOR.
+
+Examples include:
+
+- Media Types
+- Presentation Types
+- Audience Classifications
+- Commercial Types
+- Person Roles
+
+Enums define how the application understands media rather than describing individual media items.
+
+
+### 5.7.2 Vocabulary
+
+Vocabulary provides standardized descriptive values.
+
+Unlike Enums, vocabulary is expected to expand as the media library grows.
+
+Examples include:
+
+- Genres
+- Music Genres
+- Themes
+- Countries
+- Languages
+- Tags
+- Content Ratings
+
+Content Ratings are vocabulary rather than a single Enum because official rating systems differ between countries and organizations, and a single media item may carry different ratings per region.
+
+Vocabulary allows consistent metadata while remaining flexible enough to accommodate future media additions.
+
+
+### 5.7.3 Models
+
+Models describe the structure and relationships of media within VISTOR.
+
+Every broadcast asset is represented as a Media Item.
+
+Specialized media types extend this shared foundation while adding only the metadata unique to that type.
+
+Examples include:
+
+- Movies
+- Episodes
+- Commercials
+- Music Videos
+- Sports Events
+- News Segments
+- Weather Segments
+- Station IDs
+
+Supporting models such as Series, Seasons, Campaigns, Advertisers, Products, and People provide relationships between media rather than duplicating information.
+
+
+### 5.7.4 Metadata Services
+
+Metadata Services manage the metadata system itself.
+
+These components load, validate, search, serialize, and maintain the metadata library used by the rest of the application.
+
+Keeping metadata services separate from metadata models allows the application to evolve without altering the underlying library structure.
+
+This layered architecture allows every broadcast asset to be treated consistently while supporting the wide variety of media required to accurately recreate a late-1990s and early-2000s cable television experience.
+
+
+## 5.8 Content Availability Philosophy
+
+VISTOR distinguishes between a media item's existence and its local availability.
+
+The metadata library represents the complete broadcast catalog, regardless of whether every associated media asset currently exists on the local machine.
+
+Separate content management systems determine which assets should be downloaded, retained, or removed based upon scheduling requirements, storage limitations, seasonal relevance, and future broadcast demand.
+
+This separation allows VISTOR to simulate an extremely large broadcast library while requiring only a fraction of the storage space that a complete local archive would otherwise consume.
+
+Media metadata remains permanent.
+
+Media availability is treated as a dynamic runtime state.
+
+
+## 5.9 Cross-Media Categorization
+
+VISTOR organizes metadata around reusable relationships rather than treating each media type as an isolated object.
+
+Whenever multiple forms of media share a common real-world concept, that concept is represented once and referenced throughout the metadata library.
+
+For example:
+
+- A **Franchise** may include television series, movies, promos, commercials, station identifications, documentaries, and other related media.
+- A **Studio** may produce television series, feature films, documentaries, or promotional material.
+- A **Network** may broadcast episodes, promos, station identifications, news segments, weather programming, and live events.
+- An **Advertiser** may promote multiple products through numerous campaigns and commercials.
+- A **Person** may participate in any type of media through the Appearance relationship model.
+
+This relationship-driven approach allows VISTOR to perform searching, scheduling, and organization across the entire media library without duplicating metadata for each individual media type.
+
+Examples include:
+
+- Every Studio Ghibli production.
+- Every Disney Channel original broadcast.
+- Every appearance by Robin Williams.
+- Every commercial associated with the "Got Milk?" campaign.
+- Every piece of media belonging to the Pokémon franchise.
+
+Rather than creating separate implementations for each media type, VISTOR models shared concepts once and reuses them throughout the metadata system. This philosophy keeps the architecture flexible, extensible, and consistent as additional broadcast media types are introduced.
+
+
+## 5.10 Metadata Population Philosophy
+
+VISTOR populates its metadata library by constructing each shared entity exactly once.
+
+Reusable entities such as Advertisers, Products, Campaigns, Networks, and Studios are created a single time and then referenced by every object that depends on them.
+
+Population routines do not rebuild the entities they depend upon.
+
+For example, a Product references an existing Advertiser rather than constructing a new one, and a Campaign references an existing Product rather than constructing its own.
+
+This preserves a single source of truth throughout the metadata library and prevents duplicated entities that represent the same real-world organization.
+
+Dependent entities are assembled together so that shared references remain consistent:
+
+Advertiser
+→ Product
+→ Campaign
+→ Commercial
+
+Because population follows the same reference-driven philosophy as the rest of the metadata system, populated data can be searched, scheduled, and organized by shared entities without duplication.
+
+---
+
+# 6. Inspiration
+
+VISTOR is an original software project.
+
+The initial inspiration came from the open-source project FieldStation42, which demonstrated the concept of continuously broadcasting television channels that remain synchronized regardless of whether they are actively being viewed.
+
+VISTOR adopts this broadcast philosophy as one of its core design principles.
+
+Beyond this concept, VISTOR is designed as an independent system with its own architecture, goals, and implementation.
+
+Major systems unique to VISTOR include:
+
+- Modular software architecture
+- Metadata-driven media organization
+- Cable-box style on-screen display
+- Infrared remote integration
+- Raspberry Pi appliance deployment
+- Live Weather Channel generation
+- Seasonal broadcast events
+- Dynamic commercial scheduling
+- Television guide
+- Relative-path project structure
+- Expandable channel framework
+
+While FieldStation42 helped inspire the original idea, VISTOR is not intended to be a modification, fork, or reimplementation of that project.
+
+Instead, it is an original project that shares the underlying philosophy of persistent television broadcasting while pursuing its own vision of recreating the complete cable television experience.
+
+---
+
+# 7. Project Scope
+
+VISTOR is intended to faithfully recreate the experience of watching American cable television during the late 1990s and early 2000s.
+
+Historical authenticity should always take priority over adding modern conveniences or unnecessary features.
+
+Whenever multiple design decisions are possible, preference should be given to the option that better recreates the atmosphere and behavior of period-correct cable television.
+
+The project is intended to simulate an entire cable television ecosystem rather than simply providing access to a collection of media files.
+
+---
+
+# 8. Non-Goals
+
+VISTOR is intentionally not designed to become a modern media platform.
+
+The project is **not** intended to function as:
+
+- A streaming service
+- A Plex replacement
+- A DVR
+- A media server
+- A smart television interface
+- A movie library browser
+- A video editor
+- A home theater management system
+
+The objective is to recreate the experience of cable television rather than improve upon it with modern conveniences.
+
+---
+
+# 9. Broadcast Standards
+
+Every broadcast should appear intentional.
+
+Programming should feel professionally scheduled rather than randomly assembled.
+
+Whenever possible:
+
+- Episodes should air in logical order.
+- Commercial breaks should occur naturally.
+- Station IDs should appear periodically.
+- Network promotions should advertise upcoming programming.
+- Time-of-day scheduling should resemble real television.
+- Weekends and holidays should feel different from weekdays.
+
+The viewer should believe that every channel has been programmed by an actual television network.
+
+---
+
+# 10. Channel Standards
+
+Every television channel should maintain its own identity.
+
+Each channel configuration should eventually define:
+
+- Channel number
+- Channel name
+- Channel logo
+- Primary genre
+- Target audience
+- Programming sources
+- Commercial pools
+- Promotional material
+- Broadcast schedule
+- Station identification graphics
+- Network branding
+
+No two channels should feel identical.
+
+Each should recreate the personality of a real cable network.
+
+---
+
+# 11. Commercial Philosophy
+
+Commercials are considered an essential part of the VISTOR experience.
+
+Rather than interrupting programming, commercials help establish the illusion of authentic television broadcasting.
+
+Commercial selection should consider:
+
+- Television network
+- Program genre
+- Intended audience
+- Time of day
+- Season
+- Year
+- Holiday events
+
+Commercials should complement the surrounding programming whenever possible.
+
+Late-night programming should naturally transition toward infomercials and direct-response advertising.
+
+---
+
+# 12. Audio Philosophy
+
+VISTOR should preserve the original character of archived media whenever practical.
+
+Minor imperfections contribute to authenticity.
+
+Whenever possible:
+
+- Preserve original stereo or mono mixes.
+- Avoid unnecessary audio processing.
+- Preserve original broadcast dynamics.
+- Avoid excessive loudness normalization.
+- Maintain consistent listening levels without sacrificing authenticity.
+
+The objective is to recreate the sound of television rather than modern digital media.
+
+---
+
+# 13. Visual Philosophy
+
+Visual presentation should remain faithful to the era being recreated.
+
+Whenever practical:
+
+- Preserve original aspect ratios.
+- Avoid stretching 4:3 programming.
+- Preserve original broadcast logos.
+- Avoid unnecessary AI enhancement.
+- Maintain period-appropriate graphics.
+- Design VISTOR graphics to complement CRT displays.
+
+Modern visual effects should only be used when they improve authenticity.
+
+---
+
+# 14. Metadata Standards
+
+VISTOR separates media files from descriptive information.
+
+Every media item should have corresponding metadata whenever practical.
+
+Metadata may include:
+
+- Title
+- Episode
+- Season
+- Runtime
+- Original network
+- Original air date
+- Genre
+- Tags
+- Preferred channels
+- Commercial preferences
+- Scheduling information
+
+Folder structure should never determine scheduling behavior.
+
+Metadata should remain human-readable and easily editable.
+
+---
+
+# 15. Configuration Philosophy
+
+Configuration should always be preferred over hardcoded values.
+
+Whenever practical:
+
+- Channels should be created through configuration files.
+- Schedules should be generated from configuration.
+- Settings should remain editable without modifying source code.
+- Future expansion should require minimal programming changes.
+
+The project should remain flexible and maintainable as it grows.
+
+---
+
+# 16. Performance Goals
+
+VISTOR is intended to operate as a dedicated appliance.
+
+Target hardware includes:
+
+- Raspberry Pi 5
+- 8 GB RAM
+- SSD storage
+- CRT television
+
+Performance objectives include:
+
+- Automatic startup after boot.
+- Stable long-term operation.
+- Low CPU utilization.
+- Efficient memory usage.
+- Responsive channel changes.
+- Reliable continuous playback.
+
+The finished system should require little or no maintenance during normal operation.
+
+---
+
+# 17. Development Milestones
+
+The project will be developed in incremental phases.
+
+Major milestones currently include:
+
+- Project foundation
+- Media library organization
+- Metadata system
+- Channel scheduler
+- Playback engine
+- On-screen display
+- Remote control integration
+- Television guide
+- Weather Channel
+- Seasonal broadcast events
+- Raspberry Pi deployment
+- Version 1.0 release
+
+Future milestones will be added as the project evolves.
+
+---
+
+# 18. Version History
+
+The Design Bible maintains a record of significant project changes.
+
+Major architectural decisions are documented here to preserve the project's history and reasoning.
+
+## 18.1 Project Evolution: RetroTV → VISTOR
+
+VISTOR began as an earlier local prototype named *RetroTV*, developed on-machine before the project was placed under version control. This early phase was exploratory and served as the conceptual and technical foundation for the current project. When the project migrated to Git on 2026-07-24, it was deliberately reset and rebuilt as VISTOR, carrying forward the lessons of the RetroTV prototype while establishing a more disciplined architecture and workflow. See Section 1.2, "The Name VISTOR," for the naming history.
+
+### Language Migration: C → Python
+
+The RetroTV prototype was initially implemented in C. As the project's scope grew from simple media playback into a full broadcast simulation system, C's manual overhead became a poor fit for the problem. The reset to VISTOR included a migration to Python for the following reasons:
+
+- **Ease of imports and packaging** — Python's import system and package ecosystem removed the friction of manual build configuration and dependency management that slowed iteration in C.
+- **Faster iteration** — High-level constructs and dynamic typing allowed features such as scheduling and broadcast events to be prototyped and revised quickly.
+- **Rich standard library and ecosystem** — Built-in and third-party support for JSON, file handling, and media tooling (e.g., MPV integration) reduced the amount of low-level code required.
+- **Readability and maintainability** — Python's clarity better supported the project's emphasis on modularity and separation of responsibilities as a long-term codebase.
+- **Cross-platform portability** — Python simplified running the same codebase across a Windows development machine and the Raspberry Pi deployment target without per-platform build steps.
+
+### Summary of Changes During the Reset
+
+| Change | Description |
+| --- | --- |
+| Prototype matured | Early experimentation gave way to deliberate architecture |
+| Scope expanded | The project became a broadcast simulation system |
+| Git migration | Established version history and safer experimentation |
+| VS Code environment | Created a more structured development workflow |
+| Architecture changed | Media playback evolved into scheduling + broadcast events |
+| Standards emerged | Relative paths, modularity, separation of responsibilities |
+| Deployment became real | Raspberry Pi and CRT became concrete engineering targets |
+| Identity matured | RetroTV evolved into VISTOR as a distinct long-term project |
+
+---
+
+# 19. Future Ideas
+
+Ideas that fall outside the current development roadmap should be recorded rather than forgotten.
+
+Possible future additions include:
+
+- Emergency Alert System simulations
+- Public access channels
+- Cable outage simulations
+- VHS tracking effects
+- Static between channels
+- Local bulletin board channel
+- Interactive TV listings
+- Multiple cable provider presets
+- Regional station packages
+- Alternate era presets
+
+Recording future ideas helps maintain long-term direction without interrupting current development.
+
+---
+
+# 20. Cable Provider Philosophy
+
+VISTOR should be approached as though it were an actual cable television provider rather than a software application.
+
+Every design decision should reinforce the illusion that the viewer is connected to a professionally operated cable network.
+
+Questions considered during development should include:
+
+- Which channels does the provider carry?
+- What channel numbers are assigned?
+- How are premium channels organized?
+- What station branding is used?
+- What promotional material is broadcast?
+- How are seasonal marathons scheduled?
+- How do channels evolve throughout the year?
+- What does the television guide display?
+
+Thinking from the perspective of operating a cable provider helps ensure that every feature contributes toward a consistent and believable television experience.
+
+---
+
+# 21. Guiding Principle
+
+Whenever uncertainty exists during development, one question should always be asked:
+
+> **"Would this make the viewer believe they are watching real cable television?"**
+
+If the answer is **yes**, the feature likely belongs in VISTOR.
+
+If the answer is **no**, the design should be reconsidered.
+
+This principle takes precedence over convenience, modern expectations, or technical simplicity.
+
+VISTOR is not intended to imitate a media player.
+
+VISTOR is intended to recreate the experience of television.
+
+---
+
+# 22. Media Sources and Rights
+
+VISTOR is designed to work with media that the user has the legal right to use.
+
+Potential media sources may include:
+
+- Public domain works
+- Internet Archive collections
+- Personally created recordings
+- Personal VHS or DVD backups where legally permitted
+- Home videos
+- Other legally obtained media
+
+Internet Archive serves as one of the primary resources for locating historically significant television broadcasts, commercials, station identifications, and promotional material preserved by the community.
+
+VISTOR itself does not distribute copyrighted media.
+
+The project provides software for organizing and presenting media supplied by the user.
+
+Users are responsible for ensuring that any media added to their VISTOR installation complies with the copyright laws applicable in their jurisdiction.
+
+Whenever possible, original creators, preservation groups, and archival projects should be respected and credited.
+
+The VISTOR project encourages responsible media preservation and supports organizations dedicated to preserving television history for future generations.
+
+## Acknowledgements
+
+VISTOR would not be possible without the efforts of countless individuals and organizations dedicated to preserving television history.
+
+Special recognition is given to:
+
+- The Internet Archive, for preserving historically significant broadcasts and media.
+- Home media preservation communities.
+- VHS preservation projects.
+- Broadcast history enthusiasts.
+- Open-source software contributors whose work has inspired ideas incorporated into VISTOR.
+
+Their efforts help preserve a part of television history that might otherwise be lost.
+
+---
+
+# 23. Development Standards
+
+## Naming Conventions
+
+To maintain consistency throughout the VISTOR codebase, the following naming conventions shall be used unless a specific exception is documented.
+
+### Directories
+
+- Lowercase only
+- Use `snake_case` when multiple words are required
+
+Examples:
+
+```text
+src/
+channel_configs/
 game_shows/
 ```
 

@@ -1,62 +1,62 @@
-# ==========================================================  
-# VISTOR Python Requirements  
-#  
-# This file lists all third-party Python packages required  
-# to develop and run VISTOR.  
-#  
-# Install all dependencies using:  
-#  
-#     pip install -r requirements.txt  
-#  
-# Dependencies will be added as features are implemented.  
-#  
-# ==========================================================  
-  
-# ------------------------------------------------------------------  
-# Current Dependencies  
-# ------------------------------------------------------------------  
-  
-requests           # HTTP downloads (Internet Archive, generic sites, weather)  
-yt-dlp             # YouTube and other site video acquisition  
-mutagen            # Read audio/video metadata  
-Flask              # Local drag-and-drop web ingest UI (add_media_web.py)  
-  
-# ------------------------------------------------------------------  
-# Optional Dependencies (feature-gated, imported lazily)  
-# ------------------------------------------------------------------  
-  
-# Download-stage AcoustID audio refiner (definitive music match). The Python  
-# binding is optional and imported lazily inside the classifier's refine hook,  
-# so the offline smoke test never needs it. It ALSO requires the Chromaprint  
-# `fpcalc` binary on PATH (a SYSTEM package, NOT pip-installable) and a free  
-# ACOUSTID_API_KEY env var; without any of these the refiner no-ops and the  
-# title-search MusicBrainz result stands.  
-#   - fpcalc: Windows -> download Chromaprint and add fpcalc.exe to PATH  
-#             macOS   -> brew install chromaprint  
-#             Linux   -> apt install libchromaprint-tools  
-pyacoustid         # AcoustID/Chromaprint fingerprint -> MusicBrainz recording    
-  
-# Real audio/video output layer behind the headless Player (src/player/renderer.py).    
-# The Python binding is optional and imported lazily inside MpvRenderer, so the    
-# headless tests (test_playback.py) and unwatched channels never need it --    
-# create_renderer() falls back to NullRenderer when it's absent. It ALSO requires    
-# the native libmpv DLL/shared library on PATH (a SYSTEM package, NOT pip-installable):    
-#   - Windows -> download an mpv-dev build and put libmpv-2.dll (a.k.a. mpv-2.dll) on PATH    
-#   - macOS   -> brew install mpv    
-#   - Linux   -> apt install libmpv2 (or libmpv-dev)    
-python-mpv         # MPV media player integration (real video/audio playback)    
-  
-# ------------------------------------------------------------------    
-# Planned Dependencies (Subject to Change)    
-# ------------------------------------------------------------------ 
-# Pillow           # Image processing and OSD graphics  
-# watchdog         # Automatic media library monitoring  
-# python-dateutil  # Advanced date and schedule calculations  
-  
-# The following libraries may be used depending on future design  
-# decisions and implementation requirements.  
-  
-# opencv-python    # Video processing (optional)  
-# numpy            # Numerical operations  
-# lxml             # XML parsing  
+# ==========================================================
+# VISTOR Python Requirements
+#
+# This file lists all third-party Python packages required
+# to develop and run VISTOR.
+#
+# Install all dependencies using:
+#
+#     pip install -r requirements.txt
+#
+# Dependencies will be added as features are implemented.
+#
+# ==========================================================
+
+# ------------------------------------------------------------------
+# Current Dependencies
+# ------------------------------------------------------------------
+
+requests           # HTTP downloads (Internet Archive, generic sites, weather)
+yt-dlp             # YouTube and other site video acquisition
+mutagen            # Read audio/video metadata
+Flask              # Local drag-and-drop web ingest UI (add_media_web.py)
+
+# ------------------------------------------------------------------
+# Optional Dependencies (feature-gated, imported lazily)
+# ------------------------------------------------------------------
+
+# Download-stage AcoustID audio refiner (definitive music match). The Python
+# binding is optional and imported lazily inside the classifier's refine hook,
+# so the offline smoke test never needs it. It ALSO requires the Chromaprint
+# `fpcalc` binary on PATH (a SYSTEM package, NOT pip-installable) and a free
+# ACOUSTID_API_KEY env var; without any of these the refiner no-ops and the
+# title-search MusicBrainz result stands.
+#   - fpcalc: Windows -> download Chromaprint and add fpcalc.exe to PATH
+#             macOS   -> brew install chromaprint
+#             Linux   -> apt install libchromaprint-tools
+pyacoustid         # AcoustID/Chromaprint fingerprint -> MusicBrainz recording
+
+# Real audio/video output layer behind the headless Player (src/player/renderer.py).
+# The Python binding is optional and imported lazily inside MpvRenderer, so the
+# headless tests (test_playback.py) and unwatched channels never need it --
+# create_renderer() falls back to NullRenderer when it's absent. It ALSO requires
+# the native libmpv DLL/shared library on PATH (a SYSTEM package, NOT pip-installable):
+#   - Windows -> download an mpv-dev build and put libmpv-2.dll (a.k.a. mpv-2.dll) on PATH
+#   - macOS   -> brew install mpv
+#   - Linux   -> apt install libmpv2 (or libmpv-dev)
+python-mpv         # MPV media player integration (real video/audio playback)
+
+# ------------------------------------------------------------------
+# Planned Dependencies (Subject to Change)
+# ------------------------------------------------------------------
+# Pillow           # Image processing and OSD graphics
+# watchdog         # Automatic media library monitoring
+# python-dateutil  # Advanced date and schedule calculations
+
+# The following libraries may be used depending on future design
+# decisions and implementation requirements.
+
+# opencv-python    # Video processing (optional)
+# numpy            # Numerical operations
+# lxml             # XML parsing
 # PyYAML           # YAML configuration support (optional)

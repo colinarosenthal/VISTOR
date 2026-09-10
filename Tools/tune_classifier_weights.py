@@ -13,10 +13,10 @@ classifier with candidate weights and counts correct labels.
 """
 
 import json
-import sys  
-from pathlib import Path  
-  
-# Resolve <repo root>/src regardless of where this script is launched from.  
+import sys
+from pathlib import Path
+
+# Resolve <repo root>/src regardless of where this script is launched from.
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 from metadata.services.media_classifier import (  # noqa: E402

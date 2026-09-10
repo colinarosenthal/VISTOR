@@ -94,54 +94,57 @@ The final production system is intended to operate as a dedicated cable box usin
 ## Project Structure
 
 ```
-VISTOR/  
-  
-Assets/  
-Cache/  
-ChannelConfigs/  
+VISTOR/
+
+Assets/
+Cache/
+ChannelConfigs/
 src/
-Config/  
-Docs/  
-Logs/  
-Media/  
-Metadata/  
-Schedules/  
+Config/
+Docs/
+Logs/
+Media/
+Metadata/
+Schedules/
 Scripts/
 Tools/
-  
-README.md  
-ROADMAP.md  
-CHANGELOG.md  
-LICENSE  
-requirements.txt  
+
+README.md
+ROADMAP.md
+CHANGELOG.md
+LICENSE
+requirements.txt
 setup.ps1
 ```
 
+# Assets/, Cache/, Config/, Logs/, and Media/ are created by
+# setup.ps1 / first run and are not tracked in the repository.
+
 ---
 
-## Project Documentation  
-  
-Additional documentation is located inside the **Docs** directory.  
-  
-- Design Bible (`VISTOR_Design_Bible.md`)  
-- Developer Guide (`VISTOR_Developer_Guide.md`)  
-- User Manual (`VISTOR_User_Manual.md`)  
-- Technical Notes (`Technical_Notes.md`)  
-- Hardware Guide (`Hardware.md`)  
-- Ideas (`Ideas.md`)  
-  
-The roadmap and version history live at the repository root in `ROADMAP.md`  
+## Project Documentation
+
+Additional documentation is located inside the **Docs** directory.
+
+- Design Bible (`VISTOR_Design_Bible.md`)
+- Developer Guide (`VISTOR_Developer_Guide.md`)
+- User Manual (`VISTOR_User_Manual.md`)
+- Technical Notes (`Technical_Notes.md`)
+- Hardware Guide (`Hardware.md`)
+- Ideas (`Ideas.md`)
+
+The roadmap and version history live at the repository root in `ROADMAP.md`
 and `CHANGELOG.md`.
 
 ---
 
-## Development Status  
-  
-**Status:** Alpha — Version 0.8.1  
-  
-Phases 1 through 7 are implemented and exercised by the test suite (metadata  
-engine, playback runtime, cable-box UI, intelligent content management, and the  
-media acquisition/ingestion pipeline). Phase 8 (Broadcast Programming) is in  
+## Development Status
+
+**Status:** Alpha
+
+Phases 1 through 7 are implemented and exercised by the test suite (metadata
+engine, playback runtime, cable-box UI, intelligent content management, and the
+media acquisition/ingestion pipeline). Phase 8 (Broadcast Programming) is in
 progress. Weather remains the only reserved, unimplemented subsystem.
 
 ---
@@ -202,12 +205,13 @@ The current development roadmap can be found in:
 
 ---
 
-## License  
-  
-VISTOR's source code is released under the terms in the `LICENSE` file at the  
-repository root. VISTOR does not distribute copyrighted television programming,  
-commercials, films, or music; users are responsible for obtaining and using  
-media in accordance with applicable copyright law.
+## License
+
+VISTOR's source code is an original open-source project. A formal LICENSE
+file will be added at the repository root. VISTOR does not distribute
+copyrighted television programming, commercials, films, or music; users are
+responsible for obtaining and using media in accordance with applicable
+copyright law.
 
 ---
 

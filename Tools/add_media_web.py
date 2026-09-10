@@ -20,9 +20,9 @@ import os
 # Ensure libmpv-2.dll is loadable via an ABSOLUTE path. python-mpv's loader
 # refuses DLLs found under relative %PATH% entries (e.g. the cwd), so point it
 # at the repo root where libmpv-2.dll lives before importing the binding.
-from pathlib import Path  
-_dll_dir = str(Path(__file__).resolve().parent.parent)  # repo root, where libmpv-2.dll lives  
-if _dll_dir not in os.environ.get("PATH", ""):  
+from pathlib import Path
+_dll_dir = str(Path(__file__).resolve().parent.parent)  # repo root, where libmpv-2.dll lives
+if _dll_dir not in os.environ.get("PATH", ""):
     os.environ["PATH"] = _dll_dir + os.pathsep + os.environ.get("PATH", "")
 
 import mpv
@@ -31,10 +31,10 @@ import glob
 import threading
 import webbrowser
 
-import sys  
-from pathlib import Path  
-  
-# Resolve <repo root>/src regardless of where this script is launched from.  
+import sys
+from pathlib import Path
+
+# Resolve <repo root>/src regardless of where this script is launched from.
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 # 1. Put winget's ffmpeg bin on PATH (Windows). No-op if not found.
@@ -51,8 +51,8 @@ if _matches:
 #    Use a hard assignment, NOT os.environ.setdefault(...): setdefault is a
 #    no-op if the name already exists as an empty/blank string, which is
 #    exactly the failure you hit. Assigning guarantees TMDBSource() sees it.
-os.environ.setdefault("TMDB_API_KEY", os.environ.get("TMDB_API_KEY", ""))  
-if not os.environ.get("TMDB_API_KEY"):  
+os.environ.setdefault("TMDB_API_KEY", os.environ.get("TMDB_API_KEY", ""))
+if not os.environ.get("TMDB_API_KEY"):
     raise SystemExit("Set the TMDB_API_KEY environment variable before launching.")
 
 # 3. Import the app ONLY AFTER the env is ready (this line builds _session ->
