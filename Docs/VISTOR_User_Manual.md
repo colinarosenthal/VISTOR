@@ -212,8 +212,11 @@ used by almost all Python projects, noted where they apply.
   
 - **`src/`** — all of VISTOR's actual program code, split into subsystems  
   (see below). Keeping code in a `src/` folder is a common Python layout.  
-- **`tests/`** — the test scripts (`test.py`, `test_playback.py`) that prove  
-  the code works. A dedicated tests folder is a standard convention.  
+- **`src/tests/`** — the test suite, split into one module per subsystem  
+  (`test_metadata.py`, `test_player.py`, `test_playback.py`, `test_engine.py`,  
+  `test_osd.py`, `test_icm.py`, `test_scheduling.py`, `test_acquisition.py`,  
+  `test_catalogue_expansion.py`), with `test_suite.py` as the runner that  
+  executes them all. Keeping tests together is a standard convention.
 - **`Tools/`** — helper scripts you run by hand (`add_media.py`,  
   `add_media_web.py`, `rebuild_media.py`, classifier tuner).  
 - **`Scripts/`** — one-off setup/seed scripts (e.g. seeding vocabulary).  

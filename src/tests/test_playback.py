@@ -11,9 +11,9 @@ Run from the repo root: python test_playback.py
 import sys
 import time
 import tempfile
-from pathlib import Path
+from pathlib import Path  
 
-sys.path.append("src")
+sys.path.append(str(Path(__file__).resolve().parent.parent / "src"))
 
 from player.player import Player, PlaybackState
 from player.renderer import NullRenderer, MpvRenderer, create_renderer

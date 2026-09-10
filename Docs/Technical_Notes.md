@@ -425,27 +425,23 @@ Models describe relationships between media rather than individual classificatio
 
 This separation improves maintainability, reduces duplication, and provides a scalable foundation for future features.
 
-## Applied In VISTOR
-
-The metadata package is organized into three primary components:
-
-```text
-metadata/
-├── enums/
-│   ├── audience.py
-│   ├── content_rating.py
-│   ├── media_type.py
-│   └── presentation_type.py
-│
-├── vocabulary/
-│   ├── genre.py
-│   ├── music_genre.py
-│   ├── network.py
-│   ├── country.py
-│   ├── theme.py
-│   └── tag.py
-│
-└── models/
-```
-
-This organization reflects the philosophy that architectural concepts, descriptive metadata, and media relationships should remain independent systems while working together to describe every piece of media within VISTOR.
+## Applied In VISTOR  
+  
+The metadata package is organized into six sub-packages:  
+  
+```text  
+metadata/  
+├── enums/          architectural concepts (audience, content_rating, media_type, presentation_type)  
+├── vocabulary/     controlled descriptive terms (genre, music_genre, network, country, theme, tag)  
+├── library/        library-level container models  
+├── media/          media item models (movies, episodes, music videos, commercials, ...)  
+├── relationships/  relationship models (people, studios, franchises, series, seasons, ...)  
+└── services/       acquisition, enrichment, scoring, caching, serialization, ingestion  
+```  
+  
+This organization reflects the philosophy that architectural concepts,  
+descriptive vocabulary, media models, and their relationships should remain  
+independent systems while working together to describe every piece of media  
+within VISTOR. The `services/` layer holds the behavior — acquisition,  
+enrichment, scoring, caching, serialization, and ingestion — that operates over  
+those models.

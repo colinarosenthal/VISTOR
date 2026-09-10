@@ -94,23 +94,26 @@ The final production system is intended to operate as a dedicated cable box usin
 ## Project Structure
 
 ```
-VISTOR/
-
-Assets/
-Cache/
-ChannelConfigs/
+VISTOR/  
+  
+Assets/  
+Cache/  
+ChannelConfigs/  
 src/
-Config/
-Docs/
-Logs/
-Media/
-Metadata/
-Schedules/
-
-README.md
-ROADMAP.md
-CHANGELOG.md
-requirements.txt
+Config/  
+Docs/  
+Logs/  
+Media/  
+Metadata/  
+Schedules/  
+Scripts/
+Tools/
+  
+README.md  
+ROADMAP.md  
+CHANGELOG.md  
+LICENSE  
+requirements.txt  
 setup.ps1
 ```
 

@@ -1,8 +1,8 @@
 # VISTOR Developer Guide  
   
-**Version:** 0.5.0  
+**Version:** 0.8.1
   
-**Last Updated:** July 28, 2026  
+**Last Updated:** September 10, 2026  
   
 ---  
   
@@ -55,13 +55,14 @@
     7.11 Media Acquisition and Source Resolution
     7.12 Media Ingestion (Drop-In and Link)
   
-8. Subsystems (Not Yet Implemented)  
-    8.1 Player  
-    8.2 Channel Manager  
-    8.3 OSD  
-    8.4 Weather  
-    8.5 Remote  
-    8.6 Guide  
+8. Subsystems    
+    8.1 Player    
+    8.2 Channel Manager    
+    8.3 OSD    
+    8.4 Weather    
+    8.5 Remote    
+    8.6 Guide    
+    8.7 Settings
   
 9. Testing  
   
@@ -199,18 +200,20 @@ As development continues, this section will expand into a complete architectural
 ## 3.1 Source Tree  
   
 ```  
-src/  
-    core/  
-    engine/  
-    scheduler/  
-    metadata/  
-    channel/  
-    player/  
-    osd/  
-    remote/  
-    guide/  
-    ingest/  
-    main.py  
+src/    
+    core/    
+    engine/    
+    scheduler/    
+    metadata/    
+    channel/    
+    player/    
+    osd/    
+    remote/    
+    guide/    
+    settings/    
+    ingest/    
+    tests/    
+    main.py
 ```  
   
 The `core/`, `engine/`, `scheduler/`, and `metadata/` packages are implemented,  
@@ -768,6 +771,28 @@ to the ChannelManager and Engine. Unknown keys warn rather than crash.
 `guide.py` (Guide) builds one row per channel from the ChannelManager + Clock,  
 exposing current/upcoming program labels, a 12-hour time string, and clamped  
 up/down cursor navigation.
+
+## 8.7 Settings    
+    
+**Status:** Implemented (`src/settings/`).    
+    
+`settings_menu.py` (SettingsMenu) is the on-screen configuration overlay. Its    
+fields are Storage Budget (bytes), Commercials (broadcast_mode: off /    
+between_programs / mid_program), Captions, OSD Enabled, Weather Enabled, and    
+Recommended Media. Edits persist through `Config` so they survive restarts.    
+    
+## 8.8 Rendering (`src/player/renderer.py`)    
+    
+`Renderer` is the interface every playback backend implements — load, play,    
+pause, stop, seek, set_volume, set_mute, render_osd, and shutdown.    
+`NullRenderer` is a headless no-op used by the test suite, CI, and every    
+channel that is not the one currently being watched. `MpvRenderer` drives real    
+audio/video through libmpv and mirrors the OSD overlays onto the mpv OSD layer;    
+python-mpv is imported lazily so the module never fails on a headless box.    
+`create_renderer()` returns an `MpvRenderer` when libmpv is available and falls    
+back to `NullRenderer` when it is not.
+
+---
   
 # 9. Testing  
   
@@ -776,10 +801,15 @@ framework.
   
 ## 9.1 test.py  
   
-Located at the repository root, test.py exercises the metadata layer and the  
-broadcast-runtime subsystems end to end. It runs from the repo root with:  
-  
-    python test.py  
+## 9.1 src/tests/    
+    
+The suite lives in `src/tests/`, split into one module per subsystem    
+(`test_metadata.py`, `test_player.py`, `test_playback.py`, `test_engine.py`,    
+`test_osd.py`, `test_icm.py`, `test_scheduling.py`, `test_acquisition.py`,    
+`test_catalogue_expansion.py`). `test_suite.py` is the runner that executes    
+them all. Run it from the repo root with:    
+    
+    python src/tests/test_suite.py
   
 The script verifies, in order:  
   
@@ -801,7 +831,7 @@ A successful run ends with "All tests passed successfully."
 ## 10.1 Branching and Commits  
   
 - Keep commits focused and descriptive.  
-- Ensure test_metadata.py passes before committing metadata changes.  
+- Ensure `python src/tests/test_suite.py` passes before committing.  
   
 ## 10.2 Code Style  
   

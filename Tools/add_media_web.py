@@ -20,8 +20,9 @@ import os
 # Ensure libmpv-2.dll is loadable via an ABSOLUTE path. python-mpv's loader
 # refuses DLLs found under relative %PATH% entries (e.g. the cwd), so point it
 # at the repo root where libmpv-2.dll lives before importing the binding.
-_dll_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-if _dll_dir not in os.environ.get("PATH", ""):
+from pathlib import Path  
+_dll_dir = str(Path(__file__).resolve().parent.parent)  # repo root, where libmpv-2.dll lives  
+if _dll_dir not in os.environ.get("PATH", ""):  
     os.environ["PATH"] = _dll_dir + os.pathsep + os.environ.get("PATH", "")
 
 import mpv
@@ -50,7 +51,9 @@ if _matches:
 #    Use a hard assignment, NOT os.environ.setdefault(...): setdefault is a
 #    no-op if the name already exists as an empty/blank string, which is
 #    exactly the failure you hit. Assigning guarantees TMDBSource() sees it.
-os.environ["TMDB_API_KEY"] = "836ceaaf4ceb9fb0743ed383296a90d0"
+os.environ.setdefault("TMDB_API_KEY", os.environ.get("TMDB_API_KEY", ""))  
+if not os.environ.get("TMDB_API_KEY"):  
+    raise SystemExit("Set the TMDB_API_KEY environment variable before launching.")
 
 # 3. Import the app ONLY AFTER the env is ready (this line builds _session ->
 #    IngestSession -> TMDBSource, which snapshots TMDB_API_KEY in __init__).
