@@ -116,27 +116,30 @@ setup.ps1
 
 ---
 
-## Project Documentation
-
-Additional documentation is located inside the **Docs** directory.
-
-- Design Bible
-- Roadmap
-- Hardware Guide
-- Ideas
-- Specification *(future)*
-- Developer Guide *(future)*
-- User Manual *(future)*
+## Project Documentation  
+  
+Additional documentation is located inside the **Docs** directory.  
+  
+- Design Bible (`VISTOR_Design_Bible.md`)  
+- Developer Guide (`VISTOR_Developer_Guide.md`)  
+- User Manual (`VISTOR_User_Manual.md`)  
+- Technical Notes (`Technical_Notes.md`)  
+- Hardware Guide (`Hardware.md`)  
+- Ideas (`Ideas.md`)  
+  
+The roadmap and version history live at the repository root in `ROADMAP.md`  
+and `CHANGELOG.md`.
 
 ---
 
-## Development Status
-
-**Status:** Pre-Alpha
-
-VISTOR is currently in the planning and architecture stage.
-
-Core documentation is being completed before software development begins.
+## Development Status  
+  
+**Status:** Alpha — Version 0.8.1  
+  
+Phases 1 through 7 are implemented and exercised by the test suite (metadata  
+engine, playback runtime, cable-box UI, intelligent content management, and the  
+media acquisition/ingestion pipeline). Phase 8 (Broadcast Programming) is in  
+progress. Weather remains the only reserved, unimplemented subsystem.
 
 ---
 
@@ -196,11 +199,16 @@ The current development roadmap can be found in:
 
 ---
 
-## License
+## License  
+  
+VISTOR's source code is released under the terms in the `LICENSE` file at the  
+repository root. VISTOR does not distribute copyrighted television programming,  
+commercials, films, or music; users are responsible for obtaining and using  
+media in accordance with applicable copyright law.
 
-License information will be added once the project reaches a public release.
+---
 
-## What Makes VISTOR Different?
+## Why VISTOR?
 
 VISTOR is not intended to replace Plex, Jellyfin, Kodi, or other media center software.
 

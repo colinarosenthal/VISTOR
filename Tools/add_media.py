@@ -28,9 +28,9 @@ import json
 import sys
 import tempfile
 from pathlib import Path
-
-# Make the src/ layout importable exactly like test_metadata.py does.
-sys.path.insert(0, "src")
+  
+# Resolve <repo root>/src regardless of where this script is launched from.  
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 from metadata.services.media_ingestor import MediaIngestor
 

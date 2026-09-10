@@ -30,10 +30,13 @@ import glob
 import threading
 import webbrowser
 
-# 1. Make the src/ layout importable (same bootstrap as add_media.py).
-sys.path.insert(0, "src")
+import sys  
+from pathlib import Path  
+  
+# Resolve <repo root>/src regardless of where this script is launched from.  
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
-# 2. Put winget's ffmpeg bin on PATH (Windows). No-op if not found.
+# 1. Put winget's ffmpeg bin on PATH (Windows). No-op if not found.
 #    yt-dlp needs ffmpeg on PATH to merge the bv*+ba streams into .mkv;
 #    without it every download lands in `unresolved`.
 _matches = glob.glob(os.path.join(
@@ -43,13 +46,13 @@ _matches = glob.glob(os.path.join(
 if _matches:
     os.environ["PATH"] = _matches[0] + os.pathsep + os.environ.get("PATH", "")
 
-# 3. FORCE the TMDB key into THIS process's environment.
+# 2. FORCE the TMDB key into THIS process's environment.
 #    Use a hard assignment, NOT os.environ.setdefault(...): setdefault is a
 #    no-op if the name already exists as an empty/blank string, which is
 #    exactly the failure you hit. Assigning guarantees TMDBSource() sees it.
 os.environ["TMDB_API_KEY"] = "836ceaaf4ceb9fb0743ed383296a90d0"
 
-# 4. Import the app ONLY AFTER the env is ready (this line builds _session ->
+# 3. Import the app ONLY AFTER the env is ready (this line builds _session ->
 #    IngestSession -> TMDBSource, which snapshots TMDB_API_KEY in __init__).
 from ingest.web_app import run
 
@@ -66,7 +69,6 @@ def main():
     threading.Timer(1.0, _open_browser).start()
     print(f"Serving VISTOR ingest UI at {_URL} (Ctrl+C to quit)")
     run()
-
 
 if __name__ == "__main__":
     main()
