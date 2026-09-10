@@ -1567,6 +1567,106 @@ assert isinstance(create_broadcast_mode("garbage"), OffMode)
 print("create_broadcast_mode maps every Config value.")  
   
 print("Broadcast mode tests passed.")
+
+# ------------------------------------------------------------------  
+# Seasonal Schedule Selection  
+# ------------------------------------------------------------------  
+  
+print("\n=== Testing Seasonal Schedule Selection ===")  
+  
+from datetime import datetime as _dt  
+from core.clock import Clock as _Clock  
+from scheduler.schedule_type import ScheduleType as _ScheduleType  
+  
+_clock = _Clock()  
+  
+  
+def _sched_for(year, month, day):  
+    _clock.current_time = _dt(year, month, day, 12, 0, 0)  
+    return _clock.get_schedule_type()  
+  
+  
+# Fixed-date holidays.  
+assert _sched_for(2026, 1, 1) == _ScheduleType.NEW_YEARS_DAY  
+assert _sched_for(2026, 2, 14) == _ScheduleType.VALENTINES_DAY  
+assert _sched_for(2026, 3, 17) == _ScheduleType.ST_PATRICKS_DAY  
+assert _sched_for(2026, 7, 4) == _ScheduleType.INDEPENDENCE_DAY  
+assert _sched_for(2026, 10, 31) == _ScheduleType.HALLOWEEN  
+assert _sched_for(2026, 12, 24) == _ScheduleType.CHRISTMAS_EVE  
+assert _sched_for(2026, 12, 25) == _ScheduleType.CHRISTMAS_DAY  
+assert _sched_for(2026, 12, 31) == _ScheduleType.NEW_YEARS_EVE  
+  
+# Thanksgiving = the fourth Thursday of November (found dynamically).  
+_nov_thursdays = [d for d in range(1, 31) if _dt(2026, 11, d).weekday() == 3]  
+_fourth_thursday = _nov_thursdays[3]  
+assert _sched_for(2026, 11, _fourth_thursday) == _ScheduleType.THANKSGIVING  
+  
+# A holiday-free month (June) resolves purely by weekday/weekend.  
+for _d in range(1, 8):  
+    _st = _sched_for(2026, 6, _d)  
+    if _dt(2026, 6, _d).weekday() < 5:  
+        assert _st == _ScheduleType.WEEKDAY  
+    else:  
+        assert _st == _ScheduleType.WEEKEND  
+  
+print("Seasonal schedule selection verified.")  
+  
+  
+# ------------------------------------------------------------------  
+# Authored Schedule Loading (metadata-only)  
+# ------------------------------------------------------------------  
+  
+print("\n=== Testing Authored Schedule Loading ===")  
+  
+import json as _json  
+import tempfile as _tf2  
+from pathlib import Path as _P2  
+  
+from scheduler.schedule_loader import ScheduleLoader as _ScheduleLoader  
+from scheduler.scheduled_item import ScheduledItem as _ScheduledItem  
+  
+_tmp_sched = _P2(_tf2.mkdtemp())  
+(_tmp_sched / "weekday.json").write_text(  
+    _json.dumps({  
+        "schedule_type": "weekday",  
+        "name": "Weekday",  
+        "blocks": [  
+            {  
+                "name": "Primetime",  
+                "start_hour": 20, "start_minute": 0,  
+                "end_hour": 22, "end_minute": 0,  
+                "items": ["ep_test_001", "mv_test_002"],  
+            }  
+        ],  
+    }),  
+    encoding="utf-8",  
+)  
+  
+_loader = _ScheduleLoader(schedules_directory=_tmp_sched)  
+_loader.load()  
+  
+_weekday = _loader.get_schedule(_ScheduleType.WEEKDAY)  
+assert _weekday is not None  
+  
+_blocks = _weekday.get_blocks()  
+assert len(_blocks) == 1  
+  
+_items = _blocks[0].get_items()  
+assert len(_items) == 2  
+assert all(isinstance(i, _ScheduledItem) for i in _items)  
+assert _items[0].get_media_id() == "ep_test_001"  
+assert _items[1].get_media_id() == "mv_test_002"  
+print("Authored schedule loading (media-by-id) verified.")  
+  
+# An absent / empty directory falls back to the code defaults.  
+_empty = _P2(_tf2.mkdtemp())  
+_loader2 = _ScheduleLoader(schedules_directory=_empty)  
+_loader2.load()  
+assert _loader2.get_schedule(_ScheduleType.WEEKDAY) is not None  
+assert _loader2.get_schedule(_ScheduleType.HALLOWEEN) is not None  
+print("Default schedule fallback verified.")  
+  
+print("Scheduling content tests passed.")
   
 # ------------------------------------------------------------------  
 # Final Result  

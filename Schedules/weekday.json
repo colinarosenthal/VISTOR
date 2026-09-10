@@ -1,0 +1,30 @@
+{  
+    "schedule_type": "weekday",  
+    "name": "Weekday",  
+    "blocks": [  
+        {  
+            "name": "Morning",  
+            "start_hour": 0, "start_minute": 0,  
+            "end_hour": 9, "end_minute": 0,  
+            "items": []  
+        },  
+        {  
+            "name": "Daytime",  
+            "start_hour": 9, "start_minute": 0,  
+            "end_hour": 17, "end_minute": 0,  
+            "items": []  
+        },  
+        {  
+            "name": "Primetime",  
+            "start_hour": 17, "start_minute": 0,  
+            "end_hour": 23, "end_minute": 0,  
+            "items": []  
+        },  
+        {  
+            "name": "Overnight",  
+            "start_hour": 23, "start_minute": 0,  
+            "end_hour": 23, "end_minute": 59,  
+            "items": []  
+        }  
+    ]  
+}

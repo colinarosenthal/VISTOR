@@ -1,0 +1,24 @@
+{  
+    "schedule_type": "weekend",  
+    "name": "Weekend",  
+    "blocks": [  
+        {  
+            "name": "Saturday Morning Cartoons",  
+            "start_hour": 0, "start_minute": 0,  
+            "end_hour": 12, "end_minute": 0,  
+            "items": []  
+        },  
+        {  
+            "name": "Afternoon Movies",  
+            "start_hour": 12, "start_minute": 0,  
+            "end_hour": 18, "end_minute": 0,  
+            "items": []  
+        },  
+        {  
+            "name": "Weekend Primetime",  
+            "start_hour": 18, "start_minute": 0,  
+            "end_hour": 23, "end_minute": 59,  
+            "items": []  
+        }  
+    ]  
+}
