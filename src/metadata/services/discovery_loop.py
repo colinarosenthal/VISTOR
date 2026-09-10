@@ -17,21 +17,30 @@ loop is a no-op.
   
 from core.config import Config  
 from core.logger import Logger  
+
 from metadata.services.record_builder import RecordBuilder  
 from metadata.services.media_ingestor import MediaIngestor  
-from metadata.services.enrichment.recommendation_source import RecommendationSource  
+from metadata.services.enrichment.recommendation_source import RecommendationSource 
+from metadata.services.enrichment.archive_search_source import ArchiveSearchSource 
   
   
 class DiscoveryLoop:  
-    def __init__(self, metadata_path="Metadata/data", config=None):  
+    def __init__(self, metadata_path="Metadata/data", config=None,  
+                 source_search=None):  
         self.config = config or Config().load()  
         self.recommender = RecommendationSource()  
         self.builder = RecordBuilder()  
         self.ingestor = MediaIngestor(metadata_path)  
+        self.source_search = source_search or ArchiveSearchSource()
   
     def run_from_seed(self, tmdb_id, media_type="Movie", limit=8):  
         """Expand the catalogue from one seed TMDB id. Returns a report."""  
-        report = {"suggested": [], "committed": [], "skipped_cap": []}  
+        report = {  
+            "suggested": [],  
+            "committed": [],  
+            "skipped_cap": [],  
+            "needs_confirm": [],  
+        } 
   
         if not getattr(self.config, "recommended_media", False):  
             Logger.info("Recommended media disabled; discovery loop is a no-op.")  
@@ -55,8 +64,10 @@ class DiscoveryLoop:
             cand["source_url"] = url  
   
             if mode == "assisted":  
-                # Surface for human confirm (same confirm step as the web UI).  
-                continue  
+                # Surface for human confirm (same confirm step as the web  
+                # UI). The candidate now carries its discovered source_url.  
+                report["needs_confirm"].append(cand)  
+                continue
   
             # automatic  
             if remaining <= 0:  
@@ -69,12 +80,21 @@ class DiscoveryLoop:
   
         Logger.info(  
             f"Discovery ({mode}): suggested={len(report['suggested'])} "  
-            f"committed={len(report['committed'])} capped={len(report['skipped_cap'])}."  
+            f"needs_confirm={len(report['needs_confirm'])} "  
+            f"committed={len(report['committed'])} "  
+            f"capped={len(report['skipped_cap'])}."  
         )  
-        return report  
+        return report
   
     def _discover_source_url(self, candidate):  
         """Search public archives for a playable URL for a suggested title.  
-        Placeholder until a real Internet Archive / YouTube search backend  
-        lands — returns None so 'automatic' mode stays inert until wired."""  
-        return None
+  
+        Delegates to the Source URL Discovery backend (ArchiveSearchSource).  
+        Offline / on no match this returns None, so assisted mode surfaces  
+        nothing and automatic mode acquires nothing.  
+        """  
+        return self.source_search.find_source_url(  
+            candidate.get("title"),  
+            year=candidate.get("release_year"),  
+            media_type=candidate.get("media_type", "Movie"),  
+        )

@@ -536,9 +536,9 @@ fingerprinted media.json record; VISTOR can also grow its own catalogue._
 - [x] Config recommended_media toggle + recommendation_mode    
 - [x] DiscoveryLoop (seed -> suggest -> source-discover -> acquire)    
 - [x] Suggest-Only mode (queue suggestions; no download)    
-- [ ] Assisted mode (auto-find candidate URL; human confirms)    
-- [ ] Automatic mode (auto URL-discovery + ingest, week-capped)    
-- [ ] Source URL Discovery backend (archive search for a suggested title)    
+- [x] Assisted mode (auto-find candidate URL; human confirms)    
+- [x] Automatic mode (auto URL-discovery + ingest, week-capped)    
+- [x] Source URL Discovery backend (archive search for a suggested title)    
 - [x] Config Persistence (JSON load/save; recommended_media toggle)    
 - [x] seed_source + max_auto_additions_per_week config fields    
     
@@ -1108,7 +1108,7 @@ the `(provider, reference)` pair the fetchers expect (youtu.be & `watch?v=` -> y
 - Verified in `test.py` (`=== Testing Breakpoint Detection ===`): breakpoints round-trip through serialization; black/silence stderr parsers intersect correctly; runtime fallback yields even 10-min spacing for a 30-min asset and nothing for a 5-min clip. `test.py` and `test_playback.py` both pass to completion.  
 - KNOWN LIMITATION: breakpoints are now detected and stored, but `MidProgramMode` cannot consume them yet (broadcast_modes.py not present) and the item-based Player/PlaybackQueue still can't split a file mid-play. Black/silence is a heuristic and may fire on in-content fades.
 
-## 2026-09-08 (Broadcast Realism)  
+## 2026-09-08  
   
 - Added `src/scheduler/broadcast_event.py`: a `BroadcastEvent` model + `BroadcastEventType` enum (COMMERCIAL_BLOCK / STATION_ID / NETWORK_PROMO, plus reserved BREAKING_NEWS / EMERGENCY_ALERT / WEATHER) so interruptions are first-class items the Broadcast Controller can enqueue without the Player making scheduling decisions. `make_commercial_block()` is the convenience constructor for the common case; real commercial/station-ID media can be attached later via `items` without touching the modes.  
 - Added `src/scheduler/broadcast_modes.py`: the three concrete Broadcast Modes behind the existing `BroadcastController` seam — `OffMode` (programs in order, parity with `mode=None`), `BetweenProgramsMode` (one commercial block after each program), and `MidProgramMode` (a block per detected breakpoint, falling back to ~10-min runtime spacing, airing whole when neither breakpoints nor runtime are known). `create_broadcast_mode(name)` maps the persisted `Config.broadcast_mode` string (`off` / `between_programs` / `mid_program`) to an instance and defaults unknown values to Off. Item introspection is duck-typed (`get_breakpoints` / `get_runtime_seconds` on the item or its `MediaAsset`) so it works before program items settle on one type.  
@@ -1116,10 +1116,16 @@ the `(provider, reference)` pair the fetchers expect (youtu.be & `watch?v=` -> y
 - Wired mode selection from Config into the pipeline: `Engine.initialize()` injects `create_broadcast_mode(config.get_broadcast_mode())` into the broadcast controller after `Config().load()`, and `Channel.set_broadcast_mode(name)` lets the ChannelManager propagate the same setting to every channel's own controller.  
 - Added `=== Testing Broadcast Modes ===` to `test.py`: Off order/no-events, Between-Programs interleave, Mid-Program per-breakpoint split, runtime-spacing fallback, short-program whole-airing, and factory mapping (including the unknown-value default). `test.py` and `test_playback.py` both pass to completion.
 
-## 2026-09-09 (Scheduling Content — metadata-only)  
+## 2026-09-09
   
 - Completed seasonal schedule selection: `Clock` now detects every holiday declared in `ScheduleType` (New Year's Day/Eve, Valentine's, St. Patrick's, Independence Day, Halloween, Thanksgiving [4th Thursday of November], Christmas Eve/Day) and `get_schedule_type()` selects them ahead of the weekday/weekend fallback, so a holiday that lands on a weekend still selects its holiday lineup. Previously only Halloween, Christmas Day, and weekend/weekday were reachable.  
 - Added `src/scheduler/scheduled_item.py`: `ScheduledItem` references programming by its stable metadata id (`MediaItem.get_id()`) with an optional `resolved` MediaItem slot, so schedules are authored metadata-only — declaring what airs and when without depending on a downloaded file or a loaded MetadataLibrary. Resolution to concrete media is a later (Phase 8) step.  
 - Rewrote `src/scheduler/schedule_loader.py` to load authored `*.json` schedules from `Paths.get_schedules_directory()`. Each file maps a `schedule_type` string straight onto the `ScheduleType` enum and defines time-slot blocks whose `items` are metadata ids (loaded as `ScheduledItem`s). Malformed files and unknown schedule types are skipped with a warning; when no authored schedules exist, the loader falls back to the prior in-code full-day defaults so the Scheduler always has a lineup. `ScheduleLoader(schedules_directory=...)` is injectable for testing.  
 - Populated `Schedules/` with authored `weekday.json`, `weekend.json`, and `halloween.json` (contiguous time-slot structure; `items` left empty until content population, since unresolved id-references are not yet fed to the Player).  
-- Added `=== Testing Seasonal Schedule Selection ===` and `=== Testing Authored Schedule Loading ===` to `test.py`: every holiday/weekday/weekend selection path, Thanksgiving computed dynamically as the fourth Thursday, JSON authoring with media-by-id `ScheduledItem`s, and the empty-directory default fallback. `test.py` and `test_playback.py` both pass.
+- Added `=== Testing Seasonal Schedule Selection ===` and `=== Testing Authored Schedule Loading ===` to `test.py`: every holiday/weekday/weekend selection path, Thanksgiving computed dynamically as the fourth Thursday, JSON authoring with media-by-id `ScheduledItem`s, and the empty-directory default fallback. `test.py` and `test_playback.py` both pass. 
+- Added `src/metadata/services/enrichment/archive_search_source.py`: the Source URL Discovery backend. `ArchiveSearchSource.find_source_url(title, year, media_type)` queries the Internet Archive advanced-search API and returns a `/details/<identifier>` URL for the best match. Best-effort and offline-safe — no key required, `requests` imported lazily, and it returns None with no network / on any failure / when nothing matches. The returned URL flows straight through the existing LinkResolver -> RecordBuilder -> InternetArchiveFetcher path.  
+- Wired the backend into `DiscoveryLoop`: `_discover_source_url` now delegates to an injectable `source_search` (defaults to `ArchiveSearchSource`) instead of the previous hardcoded `return None`, so assisted and automatic modes are live.  
+- Assisted mode now surfaces results: the loop records each candidate (with its discovered `source_url`) into a new `report["needs_confirm"]` list for the same human-confirm step the web UI uses, and downloads nothing.  
+- Automatic mode acquires end-to-end: candidates with a discovered URL are built + ingested with `download=True`, hard-capped by `max_auto_additions_per_week` (overflow recorded in `skipped_cap`). Still gated entirely on `recommended_media`, so it stays OFF by default.  
+- Corrected the `Config.recommendation_mode` comment to document the values the loop actually branches on (`suggest_only` / `assisted` / `automatic`) instead of the stale `auto_commit`.  
+- Added `=== Testing Catalogue Expansion (assisted/automatic) ===` to `test.py`: disabled no-op, suggest_only, assisted queueing (with and without a found URL), automatic weekly-cap enforcement, and the offline-safe empty-title path. `test.py` and `test_playback.py` both pass.

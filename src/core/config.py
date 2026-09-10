@@ -35,8 +35,10 @@ class Config:
   
         # Recommended Media (see Docs/Ideas.md -> Recommended Media).  
         # recommended_media gates the whole feature; recommendation_mode is  
-        # "suggest_only" (human-confirmed, the safe default) or "auto_commit"  
-        # (reserved for a later slice - not yet wired to auto-download).  
+        # one of:  
+        #   "suggest_only" -> return suggestions only; download nothing (default)  
+        #   "assisted"     -> auto-find a candidate source URL; human confirms  
+        #   "automatic"    -> auto URL-discovery + ingest, capped per week  
         self.recommended_media = False  
         self.recommendation_mode = "suggest_only"  
         # Discovery loop bounds (see Docs/Ideas.md -> Possible Settings).    
