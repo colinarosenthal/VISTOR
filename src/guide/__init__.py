@@ -1,3 +1,3 @@
-from .guide import Guide  
-  
+from .guide import Guide
+
 __all__ = ["Guide"]

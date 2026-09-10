@@ -13,7 +13,7 @@ def main():
 
     print("=" * 60)
     print(f"{APP_NAME} v{VERSION}")
-    
+
     if APP_SUBTITLE:
         print(APP_SUBTITLE)
     print("=" * 60)

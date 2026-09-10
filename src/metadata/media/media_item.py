@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from metadata.relationships.media_asset import MediaAsset
     from metadata.relationships.appearance import Appearance
-    
+
     from metadata.library.network import Network
 
     from metadata.vocabulary.genre import Genre
@@ -55,9 +55,9 @@ class MediaItem:
 
         self.release_year = release_year
 
-        self.runtime_minutes = runtime_minutes  
-  
-        # Scheduling weight; higher = more likely to be selected/aired.  
+        self.runtime_minutes = runtime_minutes
+
+        # Scheduling weight; higher = more likely to be selected/aired.
         self.scheduling_priority: int = 0
 
         self.media_type = media_type
@@ -122,14 +122,14 @@ class MediaItem:
 
         self.runtime_minutes = runtime
 
-    def get_scheduling_priority(self):  
-        """Return the scheduling priority."""  
-  
-        return self.scheduling_priority  
-  
-    def set_scheduling_priority(self, priority: int):  
-        """Set the scheduling priority."""  
-  
+    def get_scheduling_priority(self):
+        """Return the scheduling priority."""
+
+        return self.scheduling_priority
+
+    def set_scheduling_priority(self, priority: int):
+        """Set the scheduling priority."""
+
         self.scheduling_priority = priority
 
     # ------------------------------------------------------------------
@@ -264,19 +264,19 @@ class MediaItem:
 
         return self.appearances
 
-    # ------------------------------------------------------------------  
-    # Studios  
-    # ------------------------------------------------------------------  
-  
-    def add_studio(self, studio):  
-        """Add a production studio/distributor (dedupe by identity)."""  
-  
-        if studio not in self.studios:  
-            self.studios.append(studio)  
-  
-    def get_studios(self):  
-        """Return all production studios."""  
-  
+    # ------------------------------------------------------------------
+    # Studios
+    # ------------------------------------------------------------------
+
+    def add_studio(self, studio):
+        """Add a production studio/distributor (dedupe by identity)."""
+
+        if studio not in self.studios:
+            self.studios.append(studio)
+
+    def get_studios(self):
+        """Return all production studios."""
+
         return self.studios
 
     # ------------------------------------------------------------------

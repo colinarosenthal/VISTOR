@@ -1129,3 +1129,4 @@ the `(provider, reference)` pair the fetchers expect (youtu.be & `watch?v=` -> y
 - Automatic mode acquires end-to-end: candidates with a discovered URL are built + ingested with `download=True`, hard-capped by `max_auto_additions_per_week` (overflow recorded in `skipped_cap`). Still gated entirely on `recommended_media`, so it stays OFF by default.  
 - Corrected the `Config.recommendation_mode` comment to document the values the loop actually branches on (`suggest_only` / `assisted` / `automatic`) instead of the stale `auto_commit`.  
 - Added `=== Testing Catalogue Expansion (assisted/automatic) ===` to `test.py`: disabled no-op, suggest_only, assisted queueing (with and without a found URL), automatic weekly-cap enforcement, and the offline-safe empty-title path. `test.py` and `test_playback.py` both pass.
+- Added a full serialization round-trip test in `test.py` (save populated library -> load -> assert reconstructed counts/references).

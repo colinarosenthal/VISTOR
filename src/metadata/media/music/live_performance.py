@@ -1,8 +1,8 @@
 """
 VISTOR Live Performance
-Represents a recorded musical performance 
+Represents a recorded musical performance
 originally broadcast as part of
-another television program, live event, or special 
+another television program, live event, or special
 presentation.
 """
 

@@ -30,8 +30,8 @@ class MediaLibrary:
         self.sports_talk_shows = []
 
         self.music_videos = []
-  
-        self.commercials = []  
+
+        self.commercials = []
 
         self.concerts = []
 
@@ -65,10 +65,10 @@ class MediaLibrary:
         """Return all music videos."""
 
         return self.music_videos
-    
-    def get_commercials(self):  
-        """Return all commercials."""  
-  
+
+    def get_commercials(self):
+        """Return all commercials."""
+
         return self.commercials
 
     def get_concerts(self):
@@ -110,9 +110,9 @@ class MediaLibrary:
 
         self.music_videos.append(video)
 
-    def add_commercial(self, commercial):  
-        """Add a commercial to the library."""  
-  
+    def add_commercial(self, commercial):
+        """Add a commercial to the library."""
+
         self.commercials.append(commercial)
 
     def add_concert(self, concert):
@@ -132,15 +132,15 @@ class MediaLibrary:
     def get_total_media_count(self):
         """Return total number of media objects."""
 
-        return (  
-                len(self.movies)  
-                + len(self.episodes)  
-                + len(self.sports_events)  
-                + len(self.sports_talk_shows)  
-                + len(self.music_videos)  
-                + len(self.commercials)  
-                + len(self.concerts)  
-                + len(self.documentaries)  
+        return (
+                len(self.movies)
+                + len(self.episodes)
+                + len(self.sports_events)
+                + len(self.sports_talk_shows)
+                + len(self.music_videos)
+                + len(self.commercials)
+                + len(self.concerts)
+                + len(self.documentaries)
             )
 
     def __str__(self):
