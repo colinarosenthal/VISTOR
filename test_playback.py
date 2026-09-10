@@ -1,3 +1,13 @@
+"""  
+VISTOR Playback Rendering Test Suite  
+  
+Exercises the Player -> Renderer wiring headlessly (NullRenderer /  
+RecordingRenderer). Test 5 attempts real mpv playback and auto-skips when  
+libmpv is unavailable.  
+  
+Run from the repo root: python test_playback.py  
+"""
+
 import sys  
 import time  
 import tempfile  

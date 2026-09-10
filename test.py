@@ -1,3 +1,13 @@
+"""  
+VISTOR Test Suite  
+  
+Headless assertion tests for the metadata engine, playback/engine pipeline,  
+channel/OSD/guide/remote/settings, intelligent content management,  
+fingerprinting, broadcast modes, scheduling, and catalogue expansion.  
+  
+Run from the repo root: python test.py  
+"""
+
 import sys  
 import json
   
@@ -334,11 +344,6 @@ assert len(commercials) >= 1
 # ------------------------------------------------------------------  
 # Serialization Round-Trip (media exercised)  
 # ------------------------------------------------------------------  
-
-from metadata.media.film.movie import Movie  
-from metadata.media.television.episode import Episode  
-from metadata.media.music.music_video import MusicVideo  
-from metadata.media.advertising.commercial import Commercial
 
 print("\n=== Testing Serialization Round-Trip ===")  
   
