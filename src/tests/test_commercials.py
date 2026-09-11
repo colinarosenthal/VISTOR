@@ -57,3 +57,27 @@ assert blocks_none and not blocks_none[0].get_items()
 print("Broadcast mode without a selector leaves breaks empty.")  
   
 print("\nCommercial system tests passed.")
+
+print("\n=== Testing Time/Season Weighting ===")  
+  
+from metadata.media.advertising.commercial import Commercial  
+  
+day = Commercial(id="c-day", title="Daytime Ad")  
+day.set_airing_hours([9, 10, 11])  
+night = Commercial(id="c-night", title="Late Night Ad")  
+night.set_airing_hours([23])  
+  
+sel = CommercialSelector([day, night], break_size=5)  
+picked = [c.get_id() for c in sel.select(hour=10)]  
+assert picked == ["c-day"], picked  
+  
+xmas = Commercial(id="c-xmas", title="Holiday Ad")  
+xmas.set_airing_seasons(["christmas_day"])  
+generic = Commercial(id="c-any", title="Generic Ad")  
+sel2 = CommercialSelector([xmas, generic], break_size=5)  
+season_ids = {c.get_id() for c in sel2.select(season="christmas_day")}  
+assert season_ids == {"c-xmas", "c-any"}, season_ids  
+offseason = {c.get_id() for c in sel2.select(season="halloween")}  
+assert offseason == {"c-any"}, offseason  
+  
+print("Time/season weighting verified.")

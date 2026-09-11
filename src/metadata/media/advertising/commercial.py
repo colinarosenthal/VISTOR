@@ -43,6 +43,10 @@ class Commercial(MediaItem):
 
         self.is_local = False
 
+        # Optional broadcast-timing constraints. Empty = airs any time.  
+        self.airing_hours = set()      # e.g. {18, 19, 20} for prime time  
+        self.airing_seasons = set()    # ScheduleType values, e.g. {"halloween"}
+
     # ------------------------------------------------------------------
     # Advertiser
     # ------------------------------------------------------------------
@@ -98,6 +102,26 @@ class Commercial(MediaItem):
         """Set whether the commercial is local."""
 
         self.is_local = local
+
+    # ------------------------------------------------------------------  
+    # Broadcast timing (consumed by CommercialSelector weighting)  
+    # ------------------------------------------------------------------  
+  
+    def set_airing_hours(self, hours):  
+        """Restrict this commercial to specific hours of day (0-23)."""  
+        self.airing_hours = set(hours or [])  
+  
+    def set_airing_seasons(self, seasons):  
+        """Restrict this commercial to specific ScheduleType season keys."""  
+        self.airing_seasons = set(seasons or [])  
+  
+    def airs_at_hour(self, hour):  
+        """True when unconstrained or `hour` is in the allowed set."""  
+        return not self.airing_hours or hour in self.airing_hours  
+  
+    def airs_in_season(self, season):  
+        """True when unconstrained or `season` is in the allowed set."""  
+        return not self.airing_seasons or season in self.airing_seasons
 
     # ------------------------------------------------------------------
     # Utility

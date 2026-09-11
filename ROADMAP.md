@@ -659,11 +659,11 @@ _Milestone: each content category and channel is populated and schedulable._
 
 ## Commercial System
 
-- [ ] Commercial Pools
+- [x] Commercial Pools
 - [ ] Network Promos
 - [ ] Station IDs
-- [ ] Time-Based Commercial Selection
-- [ ] Seasonal Commercial Selection
+- [x] Time-Based Commercial Selection
+- [x] Seasonal Commercial Selection
 
 ---
 
@@ -1144,3 +1144,7 @@ the `(provider, reference)` pair the fetchers expect (youtu.be & `watch?v=` -> y
 - Corrected the `Config.recommendation_mode` comment to document the values the loop actually branches on (`suggest_only` / `assisted` / `automatic`) instead of the stale `auto_commit`.
 - Added `=== Testing Catalogue Expansion (assisted/automatic) ===` to `test.py`: disabled no-op, suggest_only, assisted queueing (with and without a found URL), automatic weekly-cap enforcement, and the offline-safe empty-title path. `test.py` and `test_playback.py` both pass.
 - Added a full serialization round-trip test in `test.py` (save populated library -> load -> assert reconstructed counts/references).
+
+## 2026-09-11
+
+- Activated `CommercialSelector` time-of-day / seasonal weighting by adding `airs_at_hour` / `airs_in_season` to the `Commercial` model; the selector's duck-typed eligibility hooks now fire. Wired a per-channel selector into every broadcast mode via `set_broadcast_mode`.

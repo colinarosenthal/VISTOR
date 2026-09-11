@@ -718,8 +718,9 @@ network.
 
 # 8. Subsystems
 
-The following subsystems have reserved locations in the source tree. All but
-Weather are now implemented and exercised by the root smoke test.
+The following subsystems have reserved locations in the source tree. All  
+subsystems described below are implemented and exercised by the test suite  
+in `src/tests/`.
 
 ## 8.1 Player
 

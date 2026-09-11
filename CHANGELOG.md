@@ -585,3 +585,19 @@ VISTOR possesses a complete project foundation and application skeleton ready fo
   seeded `weekday.json`, `weekend.json`, `halloween.json`.
 - Added `ArchiveSearchSource` (Internet Archive Source URL Discovery), wiring
   `DiscoveryLoop` assisted/automatic modes end to end.
+
+## [0.9.0] — Weather & Commercial System  
+  
+### Added  
+  
+- Added the headless Weather subsystem (`src/weather/`): `WeatherProvider` +  
+  offline-safe `NullWeatherProvider`, `WeatherService` building `WeatherSegment`  
+  items, and `create_weather_provider()` fallback.  
+- Added `CommercialSelector` (`src/scheduler/commercial_selector.py`) filling  
+  commercial blocks from each channel's `commercial_pools`, with time-of-day /  
+  seasonal weighting via optional `Commercial.airs_at_hour` / `airs_in_season`.  
+- Wired a per-channel selector into all broadcast modes through  
+  `create_broadcast_mode(mode_name, selector=...)` and `set_broadcast_mode`.  
+- Repaired channel-to-media auto-matching (genre vocabulary, audience  
+  normalization, logo casing) and added `test_channels.py`.  
+- Added `test_weather.py` and `test_commercials.py`.
