@@ -153,12 +153,16 @@ _nov_thursdays = [d for d in range(1, 31) if datetime(2026, 11, d).weekday() == 
 _fourth_thursday = _nov_thursdays[3]
 assert _sched_for(2026, 11, _fourth_thursday) == ScheduleType.THANKSGIVING
 
-# A holiday-free month (June) resolves purely by weekday/weekend.
-for _d in range(1, 8):
-    _st = _sched_for(2026, 6, _d)
-    if datetime(2026, 6, _d).weekday() < 5:
-        assert _st == ScheduleType.WEEKDAY
-    else:
+# Summer months (June-August) select the SUMMER lineup.  
+assert _sched_for(2026, 6, 15) == ScheduleType.SUMMER  
+assert _sched_for(2026, 8, 1) == ScheduleType.SUMMER  
+  
+# A holiday-free, non-summer month (April) resolves by weekday/weekend.  
+for _d in range(1, 8):  
+    _st = _sched_for(2026, 4, _d)  
+    if datetime(2026, 4, _d).weekday() < 5:  
+        assert _st == ScheduleType.WEEKDAY  
+    else:  
         assert _st == ScheduleType.WEEKEND
 
 print("Seasonal schedule selection verified.")

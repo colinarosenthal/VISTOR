@@ -1,0 +1,18 @@
+{  
+    "schedule_type": "christmas_day",  
+    "name": "Christmas Day",  
+    "blocks": [  
+        {  
+            "name": "Christmas Morning",  
+            "start_hour": 0, "start_minute": 0,  
+            "end_hour": 12, "end_minute": 0,  
+            "items": []  
+        },  
+        {  
+            "name": "Christmas Programming",  
+            "start_hour": 12, "start_minute": 0,  
+            "end_hour": 23, "end_minute": 59,  
+            "items": []  
+        }  
+    ]  
+}

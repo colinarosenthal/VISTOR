@@ -755,7 +755,10 @@ Provides weather data for weather-themed channels and segments. A
 offline-safe `NullWeatherProvider` default), and `WeatherService` builds  
 `WeatherSegment` media items from it. `create_weather_provider()` returns a  
 live provider when a source is available and falls back to the null provider  
-otherwise, mirroring the renderer/fetcher fallback pattern.
+otherwise, mirroring the renderer/fetcher fallback pattern. `create_weather_provider()` now returns a keyless `LiveWeatherProvider`  
+(wttr.in) when `requests` is importable, falling back to  
+`NullWeatherProvider` offline; the live provider is itself offline-safe  
+(guarded fetch returning None/[] on any failure).
 
 ## 8.5 Remote
 

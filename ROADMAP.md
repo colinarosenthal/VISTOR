@@ -669,17 +669,17 @@ _Milestone: each content category and channel is populated and schedulable._
 
 ## Seasonal Programming
 
-- [ ] Halloween Marathons
-- [ ] Thanksgiving Specials
-- [ ] Christmas Programming
-- [ ] Summer Programming
-- [ ] Weekend Marathons
+- [x] Halloween Marathons
+- [x] Thanksgiving Specials
+- [x] Christmas Programming
+- [x] Summer Programming
+- [x] Weekend Marathons
 
 ---
 
 ## Weather Channel
 
-- [ ] Live Weather API
+- [x] Live Weather API
 - [x] Forecast Generation
 - [ ] Radar Graphics
 - [x] Local Forecast
@@ -1153,3 +1153,7 @@ the `(provider, reference)` pair the fetchers expect (youtu.be & `watch?v=` -> y
 - Broadcast modes now accept commercial / promo / station-ID selectors; `_make_break` returns the full list of events for a break and modes `extend` rather than `append`. Empty pools still emit empty placeholder blocks (legacy behavior preserved).  
 - `Channel.set_broadcast_mode` builds three `PoolSelector`s from `get_commercial_pools()`, `get_promotional_material()`, and `get_station_id_graphics()` and injects them via `create_broadcast_mode(...)`; the engine's per-channel loop drives this unchanged.  
 - Flipped `Network Promos` and `Station IDs` to done in Phase 8 Commercial System. All 12 test modules pass.
+- Added `ScheduleType.SUMMER` + `Clock.is_summer()` (meteorological June-August), selected after holidays and before the weekday/weekend fallback so summer days get a distinct lineup while holidays like Independence Day still win. Gave `SUMMER` a code default in `ScheduleLoader`.  
+- Authored the remaining seasonal schedules under `Schedules/` (`thanksgiving.json`, `christmas_eve.json`, `christmas_day.json`, `summer.json`) and added a "Weekend Marathon" block to `weekend.json`; all metadata-only with empty `items` until content population.  
+- Added `LiveWeatherProvider` (keyless wttr.in, lazy `requests` import, guarded fetch) behind `create_weather_provider()`, which now returns it when `requests` is importable and falls back to `NullWeatherProvider` otherwise. Offline-safe: any failure degrades to None/[].  
+- Extended `test_scheduling.py` (summer selection + April weekday/weekend) and `test_weather.py` (live-provider parsing + no-network fallback). Full suite passes.

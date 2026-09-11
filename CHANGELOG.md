@@ -601,3 +601,15 @@ VISTOR possesses a complete project foundation and application skeleton ready fo
 - Repaired channel-to-media auto-matching (genre vocabulary, audience  
   normalization, logo casing) and added `test_channels.py`.  
 - Added `test_weather.py` and `test_commercials.py`.
+
+## [0.9.1] — Seasonal Programming & Live Weather  
+  
+### Added  
+  
+- Added `ScheduleType.SUMMER` + `Clock.is_summer()` and authored the  
+  remaining seasonal schedules (`thanksgiving`, `christmas_eve`,  
+  `christmas_day`, `summer`) plus a weekend marathon block.  
+- Added `LiveWeatherProvider` (keyless wttr.in) behind  
+  `create_weather_provider()`, with an offline-safe fallback to  
+  `NullWeatherProvider`.  
+- Extended `test_scheduling.py` and `test_weather.py` accordingly.

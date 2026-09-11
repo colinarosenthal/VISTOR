@@ -92,6 +92,10 @@ class Clock:
 
         return self.current_time.weekday() >= 5
 
+    def is_summer(self):  
+        # Meteorological summer: June, July, August.  
+        return self.get_month() in (6, 7, 8)
+
     def is_new_years_day(self):
 
         return self.get_month() == 1 and self.get_day() == 1
@@ -175,10 +179,13 @@ class Clock:
         if self.is_christmas_day():
             return ScheduleType.CHRISTMAS_DAY
 
-        if self.is_new_years_eve():
-            return ScheduleType.NEW_YEARS_EVE
-
-        if self.is_weekend():
-            return ScheduleType.WEEKEND
-
+        if self.is_new_years_eve():  
+            return ScheduleType.NEW_YEARS_EVE  
+  
+        if self.is_summer():  
+            return ScheduleType.SUMMER  
+  
+        if self.is_weekend():  
+            return ScheduleType.WEEKEND  
+  
         return ScheduleType.WEEKDAY

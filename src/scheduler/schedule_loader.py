@@ -188,12 +188,26 @@ class ScheduleLoader:
     # Code Defaults (fallback when no authored schedules exist)
     # ------------------------------------------------------------------
 
-    def _load_defaults(self):
-        """Build safe full-day placeholder schedules with no media items."""
-
-        self._load_weekday_schedule()
-        self._load_weekend_schedule()
-        self._load_holiday_schedules()
+    def _load_defaults(self):  
+        """Build safe full-day placeholder schedules with no media items."""  
+  
+        self._load_weekday_schedule()  
+        self._load_weekend_schedule()  
+        self._load_summer_schedule()  
+        self._load_holiday_schedules()  
+  
+    def _load_summer_schedule(self):  
+        """Create the default summer schedule."""  
+  
+        schedule = Schedule("Summer")  
+  
+        schedule.add_block(  
+            ProgrammingBlock("Summer Programming", 0, 0, 23, 59)  
+        )  
+  
+        schedule.load()  
+  
+        self.schedule_library[ScheduleType.SUMMER] = schedule
 
     def _load_weekday_schedule(self):
         """Create the default weekday schedule."""

@@ -9,8 +9,9 @@ from enum import Enum
 class ScheduleType(Enum):
     """Available schedule types."""
 
-    WEEKDAY = "weekday"
-    WEEKEND = "weekend"
+    WEEKDAY = "weekday"  
+    WEEKEND = "weekend"  
+    SUMMER = "summer"
 
     NEW_YEARS_DAY = "new_years_day"
     VALENTINES_DAY = "valentines_day"

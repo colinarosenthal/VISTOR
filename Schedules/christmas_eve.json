@@ -1,0 +1,12 @@
+{  
+    "schedule_type": "christmas_eve",  
+    "name": "Christmas Eve",  
+    "blocks": [  
+        {  
+            "name": "Christmas Eve Programming",  
+            "start_hour": 0, "start_minute": 0,  
+            "end_hour": 23, "end_minute": 59,  
+            "items": []  
+        }  
+    ]  
+}

@@ -142,10 +142,11 @@ and `CHANGELOG.md`.
 
 **Status:** Alpha
 
-Phases 1 through 7 are implemented and exercised by the test suite (metadata
-engine, playback runtime, cable-box UI, intelligent content management, and the
-media acquisition/ingestion pipeline). Phase 8 (Broadcast Programming) is in
-progress. Weather remains the only reserved, unimplemented subsystem.
+Phases 1 through 8 are implemented and exercised by the test suite (metadata  
+engine, playback runtime, cable-box UI, intelligent content management, the  
+media acquisition/ingestion pipeline, the broadcast programming layer, and the  
+Weather subsystem). Remaining work is content population (gated on media  
+storage) and Phase 9 Raspberry Pi deployment (gated on hardware).
 
 ---
 

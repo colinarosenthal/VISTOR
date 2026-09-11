@@ -1,0 +1,18 @@
+{  
+    "schedule_type": "summer",  
+    "name": "Summer",  
+    "blocks": [  
+        {  
+            "name": "Summer Daytime",  
+            "start_hour": 0, "start_minute": 0,  
+            "end_hour": 18, "end_minute": 0,  
+            "items": []  
+        },  
+        {  
+            "name": "Summer Primetime",  
+            "start_hour": 18, "start_minute": 0,  
+            "end_hour": 23, "end_minute": 59,  
+            "items": []  
+        }  
+    ]  
+}
