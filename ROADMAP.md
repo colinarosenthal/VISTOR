@@ -680,9 +680,9 @@ _Milestone: each content category and channel is populated and schedulable._
 ## Weather Channel
 
 - [ ] Live Weather API
-- [ ] Forecast Generation
+- [x] Forecast Generation
 - [ ] Radar Graphics
-- [ ] Local Forecast
+- [x] Local Forecast
 - [ ] Classic Weather Channel Styling
 
 ---

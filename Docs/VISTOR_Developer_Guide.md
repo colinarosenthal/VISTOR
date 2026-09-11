@@ -208,8 +208,9 @@ src/
     player/
     osd/
     remote/
-    guide/
-    ingest/
+    guide/  
+    weather/  
+    ingest/  
     main.py
 ```
 
@@ -217,7 +218,7 @@ The `core/`, `engine/`, `scheduler/`, and `metadata/` packages are implemented,
 along with the broadcast-runtime subsystems `channel/`, `player/`, `osd/`,
 `remote/`, and `guide/`, and the `ingest/` package that drives metadata
 acquisition (web UI + ingest session). Each subsystem's current responsibility
-is described in Section 8. The Weather subsystem remains planned.
+is described in Section 8.
 
 ## 3.2 Dependency Direction
 
@@ -746,12 +747,14 @@ set of channels and handles channel_up/down, numeric jump, and previous-channel.
 program info, and clock — with fade-in/hold/fade-out phases (OSDPhase) and
 smoothstep opacity easing.
 
-## 8.4 Weather
-
-**Status:** Not yet implemented.
-
-Will provide weather data for weather-themed channels and segments,
-integrating with the metadata WeatherSegment media type.
+## 8.4 Weather  
+  
+Provides weather data for weather-themed channels and segments. A  
+`WeatherProvider` supplies current conditions / forecast data (with an  
+offline-safe `NullWeatherProvider` default), and `WeatherService` builds  
+`WeatherSegment` media items from it. `create_weather_provider()` returns a  
+live provider when a source is available and falls back to the null provider  
+otherwise, mirroring the renderer/fetcher fallback pattern.
 
 ## 8.5 Remote
 
