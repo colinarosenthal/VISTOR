@@ -773,32 +773,42 @@ to the ChannelManager and Engine. Unknown keys warn rather than crash.
 exposing current/upcoming program labels, a 12-hour time string, and clamped
 up/down cursor navigation.
 
-# 9. Testing
-
-VISTOR currently uses a smoke-test script rather than a formal test
-framework.
-
-## 9.1 test.py
-
-Located at the repository root, test.py exercises the metadata layer and the
-broadcast-runtime subsystems end to end. It runs from the repo root with:
-
-    python test.py
-
-The script verifies, in order:
-
-- Metadata imports, model construction (Person, MediaItem, Appearance), collections, MediaLibrary, MetadataLibrary, MetadataSearch, MetadataSerializer, MetadataValidator, and MetadataLoader.
-- MetadataPopulation.build_library assembles movies, episodes, music videos, and commercials with shared references intact.
-- A full serialization round-trip (save_to_directory -> MetadataLoader).
-- Content services: MediaVerifier (+ filename normalization), MediaScanner, MediaAssociator, and MediaValidator.
-- Broadcast runtime: Player + PlaybackQueue, the Engine broadcast pipeline, ChannelManager time-sync, RemoteController, OSDManager (overlays + fade
-  animations), and the TV Guide.
-- Intelligent content management: asset persistence (download status, pinning, Broadcast/Retention scores, sources) and keyframe fingerprinting.
-- Source resolution + RealFetcher provider routing (offline via _FakeFetcher) and MediaIngestor write-back (download_status persisted to media.json).
-
-A successful run ends with "All tests passed successfully."
-
----
+# 9. Testing  
+  
+VISTOR currently uses a suite of smoke-test scripts rather than a formal  
+test framework.  
+  
+## 9.1 test_suite.py  
+  
+Located at `src/tests/`, `test_suite.py` is a runner that auto-discovers and  
+executes every `test_*.py` module in that folder, each in its own subprocess  
+so a crash or `sys.exit` in one module can't abort the rest. It runs from the  
+repo root with:  
+  
+    python src/tests/test_suite.py  
+  
+To run a single suite on its own, invoke it directly, e.g.:  
+  
+    python src/tests/test_metadata.py  
+  
+The suite covers, across its modules:  
+  
+- Metadata layer: model construction, collections, MediaLibrary,  
+  MetadataLibrary, MetadataSearch, MetadataSerializer, MetadataValidator,  
+  MetadataLoader, and a full serialization round-trip.  
+- Content services: MediaVerifier (+ filename normalization), MediaScanner,  
+  MediaAssociator, and MediaValidator.  
+- Broadcast runtime: Player + PlaybackQueue, the Engine broadcast pipeline,  
+  ChannelManager time-sync, RemoteController, OSDManager (overlays + fade  
+  animations), and the TV Guide.  
+- Intelligent content management: asset persistence (download status,  
+  pinning, Broadcast/Retention scores, sources) and keyframe fingerprinting.  
+- Acquisition: source resolution + RealFetcher provider routing (offline via  
+  a fake fetcher) and MediaIngestor write-back.  
+- Channel config integrity, the Weather subsystem, and the Commercial System  
+  (CommercialSelector selection + broadcast-mode break filling).  
+  
+Each module prints its own pass line, and the runner ends with a suite summary.
 
 # 10. Contribution Guidelines
 
