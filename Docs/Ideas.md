@@ -580,6 +580,31 @@ Jellyfin library), and consider pointing Jellyfin at a curated subset rather
 than the whole `Media/` tree so VISTOR's `Raw/`, `tmp/`, and sidecar files do
 not clutter the Jellyfin library.
 
+### First-Run Setup Wizard  
+  
+On first launch — when no `Metadata/data/config.json` exists yet — VISTOR  
+could present a short sequence of onboarding screens that configure the  
+system for the specific user before the cable runtime starts, the way most  
+installed applications do. Today `Config` simply falls back to defaults with  
+no interactive setup step (`src/core/config.py`).  
+  
+The wizard would walk through, in order:  
+  
+1. Media storage location — internal path vs. an external drive  
+   (`media_directory`), matching TV Settings Menu #1.  
+2. Storage budget — the on-disk ceiling before retention-driven eviction  
+   runs (`storage_budget_bytes`; 0 = unbounded).  
+3. Channel selection — which channels to enable, tied to the Preset Channel  
+   Bundles concept above.  
+4. Broadcast mode — Off / Between Programs / Mid-Program.  
+  
+Choices would be written to `config.json` so subsequent launches skip the  
+wizard. It could surface both on the television itself (remote-driven, no  
+keyboard) and in the planned Management Website, consistent with the  
+TV Settings Menu / Management Website split described later in this document.  
+  
+---
+
 ### Deferral Note
 
 This is an optional deployment/integration idea, not a core roadmap item. It

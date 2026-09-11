@@ -654,6 +654,7 @@ _Milestone: each content category and channel is populated and schedulable._
 > `station_id_graphics` array is still empty. Actual programming is tracked
 > in the "Programming", "Supporting Content", and "Commercial System" sections.
 
+
 ---
 
 ## Commercial System
@@ -941,7 +942,7 @@ Rewired the Engine to drive all channels through a single shared `Clock` via `Ch
 - Promoted `requests`, `yt-dlp`, and `mutagen` from planned/commented to active dependencies in `requirements.txt`; all network imports are lazy so the headless test suite still runs offline.
 - Added offline `ProviderRegistry` routing + `RealFetcher` delegation tests to `test_metadata.py`, mirroring the existing `_FakeFetcher` pattern (no real network calls).
 - Expanded `ChannelConfigs/channels.json` from 2 to 15 channels (numbers 2-16) covering the Design Bible Section 3.8 / ROADMAP categories: Toons, Kids, Movies, Music, Sports, News, Docs, Classic, Infomercials, Aquarium, Fireplace, Public Access, Weather, Seasonal, plus General.
-- Extended `MetadataPopulation.create_genres()` with `Variety`, `Weather`, and `Ambient` so the new channels' `primary_genre` values exist in the vocabulary.
+- Extended `MetadataPopulation.create_genres()` with `Variety`, `Weather`, `Ambient`, and `Film` so the new channels' `primary_genre` values exist in the vocabulary.
 - Updated the channel-up adjacency assertion in `test_metadata.py` for the expanded lineup (channel_up from #2 now lands on #3, not #4).
 - Documented the acquisition layer as Section 7.11 in `Docs/VISTOR_Developer_Guide.md`.
 - Verified via `test_metadata.py` (all tests pass, including `=== Testing Provider Registry + RealFetcher (offline) ===`).
@@ -1086,7 +1087,7 @@ the `(provider, reference)` pair the fetchers expect (youtu.be & `watch?v=` -> y
 - Bootstrapped `libmpv-2.dll` onto PATH via an absolute path before `import mpv` (python-mpv's loader rejects DLLs found under relative %PATH% entries).
 - Added `test_playback.py`: Player→renderer wiring, audio propagation, missing-asset safety, headless `NullRenderer` fallback, real mpv playback (auto-skips if libmpv/media absent), `_format_overlay` pure-function coverage, and `set_renderer` swap+resurface.
 - Verified end-to-end: real mpv playback of `Media/Episodes/neon_genesis_evangelion.mkv` reported `time_pos ≈ 1.189` after ~2s; all seven tests pass, and `create_renderer()` falls back cleanly when libmpv is absent.
-- Flipped `DiscoveryLoop` and `Suggest-Only mode` to done in Phase 7 (verified in `src/metadata/services/discovery_loop.py`); assisted/automatic/source-URL-discovery stay open because `_discover_source_url` still returns `None`.
+- Flipped `DiscoveryLoop` and `Suggest-Only mode` to done in Phase 7 (verified in `src/metadata/services/discovery_loop.py`); assisted/automatic/source-URL-discovery remained open at this point pending the source-discovery backend (later delivered via `ArchiveSearchSource`, see 2026-08-31 below).
 ## 2026-08-30 (Storage foundation #1)
 - Made the media storage root fully configurable (Design Bible 3.6 / 4.3): `Paths.media` now derives from `Config().load().get_media_directory()`, using an absolute value as-is (external USB SSD / Raspberry Pi drive) and anchoring a relative value under the project root.
 - Removed hardcoded `"Media/"` strings from `record_builder.py` (`_path_for` builds from `Paths()`; `LOCAL_DIRS` fallback changed `"Media"` -> `""` to stop double-nesting), `media_ingestor.py` (backlog episode path), and `base_fetcher.py` (default `media_root` falls back to `Paths()` so the `tmp` staging dir shares the destination drive for atomic moves).
