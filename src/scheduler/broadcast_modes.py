@@ -3,24 +3,30 @@ VISTOR Broadcast Modes
   
 Concrete airing strategies injected into the BroadcastController. Each  
 mode takes the programs in the Scheduler's current block and returns the  
-full airing sequence, interleaving BroadcastEvents (commercial blocks)  
-per the viewer's chosen broadcast structure.  
+full airing sequence, interleaving BroadcastEvents (commercial blocks,  
+station IDs, network promos) per the viewer's chosen broadcast structure.  
   
   off              -> programs in order, no interruptions  
   between_programs -> a commercial block after each completed program  
   mid_program      -> commercial blocks at authentic breakpoints inside  
                       each program (falls back to runtime-spaced breaks)  
   
-Each mode may be given an optional CommercialSelector that fills its  
-commercial blocks from a channel's pool. When no selector is provided,  
-modes emit empty placeholder blocks (unchanged legacy behavior).  
+Each mode may be given optional PoolSelectors that fill its breaks from a  
+channel's pools. When a selector is None (or its pool is empty), that  
+content is simply omitted, so a channel with empty pools reproduces the  
+unchanged legacy behavior (one empty placeholder commercial block per  
+break).  
   
 See Docs/VISTOR_Design_Bible.md -> Broadcast Modes.  
 """  
   
 from core.logger import Logger  
   
-from scheduler.broadcast_event import make_commercial_block  
+from scheduler.broadcast_event import (  
+    make_commercial_block,  
+    make_network_promo,  
+    make_station_id,  
+)  
   
   
 # Runtime-spacing fallback when a program has no detected breakpoints.  
@@ -30,14 +36,26 @@ _FALLBACK_BREAK_SPACING_SECONDS = 10 * 60
 class BroadcastMode:  
     """Base contract: turn a block's programs into an airing sequence."""  
   
-    def __init__(self, selector=None):  
-        # Optional CommercialSelector used to fill commercial blocks. When  
-        # None, modes emit empty placeholder blocks (legacy behavior).  
+    def __init__(self, selector=None, promo_selector=None,  
+                 station_id_selector=None):  
+        # Optional PoolSelectors used to fill breaks. When None, the  
+        # corresponding content is omitted (legacy behavior for commercials  
+        # is an empty placeholder block).  
         self.selector = selector  
+        self.promo_selector = promo_selector  
+        self.station_id_selector = station_id_selector  
   
     def build_sequence(self, items):  
         """Return the full airing order for `items` (programs)."""  
         raise NotImplementedError  
+  
+    def _break(self):  
+        """Build the events for one break from this mode's selectors."""  
+        return _make_break(  
+            self.selector,  
+            self.promo_selector,  
+            self.station_id_selector,  
+        )  
   
   
 class OffMode(BroadcastMode):  
@@ -55,7 +73,7 @@ class BetweenProgramsMode(BroadcastMode):
   
         for item in items:  
             sequence.append(item)  
-            sequence.append(_make_break(self.selector))  
+            sequence.extend(self._break())  
   
         return sequence  
   
@@ -86,23 +104,44 @@ class MidProgramMode(BroadcastMode):
             sequence.append(item)  
   
             for _offset in breakpoints:  
-                sequence.append(_make_break(self.selector))  
+                sequence.extend(self._break())  
   
         return sequence  
   
   
-def _make_break(selector):  
-    """Build a commercial block, filling it from the selector when present."""  
+def _make_break(selector=None, promo_selector=None, station_id_selector=None):  
+    """Build the events for one break.  
+  
+    Always emits a commercial block (filled from `selector` when present,  
+    otherwise an empty placeholder) so the break count matches legacy  
+    behavior. A station ID is added before, and a network promo after, only  
+    when their selector actually yields items.  
+    """  
+    events = []  
+  
+    if station_id_selector is not None:  
+        station_ids = station_id_selector.select()  
+        if station_ids:  
+            events.append(make_station_id(items=station_ids))  
+  
     commercials = selector.select() if selector is not None else None  
-    return make_commercial_block(items=commercials)  
+    events.append(make_commercial_block(items=commercials))  
+  
+    if promo_selector is not None:  
+        promos = promo_selector.select()  
+        if promos:  
+            events.append(make_network_promo(items=promos))  
+  
+    return events  
   
   
-def create_broadcast_mode(mode_name, selector=None):  
+def create_broadcast_mode(mode_name, selector=None, promo_selector=None,  
+                          station_id_selector=None):  
     """Map a Config.broadcast_mode string to a concrete mode instance.  
   
-    `selector` is an optional CommercialSelector the mode uses to fill its  
-    commercial blocks. When None, modes emit empty placeholder blocks  
-    (unchanged legacy behavior).  
+    `selector`, `promo_selector`, and `station_id_selector` are optional  
+    PoolSelectors the mode uses to fill its breaks. When None, that content  
+    is omitted (empty placeholder commercial blocks; no station IDs/promos).  
     """  
   
     modes = {  
@@ -117,9 +156,13 @@ def create_broadcast_mode(mode_name, selector=None):
         Logger.warning(  
             f"Unknown broadcast mode '{mode_name}'; defaulting to Off."  
         )  
-        return OffMode(selector)  
+        mode_class = OffMode  
   
-    return mode_class(selector)  
+    return mode_class(  
+        selector,  
+        promo_selector=promo_selector,  
+        station_id_selector=station_id_selector,  
+    )  
   
   
 # ----------------------------------------------------------------------  

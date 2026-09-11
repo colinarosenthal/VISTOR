@@ -660,8 +660,8 @@ _Milestone: each content category and channel is populated and schedulable._
 ## Commercial System
 
 - [x] Commercial Pools
-- [ ] Network Promos
-- [ ] Station IDs
+- [x] Network Promos
+- [x] Station IDs
 - [x] Time-Based Commercial Selection
 - [x] Seasonal Commercial Selection
 
@@ -1148,3 +1148,8 @@ the `(provider, reference)` pair the fetchers expect (youtu.be & `watch?v=` -> y
 ## 2026-09-11
 
 - Activated `CommercialSelector` time-of-day / seasonal weighting by adding `airs_at_hour` / `airs_in_season` to the `Commercial` model; the selector's duck-typed eligibility hooks now fire. Wired a per-channel selector into every broadcast mode via `set_broadcast_mode`.
+- Generalized `CommercialSelector` into `PoolSelector` (`src/scheduler/pool_selector.py`), a pool-agnostic break filler that keeps the same `select(count, hour, season)` signature and duck-typed `airs_at_hour`/`airs_in_season` weighting, so it fills commercial, network-promo, and station-ID breaks identically.  
+- Added `make_network_promo()` and `make_station_id()` constructors to `broadcast_event.py`, mirroring `make_commercial_block()` and reusing the existing `NETWORK_PROMO` / `STATION_ID` event types.  
+- Broadcast modes now accept commercial / promo / station-ID selectors; `_make_break` returns the full list of events for a break and modes `extend` rather than `append`. Empty pools still emit empty placeholder blocks (legacy behavior preserved).  
+- `Channel.set_broadcast_mode` builds three `PoolSelector`s from `get_commercial_pools()`, `get_promotional_material()`, and `get_station_id_graphics()` and injects them via `create_broadcast_mode(...)`; the engine's per-channel loop drives this unchanged.  
+- Flipped `Network Promos` and `Station IDs` to done in Phase 8 Commercial System. All 12 test modules pass.

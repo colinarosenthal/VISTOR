@@ -68,3 +68,22 @@ def make_commercial_block(duration_seconds=0, items=None):
         items=items,
         label="Commercial Block",
     )
+
+def make_station_id(duration_seconds=0, items=None):  
+    """Convenience constructor for a station-identification event."""  
+    return BroadcastEvent(  
+        BroadcastEventType.STATION_ID,  
+        duration_seconds=duration_seconds,  
+        items=items,  
+        label="Station ID",  
+    )  
+  
+  
+def make_network_promo(duration_seconds=0, items=None):  
+    """Convenience constructor for a network-promo event."""  
+    return BroadcastEvent(  
+        BroadcastEventType.NETWORK_PROMO,  
+        duration_seconds=duration_seconds,  
+        items=items,  
+        label="Network Promo",  
+    )

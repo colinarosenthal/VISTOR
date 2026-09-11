@@ -12,7 +12,7 @@ from core.logger import Logger
 from scheduler.scheduler import Scheduler
 from scheduler.broadcast_controller import BroadcastController
 from scheduler.broadcast_modes import create_broadcast_mode
-from scheduler.commercial_selector import CommercialSelector
+from scheduler.pool_selector import PoolSelector
 
 from player.playback_queue import PlaybackQueue
 from player.player import Player
@@ -182,15 +182,18 @@ class Channel:
   
         Called by the ChannelManager so every channel honors the viewer's  
         Config.broadcast_mode setting (off / between_programs / mid_program).  
-        Each channel fills its commercial breaks from its own pool via a  
-        CommercialSelector built from get_commercial_pools(), so an empty  
-        pool still yields empty placeholder blocks (legacy behavior).  
+        Each channel fills its breaks from its own pools via PoolSelectors,  
+        so empty pools still yield empty placeholder blocks (legacy behavior).  
         """  
   
         if self.broadcast_controller is not None:  
-            selector = CommercialSelector(self.get_commercial_pools())  
             self.broadcast_controller.set_mode(  
-                create_broadcast_mode(mode_name, selector=selector)  
+                create_broadcast_mode(  
+                    mode_name,  
+                    selector=PoolSelector(self.get_commercial_pools()),  
+                    promo_selector=PoolSelector(self.get_promotional_material()),  
+                    station_id_selector=PoolSelector(self.get_station_id_graphics()),  
+                )  
             )
 
     def get_player(self):
