@@ -101,10 +101,32 @@ class MetadataPopulation:
                 name="News",
                 description="Current events and informational programming.",
             ),
-            Genre(
-                name="Music",
-                description="Music performances, videos, and related programming.",
-            ),
+            Genre(  
+                name="Music",  
+                description="Music performances, videos, and related programming.",  
+            ),  
+            Genre(  
+                name="Variety",  
+                description=(  
+                    "Mixed-format programming combining multiple content types, "  
+                    "such as general-interest, public-access, and infomercial channels."  
+                ),  
+            ),  
+            Genre(  
+                name="Ambient",  
+                description=(  
+                    "Continuous atmospheric programming with no narrative, "  
+                    "such as aquarium or fireplace loops."  
+                ),  
+            ),  
+            Genre(  
+                name="Weather",  
+                description="Weather forecasts, radar, and local conditions programming.",  
+            ),  
+            Genre(  
+                name="Film",  
+                description="Feature-length theatrical and made-for-TV movies.",  
+            ),  
         ]
 
     # ------------------------------------------------------------

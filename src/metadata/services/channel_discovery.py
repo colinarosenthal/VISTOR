@@ -67,7 +67,7 @@ class ChannelDiscovery:
             if genre in item_genres:
                 score += 3.0
 
-        audience = (channel.get_target_audience() or "").strip().lower()
+        audience = (channel.get_target_audience() or "").strip().lower().replace(" ", "_")
         if audience and item.get_audience() is not None:
             item_aud = getattr(item.get_audience(), "name", "").lower()
             if audience == item_aud:

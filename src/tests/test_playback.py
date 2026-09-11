@@ -13,7 +13,7 @@ import time
 import tempfile
 from pathlib import Path
 
-sys.path.append(str(Path(__file__).resolve().parent.parent / "src"))
+sys.path.append(str(Path(__file__).resolve().parent.parent))
 
 from player.player import Player, PlaybackState
 from player.renderer import NullRenderer, MpvRenderer, create_renderer

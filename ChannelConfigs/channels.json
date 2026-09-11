@@ -54,7 +54,7 @@
     {
         "number": 5,
         "name": "VISTOR Kids",
-        "logo": "Assets/Logos/vistor_Kids.png",
+        "logo": "Assets/Logos/vistor_kids.png",
         "primary_genre": "Animation",
         "target_audience": "Kids",
         "programming_sources": [],
