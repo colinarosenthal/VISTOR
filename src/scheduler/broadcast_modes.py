@@ -38,49 +38,45 @@ class OffMode(BroadcastMode):
         return list(items)
 
 
-class BetweenProgramsMode(BroadcastMode):
-    """Insert one commercial block after each completed program."""
-
-    def build_sequence(self, items):
-        sequence = []
-
-        for item in items:
-            sequence.append(item)
-            sequence.append(make_commercial_block())
-
+class BetweenProgramsMode(BroadcastMode):  
+    """Insert one commercial block after each completed program."""  
+  
+    def __init__(self, commercial_selector=None):  
+        self.commercial_selector = commercial_selector  
+  
+    def build_sequence(self, items):  
+        sequence = []  
+  
+        for item in items:  
+            sequence.append(item)  
+            sequence.append(_make_break(self.commercial_selector))  
+  
+        return sequence  
+  
+  
+class MidProgramMode(BroadcastMode):  
+    """Split each program at its breakpoints, inserting commercial blocks.  
+    (docstring unchanged)  
+    """  
+  
+    def __init__(self, commercial_selector=None):  
+        self.commercial_selector = commercial_selector  
+  
+    def build_sequence(self, items):  
+        sequence = []  
+  
+        for item in items:  
+            breakpoints = _extract_breakpoints(item)  
+  
+            if not breakpoints:  
+                breakpoints = _generate_runtime_breakpoints(item)  
+  
+            sequence.append(item)  
+  
+            for _offset in breakpoints:  
+                sequence.append(_make_break(self.commercial_selector))  
+  
         return sequence
-
-
-class MidProgramMode(BroadcastMode):
-    """Split each program at its breakpoints, inserting commercial blocks.
-
-    Uses breakpoints detected at download time (BreakpointDetector). A
-    program with no known breakpoints falls back to runtime-spaced breaks;
-    a program that exposes neither breakpoints nor a runtime airs whole,
-    degrading gracefully to Off behavior for that item.
-
-    NOTE: the item-based Player/PlaybackQueue cannot split a single file
-    mid-play yet (ROADMAP KNOWN LIMITATION). Until it can, the program is
-    enqueued once and the breakpoints drive how many commercial blocks
-    follow it, which keeps the sequence correct for scheduling/testing.
-    """
-
-    def build_sequence(self, items):
-        sequence = []
-
-        for item in items:
-            breakpoints = _extract_breakpoints(item)
-
-            if not breakpoints:
-                breakpoints = _generate_runtime_breakpoints(item)
-
-            sequence.append(item)
-
-            for _offset in breakpoints:
-                sequence.append(make_commercial_block())
-
-        return sequence
-
 
 def create_broadcast_mode(mode_name):
     """Map a Config.broadcast_mode string to a concrete mode instance."""
@@ -175,3 +171,24 @@ def _generate_runtime_breakpoints(item):
         offset += _FALLBACK_BREAK_SPACING_SECONDS
 
     return offsets
+
+def _make_break(commercial_selector):  
+    """Build a commercial block, filling it from the selector when present."""  
+    commercials = (  
+        commercial_selector.select()  
+        if commercial_selector is not None else None  
+    )  
+    return make_commercial_block(items=commercials)
+
+def create_broadcast_mode(mode_name, commercial_selector=None):  
+    """Map a Config.broadcast_mode string to a concrete mode instance."""  
+  
+    if mode_name == "between_programs":  
+        return BetweenProgramsMode(commercial_selector)  
+    if mode_name == "mid_program":  
+        return MidProgramMode(commercial_selector)  
+    if mode_name == "off":  
+        return OffMode()  
+  
+    Logger.warning(f"Unknown broadcast mode '{mode_name}'; defaulting to Off.")  
+    return OffMode()
